@@ -27,7 +27,7 @@
     }
 
     .wrap {
-      max-width: 1280px;
+      max-width: 1320px;
       margin: 0 auto;
       padding: 18px 24px 24px;
     }
@@ -67,6 +67,7 @@
       padding: 12px 18px;
       font-weight: 700;
       font-size: 14px;
+      font-family: inherit;
     }
 
     .btn-primary {
@@ -124,6 +125,7 @@
       border-radius: 12px;
       font-size: 14px;
       background: #fff;
+      height: 44px;
     }
 
     .service-type-buttons {
@@ -183,22 +185,18 @@
 
     input[type="text"],
     input[type="file"],
-    select {
+    select,
+    input[type="number"] {
       width: 100%;
       padding: 12px;
       border: 1px solid #ccc;
       border-radius: 12px;
       font-size: 14px;
       background: #fff;
+      height: 44px;
     }
 
     input[type="number"] {
-      width: 100%;
-      padding: 10px 34px;
-      border: 1px solid #ccc;
-      border-radius: 12px;
-      font-size: 14px;
-      background: #fff;
       text-align: center;
       appearance: textfield;
       -moz-appearance: textfield;
@@ -211,6 +209,7 @@
     }
 
     input[type="file"] {
+      height: auto;
       padding: 10px;
     }
 
@@ -267,7 +266,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1100px;
+      min-width: 1160px;
       background: #fff;
       table-layout: fixed;
     }
@@ -292,11 +291,11 @@
     }
 
     .col-tariff { width: 22%; }
-    .col-actual { width: 22%; }
-    .col-custom-pages { width: 14%; }
+    .col-actual { width: 21%; }
+    .col-custom-pages { width: 11%; }
     .col-format { width: 14%; }
     .col-qty { width: 10%; }
-    .col-price { width: 10%; }
+    .col-price { width: 14%; }
     .col-sum { width: 8%; }
 
     .money {
@@ -314,18 +313,20 @@
     }
 
     .row-qty-input {
-      width: 108px;
-      min-width: 108px;
-      max-width: 108px;
+      width: 116px;
+      min-width: 116px;
+      max-width: 116px;
       text-align: center;
+      height: 44px;
     }
 
     .row-price-input {
-      width: 128px;
-      min-width: 128px;
-      max-width: 128px;
+      width: 150px;
+      min-width: 150px;
+      max-width: 150px;
       text-align: center;
       font-size: 14px;
+      height: 44px;
     }
 
     .row-select {
@@ -337,6 +338,7 @@
       font-size: 14px;
       background: #fff;
       text-align: center;
+      height: 44px;
     }
 
     .note-box {
@@ -353,10 +355,47 @@
     .add-extra-trigger-row {
       cursor: pointer;
       background: #fcfcfc;
+      position: relative;
     }
 
     .add-extra-trigger-row:hover td {
       background: #f6f6f6;
+    }
+
+    .extra-button-popover {
+      display: none;
+      position: absolute;
+      left: 10px;
+      top: calc(100% + 8px);
+      z-index: 20;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      min-width: 340px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .add-extra-trigger-row:hover .extra-button-popover,
+    .extra-button-popover.open {
+      display: flex;
+    }
+
+    .extra-option-btn {
+      background: #fff;
+      color: #111;
+      border: 1px solid #ccc;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .extra-option-btn.active {
+      background: #111;
+      border-color: #111;
+      color: #fff;
     }
 
     .extra-inline-row td {
@@ -392,43 +431,6 @@
       line-height: 1.1;
       text-align: right;
       margin-left: auto;
-    }
-
-    .number-control {
-      position: relative;
-      width: 100%;
-      display: flex;
-      align-items: center;
-    }
-
-    .number-control input {
-      width: 100%;
-    }
-
-    .step-btn {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 24px;
-      height: 24px;
-      padding: 0;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      background: #fff;
-      color: #111;
-      font-size: 16px;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2;
-    }
-
-    .step-btn.minus { left: 6px; }
-    .step-btn.plus { right: 6px; }
-
-    .step-btn:hover {
-      background: #f3f3f3;
     }
 
     @media (max-width: 1100px) {
@@ -739,7 +741,6 @@
       `;
 
       servicesContainer.appendChild(block);
-      enhanceNumberControls(block);
 
       block.querySelectorAll(".service-type-btn").forEach(btn => {
         btn.addEventListener("click", () => {
@@ -753,8 +754,6 @@
           nameInput.value = getDefaultServiceName(newType, id);
 
           block.querySelector(".service-body").innerHTML = renderServiceFields(id, newType);
-          enhanceNumberControls(block.querySelector(".service-body"));
-
           restoreServiceResult(block);
         });
       });
@@ -773,10 +772,6 @@
 
     function getCurrentTypeForBlock(block) {
       return block.dataset.serviceType;
-    }
-
-    function getCurrentState(id, type) {
-      return serviceStates[id];
     }
 
     function ensureTypeBuckets(id, type) {
@@ -1035,8 +1030,8 @@
 
       rebuildCalculatedRows();
       renderServiceResult(block);
-
       recalcOverallTotal();
+
       if (setReadyText) {
         setStatus("Готово.");
       }
@@ -1383,16 +1378,21 @@
                 ${rows.map(row => renderRowHtml(row)).join("")}
 
                 <tr class="add-extra-trigger-row">
-                  <td class="text-left"><strong>+ Добавить доп. услугу</strong></td>
-                  <td>—</td>
-                  <td>—</td>
-                  <td>—</td>
-                  <td>—</td>
-                  <td>—</td>
-                  <td>—</td>
+                  <td class="text-left" colspan="7" style="position:relative;">
+                    <strong>+ Добавить доп. услугу</strong>
+                    <div class="extra-button-popover ${extraEditorOpen ? "open" : ""}">
+                      ${EXTRA_TYPES.map(item => `
+                        <button type="button"
+                                class="extra-option-btn ${item.key === selectedExtraType ? "active" : ""}"
+                                data-extra-type="${item.key}">
+                          ${item.label}
+                        </button>
+                      `).join("")}
+                    </div>
+                  </td>
                 </tr>
 
-                <tr class="extra-inline-row" style="${extraEditorOpen ? "" : "display:none;"}">
+                <tr class="extra-inline-row" style="${extraEditorOpen && selectedExtraType ? "" : "display:none;"}">
                   <td colspan="7">
                     <div class="extra-inline-box">
                       ${renderInlineExtraEditor(id, type, selectedExtraType)}
@@ -1408,7 +1408,6 @@
       `;
 
       bindResultArea(block);
-      enhanceNumberControls(resultBox);
     }
 
     function renderRowHtml(row) {
@@ -1445,115 +1444,123 @@
     }
 
     function renderInlineExtraEditor(id, type, selectedExtraType) {
-      return `
-        <div class="grid-3">
-          <div class="field">
-            <label>Тип доп. услуги</label>
-            <select id="inline-extra-type-${id}-${type}">
-              <option value="">Выбери пункт</option>
-              ${EXTRA_TYPES.map(item => `
-                <option value="${item.key}"${item.key === selectedExtraType ? " selected" : ""}>${item.label}</option>
-              `).join("")}
-            </select>
-          </div>
-          ${renderInlineExtraOptions(id, type, selectedExtraType)}
-        </div>
+      if (!selectedExtraType) return "";
 
-        <div style="margin-top:12px;">
-          <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
-        </div>
-      `;
-    }
-
-    function renderInlineExtraOptions(id, type, selectedExtraType) {
       if (selectedExtraType === "binding") {
         return `
-          <div class="field">
-            <label>Вид брошюровки</label>
-            <select id="inline-binding-type-${id}-${type}">
-              <option value="staples2">2 скобы</option>
-              <option value="plastic">Пластиковая пружина</option>
-              <option value="metal">Металлическая пружина</option>
-              <option value="hardcover">Твердый переплет A4</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Количество</label>
-            <input type="number" id="inline-binding-qty-${id}-${type}" min="1" step="1" value="1" />
+          <div class="grid-3">
+            <div class="field">
+              <label>Вид брошюровки</label>
+              <select id="inline-binding-type-${id}-${type}">
+                <option value="staples2">2 скобы</option>
+                <option value="plastic">Пластиковая пружина</option>
+                <option value="metal">Металлическая пружина</option>
+                <option value="hardcover">Твердый переплет A4</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество</label>
+              <input type="number" id="inline-binding-qty-${id}-${type}" min="1" step="1" value="1" />
+            </div>
+            <div class="field" style="justify-content:flex-end;">
+              <label>&nbsp;</label>
+              <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
+            </div>
           </div>
         `;
       }
 
       if (selectedExtraType === "hole_punch") {
         return `
-          <div class="field">
-            <label>Количество</label>
-            <input type="number" id="inline-hole-qty-${id}-${type}" min="1" step="1" value="1" />
-          </div>
-          <div class="field">
-            <label>Цена за ед.</label>
-            <input type="number" id="inline-hole-price-${id}-${type}" min="0" step="0.01" value="10.00" />
+          <div class="grid-3">
+            <div class="field">
+              <label>Количество</label>
+              <input type="number" id="inline-hole-qty-${id}-${type}" min="1" step="1" value="1" />
+            </div>
+            <div class="field">
+              <label>Цена за ед.</label>
+              <input type="number" id="inline-hole-price-${id}-${type}" min="0" step="0.01" value="10.00" />
+            </div>
+            <div class="field" style="justify-content:flex-end;">
+              <label>&nbsp;</label>
+              <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
+            </div>
           </div>
         `;
       }
 
       if (selectedExtraType === "multifora") {
         return `
-          <div class="field">
-            <label>Формат мультифор</label>
-            <select id="inline-multifora-format-${id}-${type}">
-              <option value="A5">A5</option>
-              <option value="A4">A4</option>
-              <option value="A3">A3</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Количество</label>
-            <input type="number" id="inline-multifora-qty-${id}-${type}" min="1" step="1" value="1" />
+          <div class="grid-3">
+            <div class="field">
+              <label>Формат мультифор</label>
+              <select id="inline-multifora-format-${id}-${type}">
+                <option value="A5">A5</option>
+                <option value="A4">A4</option>
+                <option value="A3">A3</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество</label>
+              <input type="number" id="inline-multifora-qty-${id}-${type}" min="1" step="1" value="1" />
+            </div>
+            <div class="field" style="justify-content:flex-end;">
+              <label>&nbsp;</label>
+              <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
+            </div>
           </div>
         `;
       }
 
       if (selectedExtraType === "lamination") {
         return `
-          <div class="field">
-            <label>Формат ламинирования</label>
-            <select id="inline-lamination-format-${id}-${type}">
-              <option value="A6">A6</option>
-              <option value="A5">A5</option>
-              <option value="A4">A4</option>
-              <option value="A3">A3</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Количество</label>
-            <input type="number" id="inline-lamination-qty-${id}-${type}" min="1" step="1" value="1" />
+          <div class="grid-3">
+            <div class="field">
+              <label>Формат ламинирования</label>
+              <select id="inline-lamination-format-${id}-${type}">
+                <option value="A6">A6</option>
+                <option value="A5">A5</option>
+                <option value="A4">A4</option>
+                <option value="A3">A3</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество</label>
+              <input type="number" id="inline-lamination-qty-${id}-${type}" min="1" step="1" value="1" />
+            </div>
+            <div class="field" style="justify-content:flex-end;">
+              <label>&nbsp;</label>
+              <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
+            </div>
           </div>
         `;
       }
 
       if (selectedExtraType === "folder") {
         return `
-          <div class="field">
-            <label>Вид папки</label>
-            <select id="inline-folder-type-${id}-${type}">
-              <option value="folder20">Папка на 20 мультифор</option>
-              <option value="folder30">Папка на 30 мультифор</option>
-              <option value="folder40">Папка на 40 мультифор</option>
-              <option value="folder60">Папка на 60 мультифор</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Количество</label>
-            <input type="number" id="inline-folder-qty-${id}-${type}" min="1" step="1" value="1" />
+          <div class="grid-3">
+            <div class="field">
+              <label>Вид папки</label>
+              <select id="inline-folder-type-${id}-${type}">
+                <option value="folder20">Папка на 20 мультифор</option>
+                <option value="folder30">Папка на 30 мультифор</option>
+                <option value="folder40">Папка на 40 мультифор</option>
+                <option value="folder60">Папка на 60 мультифор</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество</label>
+              <input type="number" id="inline-folder-qty-${id}-${type}" min="1" step="1" value="1" />
+            </div>
+            <div class="field" style="justify-content:flex-end;">
+              <label>&nbsp;</label>
+              <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
+            </div>
           </div>
         `;
       }
 
-      return `
-        <div></div>
-        <div></div>
-      `;
+      return "";
     }
 
     function bindResultArea(block) {
@@ -1565,8 +1572,8 @@
       const resultBox = block.querySelector(".service-result");
 
       const toggleBtn = resultBox.querySelector(".result-toggle");
-      const addExtraTriggerRow = resultBox.querySelector(".add-extra-trigger-row");
-      const extraTypeSelect = resultBox.querySelector(`#inline-extra-type-${id}-${type}`);
+      const triggerRow = resultBox.querySelector(".add-extra-trigger-row");
+      const extraButtons = resultBox.querySelectorAll(".extra-option-btn");
       const inlineAddBtn = resultBox.querySelector(".inline-add-extra-btn");
 
       toggleBtn.addEventListener("click", () => {
@@ -1574,7 +1581,7 @@
         renderServiceResult(block);
       });
 
-      addExtraTriggerRow.addEventListener("click", () => {
+      triggerRow.addEventListener("click", () => {
         state.extraEditorOpenByType[type] = !state.extraEditorOpenByType[type];
         if (!state.extraEditorOpenByType[type]) {
           state.selectedExtraTypeByType[type] = "";
@@ -1582,24 +1589,25 @@
         renderServiceResult(block);
       });
 
-      if (extraTypeSelect) {
-        extraTypeSelect.addEventListener("change", (e) => {
-          state.selectedExtraTypeByType[type] = e.target.value;
+      extraButtons.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
           state.extraEditorOpenByType[type] = true;
+          state.selectedExtraTypeByType[type] = btn.dataset.extraType;
           renderServiceResult(block);
         });
-      }
+      });
 
       if (inlineAddBtn) {
         inlineAddBtn.addEventListener("click", () => {
           const extraRow = buildInlineExtraRow(id, type);
           if (!extraRow) return;
 
-          const rows = state.resultsByType[type] || [];
+          const rows = serviceStates[id].resultsByType[type] || [];
           rows.push(extraRow);
-          state.resultsByType[type] = rows;
-          state.extraEditorOpenByType[type] = false;
-          state.selectedExtraTypeByType[type] = "";
+          serviceStates[id].resultsByType[type] = rows;
+          serviceStates[id].extraEditorOpenByType[type] = false;
+          serviceStates[id].selectedExtraTypeByType[type] = "";
 
           rebuildCalculatedRows();
           renderServiceResult(block);
@@ -1612,7 +1620,7 @@
 
     function buildInlineExtraRow(id, type) {
       const serviceName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName(type, id);
-      const extraType = document.getElementById(`inline-extra-type-${id}-${type}`)?.value;
+      const extraType = serviceStates[id].selectedExtraTypeByType[type];
 
       if (!extraType) return null;
 
@@ -1827,12 +1835,6 @@
       } else if (!isFiniteNumber(row.unitPrice) || row.unitPrice <= 0) {
         row.unitPrice = newInfo.price;
       }
-    }
-
-    function restoreAllVisibleResults() {
-      document.querySelectorAll(".service-card").forEach(block => {
-        restoreServiceResult(block);
-      });
     }
 
     function rebuildCalculatedRows() {
@@ -2087,59 +2089,6 @@
       }
 
       return "bw";
-    }
-
-    function enhanceNumberControls(root = document) {
-      const inputs = root.querySelectorAll('input[type="number"]:not([data-stepped="1"])');
-
-      inputs.forEach(input => {
-        input.setAttribute("data-stepped", "1");
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "number-control";
-
-        input.parentNode.insertBefore(wrapper, input);
-        wrapper.appendChild(input);
-
-        const minusBtn = document.createElement("button");
-        minusBtn.type = "button";
-        minusBtn.className = "step-btn minus";
-        minusBtn.textContent = "−";
-
-        const plusBtn = document.createElement("button");
-        plusBtn.type = "button";
-        plusBtn.className = "step-btn plus";
-        plusBtn.textContent = "+";
-
-        wrapper.appendChild(minusBtn);
-        wrapper.appendChild(plusBtn);
-
-        const step = () => {
-          const rawStep = parseFloat(input.step || "1");
-          return Number.isFinite(rawStep) && rawStep > 0 ? rawStep : 1;
-        };
-
-        const min = () => {
-          const rawMin = parseFloat(input.min);
-          return Number.isFinite(rawMin) ? rawMin : -Infinity;
-        };
-
-        minusBtn.addEventListener("click", () => {
-          let value = parseFlexibleNumber(input.value || "0");
-          value = Math.max(min(), value - step());
-          input.value = input.step === "1" ? String(Math.round(value)) : value.toFixed(2);
-          input.dispatchEvent(new Event("input", { bubbles: true }));
-          input.dispatchEvent(new Event("change", { bubbles: true }));
-        });
-
-        plusBtn.addEventListener("click", () => {
-          let value = parseFlexibleNumber(input.value || "0");
-          value = value + step();
-          input.value = input.step === "1" ? String(Math.round(value)) : value.toFixed(2);
-          input.dispatchEvent(new Event("input", { bubbles: true }));
-          input.dispatchEvent(new Event("change", { bubbles: true }));
-        });
-      });
     }
   </script>
 </body>
