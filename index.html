@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Калькулятор заказа</title>
+  <title>Калькулятор печати</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -142,7 +142,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 980px;
+      min-width: 1120px;
       background: #fff;
     }
     th, td {
@@ -166,14 +166,20 @@
       line-height: 1.35;
     }
     .row-input {
-      width: 110px;
-      padding: 8px 10px;
+      width: 130px;
+      min-width: 130px;
+      padding: 9px 10px;
       border-radius: 10px;
       border: 1px solid #ccc;
       font-size: 14px;
+      background: #fff;
+    }
+    .row-qty-input {
+      width: 100px;
+      min-width: 100px;
     }
     .row-select {
-      width: 180px;
+      width: 190px;
       padding: 8px 10px;
       border-radius: 10px;
       border: 1px solid #ccc;
@@ -192,11 +198,6 @@
     .total {
       margin-top: 18px;
       font-size: 28px;
-      font-weight: 700;
-    }
-    .subsection-title {
-      margin: 18px 0 10px;
-      font-size: 18px;
       font-weight: 700;
     }
     .note-box {
@@ -282,9 +283,7 @@
       SRA3: { w: 320, h: 450 }
     };
 
-    const FORMAT_OPTIONS = [
-      "A6","A5","A4","A3","A2","A1","A0","SRA3"
-    ];
+    const FORMAT_OPTIONS = ["A6","A5","A4","A3","A2","A1","A0","SRA3"];
 
     const FORMAT_LABELS = {
       A6: "A6 (105×148 мм)",
@@ -321,22 +320,22 @@
       copy: {
         A4: {
           bw: {
-            feeder: { price: 8.0, code: "1057", label: "Ксерокопирование ч/б, формат А4, 1 прог. автопод." },
-            glass:  { price: 10.0, code: "1058", label: "Ксерокопирование ч/б, формат А4, 1 прог. стекло" }
+            feeder: { price: 8.0, code: "1057", label: "Ксерокопирование ч/б, формат А4, автопод." },
+            glass:  { price: 10.0, code: "1058", label: "Ксерокопирование ч/б, формат А4, стекло" }
           },
           color: {
-            feeder: { price: 15.0, code: "1059", label: "Ксерокопирование цветн., формат А4, 1 прог. автопод." },
-            glass:  { price: 20.0, code: "1060", label: "Ксерокопирование цветн., формат А4, 1 прог. стекло" }
+            feeder: { price: 15.0, code: "1059", label: "Ксерокопирование цветн., формат А4, автопод." },
+            glass:  { price: 20.0, code: "1060", label: "Ксерокопирование цветн., формат А4, стекло" }
           }
         },
         A3: {
           bw: {
-            feeder: { price: 18.0, code: "1061", label: "Ксерокопирование ч/б, формат А3, 1 прог. автопод." },
-            glass:  { price: 20.0, code: "1062", label: "Ксерокопирование ч/б, формат А3, 1 прог. стекло" }
+            feeder: { price: 18.0, code: "1061", label: "Ксерокопирование ч/б, формат А3, автопод." },
+            glass:  { price: 20.0, code: "1062", label: "Ксерокопирование ч/б, формат А3, стекло" }
           },
           color: {
-            feeder: { price: 30.0, code: "1063", label: "Ксерокопирование цветн., формат А3, 1 прог. автопод." },
-            glass:  { price: 35.0, code: "1064", label: "Ксерокопирование цветн., формат А3, 1 прог. стекло" }
+            feeder: { price: 30.0, code: "1063", label: "Ксерокопирование цветн., формат А3, автопод." },
+            glass:  { price: 35.0, code: "1064", label: "Ксерокопирование цветн., формат А3, стекло" }
           }
         }
       },
@@ -344,27 +343,27 @@
         A4: {
           feeder_lt50: { price: 8.0, code: "1065", label: "Сканирование 400dpi, формат А4, автопод. до 50 прог." },
           feeder_gte50: { price: 6.0, code: "1066", label: "Сканирование 400dpi, формат А4, автопод. от 51 прог." },
-          glass_lt50: { price: 16.0, code: "1067", label: "Сканирование 400dpi, формат А4, со стекла до 50 прог." },
-          glass_gte50: { price: 12.0, code: "1068", label: "Сканирование 400dpi, формат А4, со стекла от 51 прог." }
+          glass_lt50: { price: 16.0, code: "1067", label: "Сканирование 400dpi, формат А4, стекло до 50 прог." },
+          glass_gte50: { price: 12.0, code: "1068", label: "Сканирование 400dpi, формат А4, стекло от 51 прог." }
         },
         A3: {
           feeder_lt50: { price: 16.0, code: "1069", label: "Сканирование 400dpi, формат А3, автопод. до 50 прог." },
           feeder_gte50: { price: 12.0, code: "1070", label: "Сканирование 400dpi, формат А3, автопод. от 51 прог." },
-          glass_lt50: { price: 32.0, code: "1071", label: "Сканирование 400dpi, формат А3, со стекла до 50 прог." },
-          glass_gte50: { price: 24.0, code: "1072", label: "Сканирование 400dpi, формат А3, со стекла от 51 прог." }
+          glass_lt50: { price: 32.0, code: "1071", label: "Сканирование 400dpi, формат А3, стекло до 50 прог." },
+          glass_gte50: { price: 24.0, code: "1072", label: "Сканирование 400dpi, формат А3, стекло от 51 прог." }
         },
         A2: {
-          wide: { price: 120.0, code: "1073", label: "Сканирование 400dpi, формат А2, 1 стор. широкоформ." }
+          wide: { price: 120.0, code: "1073", label: "Сканирование 400dpi, формат А2, широкоформ." }
         },
         A1: {
-          wide: { price: 170.0, code: "1074", label: "Сканирование 400dpi, формат А1, 1 стор. широкоформ." }
+          wide: { price: 170.0, code: "1074", label: "Сканирование 400dpi, формат А1, широкоформ." }
         }
       },
       lamination: {
-        A6: { price: 25.0, code: "1120", label: "Ламинирование пакетное, 125мкм, формат А6" },
-        A5: { price: 40.0, code: "1121", label: "Ламинирование пакетное, 125мкм, формат А5" },
-        A4: { price: 60.0, code: "1122", label: "Ламинирование пакетное, 125мкм, формат А4" },
-        A3: { price: 110.0, code: "1123", label: "Ламинирование пакетное, 125мкм, формат А3" }
+        A6: { price: 25.0, code: "1120", label: "Ламинирование, А6" },
+        A5: { price: 40.0, code: "1121", label: "Ламинирование, А5" },
+        A4: { price: 60.0, code: "1122", label: "Ламинирование, А4" },
+        A3: { price: 110.0, code: "1123", label: "Ламинирование, А3" }
       },
       binding: {
         staples2: { price: 35.0, code: "1109", label: "Брошюровка на 2 скобы" },
@@ -425,17 +424,16 @@
       },
       drawings: {
         bw: {
-          A2:   { price: 65.0, code: "1039", label: "Чертеж, ч/б, формат А2" },
-          A1:   { price: 110.0, code: "1049", label: "Чертеж, ч/б, формат А1" },
-          A0:   { price: 220.0, code: "1051", label: "Чертеж, ч/б, формат А0" }
+          A2: { price: 65.0, code: "1039", label: "Чертеж, ч/б, формат А2" },
+          A1: { price: 110.0, code: "1049", label: "Чертеж, ч/б, формат А1" },
+          A0: { price: 220.0, code: "1051", label: "Чертеж, ч/б, формат А0" }
         },
         color: {
-          A2:   { price: 75.0, code: "1040", label: "Чертеж, цвет, формат А2" },
-          A1:   { price: 130.0, code: "1050", label: "Чертеж, цвет, формат А1" },
-          A0:   { price: 260.0, code: "1052", label: "Чертеж, цвет, формат А0" }
+          A2: { price: 75.0, code: "1040", label: "Чертеж, цвет, формат А2" },
+          A1: { price: 130.0, code: "1050", label: "Чертеж, цвет, формат А1" },
+          A0: { price: 260.0, code: "1052", label: "Чертеж, цвет, формат А0" }
         },
         fold: {
-          "A3-A4": { price: 8.0, code: "1110", label: "Фальцевание, исходный А3, под А4" },
           "A2-A4": { price: 18.0, code: "1111", label: "Фальцевание, исходный А2, под А4" },
           "A1-A4": { price: 26.0, code: "1112", label: "Фальцевание, исходный А1, под А4" },
           "A2-A3": { price: 18.0, code: "1113", label: "Фальцевание, исходный А2, под А3" },
@@ -817,10 +815,8 @@
       const rows = [];
       let totalPagesOneCopy = 0;
       let dominantFormatCounter = { A4: 0, A3: 0 };
-      let fileIndex = 0;
 
       for (const file of files) {
-        fileIndex++;
         if (file.type !== "application/pdf") continue;
 
         setStatus(`Анализирую PDF-файлы... ${file.name}`);
@@ -837,9 +833,7 @@
           const widthMm = ptToMm(viewport.width);
           const heightMm = ptToMm(viewport.height);
           const exactFormat = detectFormat(widthMm, heightMm);
-          const nearestFormat = exactFormat === "CUSTOM"
-            ? findNearestFormat(widthMm, heightMm)
-            : exactFormat;
+          const nearestFormat = exactFormat === "CUSTOM" ? findNearestFormat(widthMm, heightMm) : exactFormat;
 
           let colorMode = "bw";
           if (printMode === "bw") {
@@ -893,6 +887,7 @@
             tariffCode: priceInfo.code,
             tariffLabel: priceInfo.label,
             unitPriceEditable: true,
+            qtyEditable: true,
             billedFormatEditable: true,
             editableFormats: [...FORMAT_OPTIONS],
             colorMode: group.colorMode,
@@ -904,7 +899,7 @@
             }
           });
 
-          if (group.actualFormatLabel.indexOf("≈") === 0 || group.actualFormatLabel.indexOf("Нестандарт") === 0) {
+          if (group.actualFormatLabel.startsWith("≈")) {
             notes.push(`В ${group.source} обнаружен нестандартный размер: ${group.actualFormatLabel}. Для расчёта он был округлён до ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}.`);
           }
         });
@@ -956,7 +951,6 @@
       }
 
       if (lamination === "auto") {
-        // Ламинирование по всем страницам файлов, по одной операции на каждую страницу каждого экземпляра
         for (const file of files) {
           const buffer = await file.arrayBuffer();
           const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
@@ -1156,6 +1150,7 @@
         tariffCode: tariff.code,
         tariffLabel: tariff.label,
         unitPriceEditable: true,
+        qtyEditable: true,
         billedFormatEditable: false,
         editableFormats: [],
         meta: {}
@@ -1165,16 +1160,20 @@
     function renderResults(notes = []) {
       resultTable.innerHTML = "";
 
-      calculatedRows.forEach((row, index) => {
+      calculatedRows.forEach((row) => {
         const tr = document.createElement("tr");
 
         const billedFormatCell = row.billedFormatEditable
-          ? formatSelectHtml(row, index)
+          ? formatSelectHtml(row)
           : escapeHtml(row.billedFormat || "—");
 
         const unitPriceCell = row.unitPriceEditable
-          ? `<input type="number" step="0.01" min="0" class="row-input row-price-input" data-row-id="${row.id}" value="${Number(row.unitPrice).toFixed(2)}">`
+          ? `<input type="text" inputmode="decimal" class="row-input row-price-input" data-row-id="${row.id}" value="${formatInputNumber(row.unitPrice)}">`
           : money(row.unitPrice);
+
+        const qtyCell = row.qtyEditable
+          ? `<input type="text" inputmode="numeric" class="row-input row-qty-input" data-row-id="${row.id}" value="${escapeHtml(String(row.qty))}">`
+          : escapeHtml(String(row.qty));
 
         tr.innerHTML = `
           <td>${escapeHtml(row.serviceName)}</td>
@@ -1189,7 +1188,7 @@
             <div>${escapeHtml(row.tariffCode || "—")}</div>
             <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
           </td>
-          <td>${escapeHtml(String(row.qty))}</td>
+          <td>${qtyCell}</td>
           <td>${unitPriceCell}</td>
           <td class="money">${money(row.qty * row.unitPrice)}</td>
         `;
@@ -1223,10 +1222,51 @@
 
     function bindResultEditors() {
       document.querySelectorAll(".row-price-input").forEach(input => {
+        attachFullEditBehavior(input);
+
         input.addEventListener("input", (e) => {
           const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
           if (!row) return;
-          row.unitPrice = Math.max(0, parseFloat(e.target.value || "0"));
+
+          const parsed = parseFlexibleNumber(e.target.value);
+          row.unitPrice = parsed;
+          refreshResultsOnly();
+        });
+
+        input.addEventListener("blur", (e) => {
+          const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
+          if (!row) return;
+
+          row.unitPrice = normalizeMoney(row.unitPrice);
+          refreshResultsOnly();
+        });
+      });
+
+      document.querySelectorAll(".row-qty-input").forEach(input => {
+        attachFullEditBehavior(input);
+
+        input.addEventListener("input", (e) => {
+          const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
+          if (!row) return;
+
+          const parsedQty = parsePositiveInt(e.target.value);
+          row.qty = parsedQty;
+
+          if (row.serviceType === "documents") {
+            recalculateDocumentRowByQty(row);
+          }
+
+          refreshResultsOnly();
+        });
+
+        input.addEventListener("blur", (e) => {
+          const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
+          if (!row) return;
+
+          row.qty = Math.max(1, parsePositiveInt(e.target.value));
+          if (row.serviceType === "documents") {
+            recalculateDocumentRowByQty(row);
+          }
           refreshResultsOnly();
         });
       });
@@ -1241,11 +1281,34 @@
           row.tariffCode = newInfo.code;
           row.tariffLabel = newInfo.label;
           row.unitPrice = newInfo.price;
-
           row.position = `${row.colorMode === "color" ? "Цветная печать" : "Ч/б печать"}, ${FORMAT_LABELS[row.billedFormat] || row.billedFormat}`;
           refreshResultsOnly();
         });
       });
+    }
+
+    function attachFullEditBehavior(input) {
+      input.addEventListener("focus", () => {
+        input.select();
+      });
+
+      input.addEventListener("click", () => {
+        input.select();
+      });
+    }
+
+    function recalculateDocumentRowByQty(row) {
+      const newInfo = getDocumentPriceInfo(row.billedFormat, row.colorMode, row.qty);
+      row.tariffCode = newInfo.code;
+      row.tariffLabel = newInfo.label;
+
+      if (row.colorMode === "bw") {
+        row.unitPrice = newInfo.price;
+      } else {
+        if (!isFiniteNumber(row.unitPrice) || row.unitPrice <= 0) {
+          row.unitPrice = newInfo.price;
+        }
+      }
     }
 
     function refreshResultsOnly() {
@@ -1346,6 +1409,31 @@
 
     function money(value) {
       return `${Number(value).toFixed(2)} ₽`;
+    }
+
+    function formatInputNumber(value) {
+      if (!isFiniteNumber(value)) return "0";
+      return Number(value).toString();
+    }
+
+    function parseFlexibleNumber(value) {
+      const cleaned = String(value).replace(",", ".").replace(/[^\d.]/g, "");
+      const num = parseFloat(cleaned);
+      return isFiniteNumber(num) ? Math.max(0, num) : 0;
+    }
+
+    function parsePositiveInt(value) {
+      const cleaned = String(value).replace(/[^\d]/g, "");
+      const num = parseInt(cleaned || "0", 10);
+      return Number.isFinite(num) && num > 0 ? num : 1;
+    }
+
+    function normalizeMoney(value) {
+      return Math.round(Number(value) * 100) / 100;
+    }
+
+    function isFiniteNumber(value) {
+      return typeof value === "number" && Number.isFinite(value);
     }
 
     function ptToMm(pt) {
