@@ -3,239 +3,480 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Калькулятор печати</title>
+  <title>Калькулятор заказа</title>
   <style>
-    * { box-sizing: border-box; }
+    :root {
+      --bg: #f5f5f3;
+      --panel: rgba(255, 255, 255, 0.82);
+      --panel-solid: #ffffff;
+      --text: #171717;
+      --muted: #6b6b6b;
+      --line: rgba(23, 23, 23, 0.08);
+      --line-strong: rgba(23, 23, 23, 0.14);
+      --accent: #111111;
+      --accent-2: #2f2f2f;
+      --danger: #b42318;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 12px;
+      --radius-xs: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f6f6f7;
-      color: #111;
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(0,0,0,0.03), transparent 32%),
+        radial-gradient(circle at top right, rgba(0,0,0,0.025), transparent 26%),
+        var(--bg);
     }
+
     .wrap {
-      max-width: 1280px;
+      max-width: 1320px;
       margin: 0 auto;
-      padding: 24px;
+      padding: 36px 20px 60px;
     }
+
+    .hero {
+      margin-bottom: 28px;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.75);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      margin-bottom: 14px;
+    }
+
     h1 {
       margin: 0 0 10px;
-      font-size: 32px;
+      font-size: clamp(30px, 5vw, 48px);
+      line-height: 1.02;
+      letter-spacing: -0.03em;
     }
+
     .lead {
-      margin: 0 0 24px;
-      color: #555;
-      line-height: 1.5;
+      margin: 0;
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
     }
+
     .top-actions,
     .bottom-actions {
       display: flex;
-      gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin: 22px 0 0;
     }
+
     button {
-      cursor: pointer;
+      appearance: none;
       border: none;
-      border-radius: 12px;
+      cursor: pointer;
+      border-radius: 999px;
       padding: 12px 18px;
-      font-weight: 700;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1;
+      transition: 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.78);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .btn-danger {
+      background: rgba(255,255,255,0.82);
+      color: var(--danger);
+      border: 1px solid rgba(180, 35, 24, 0.16);
+    }
+
+    .status {
+      min-height: 22px;
+      margin: 18px 0 16px;
+      color: var(--muted);
       font-size: 14px;
     }
-    .btn-primary {
-      background: #111;
-      color: #fff;
+
+    .services-stack {
+      display: grid;
+      gap: 18px;
     }
-    .btn-secondary {
-      background: #fff;
-      color: #111;
-      border: 1px solid #ccc;
-    }
-    .btn-danger {
-      background: #fff;
-      color: #b00020;
-      border: 1px solid #e0b4b4;
-    }
+
     .service-card {
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 18px;
-      padding: 18px;
-      margin-bottom: 18px;
+      position: relative;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
     }
+
+    .service-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.5),
+        rgba(255,255,255,0.08)
+      );
+    }
+
+    .service-header,
+    .service-body,
+    .service-footer {
+      position: relative;
+      z-index: 1;
+    }
+
     .service-header {
       display: flex;
-      justify-content: space-between;
-      gap: 12px;
       align-items: center;
-      margin-bottom: 16px;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .service-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .service-kicker {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .service-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .service-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       flex-wrap: wrap;
     }
-    .service-title {
-      font-size: 20px;
-      font-weight: 700;
-    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
     }
+
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
     }
+
     .field {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-    .field label {
-      font-size: 14px;
-      font-weight: 700;
+
+    .field.wide {
+      grid-column: 1 / -1;
     }
+
+    .field label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.01em;
+    }
+
     input[type="text"],
     input[type="number"],
     input[type="file"],
     select,
     textarea {
       width: 100%;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 12px;
-      font-size: 14px;
-      background: #fff;
-    }
-    input[type="file"] {
-      padding: 10px;
-    }
-    .hint {
-      font-size: 12px;
-      color: #666;
-      line-height: 1.4;
-    }
-    .status {
-      margin: 8px 0 20px;
-      font-size: 14px;
-      color: #444;
-    }
-    .result-box {
-      margin-top: 24px;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 18px;
-      padding: 18px;
-    }
-    .result-title {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-    .summary {
-      margin-bottom: 16px;
-      line-height: 1.6;
-      color: #222;
-    }
-    .table-wrap {
-      overflow-x: auto;
-      margin-top: 12px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 980px;
-      background: #fff;
-    }
-    th, td {
-      text-align: left;
-      vertical-align: top;
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-    }
-    th {
-      background: #fafafa;
-      font-weight: 700;
-    }
-    .money {
-      white-space: nowrap;
-      font-weight: 700;
-    }
-    .small {
-      font-size: 12px;
-      color: #666;
-      line-height: 1.35;
-    }
-    .row-input {
-      width: 110px;
-      padding: 8px 10px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
-    .row-select {
-      width: 180px;
-      padding: 8px 10px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      background: #fff;
-    }
-    .tag {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: #f0f0f0;
-      font-size: 12px;
-      margin-right: 6px;
-      margin-bottom: 4px;
-    }
-    .total {
-      margin-top: 18px;
-      font-size: 28px;
-      font-weight: 700;
-    }
-    .subsection-title {
-      margin: 18px 0 10px;
-      font-size: 18px;
-      font-weight: 700;
-    }
-    .note-box {
-      margin-top: 14px;
+      min-height: 46px;
       padding: 12px 14px;
-      border: 1px solid #eee;
-      border-radius: 12px;
-      background: #fafafa;
-      font-size: 13px;
-      line-height: 1.5;
-      color: #444;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.86);
+      color: var(--text);
+      font: inherit;
+      outline: none;
+      transition: 0.18s ease;
     }
 
-    @media (max-width: 900px) {
-      .grid, .grid-3 {
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="file"]:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(0,0,0,0.22);
+      box-shadow: 0 0 0 4px rgba(0,0,0,0.04);
+    }
+
+    input[type="file"] {
+      padding: 10px 12px;
+    }
+
+    .hint {
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .result-box {
+      margin-top: 28px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+    }
+
+    .result-title {
+      margin: 0 0 12px;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .summary-card {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.78);
+    }
+
+    .summary-card .label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .summary-card .value {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255,255,255,0.88);
+    }
+
+    table {
+      width: 100%;
+      min-width: 1080px;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    th,
+    td {
+      padding: 14px 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: rgba(247,247,247,0.98);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      z-index: 1;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover td {
+      background: rgba(0,0,0,0.012);
+    }
+
+    .money {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .small {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .row-input,
+    .row-select {
+      min-height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font: inherit;
+      padding: 9px 12px;
+      outline: none;
+    }
+
+    .row-input {
+      width: 104px;
+    }
+
+    .row-select {
+      width: 210px;
+    }
+
+    .note-box {
+      margin-top: 16px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.78);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .total {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 18px;
+      font-size: clamp(26px, 4vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .muted-inline {
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .grid,
+      .grid-3,
+      .summary {
         grid-template-columns: 1fr;
+      }
+
+      .service-header {
+        align-items: flex-start;
+      }
+
+      .service-actions {
+        width: 100%;
+      }
+
+      .service-actions select,
+      .service-actions button {
+        width: 100%;
+      }
+
+      .result-box,
+      .hero,
+      .service-card {
+        padding: 18px;
+        border-radius: 22px;
+      }
+
+      .wrap {
+        padding: 18px 14px 40px;
+      }
+
+      .row-select {
+        width: 180px;
       }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Калькулятор заказа</h1>
-    <p class="lead">
-      Добавляй в один заказ несколько услуг: документы, фото, чертежи, сканирование, копирование, стикеры.
-      Для документов можно загружать несколько PDF сразу.
-    </p>
+    <section class="hero">
+      <div class="eyebrow">Калькулятор заказа · text-print</div>
+      <h1>Минималистичный расчёт услуг</h1>
+      <p class="lead">
+        Добавляй несколько услуг в один заказ: документы, фото, чертежи, сканирование, копирование и стикеры.
+        Для документов можно загружать сразу несколько PDF и потом вручную уточнять формат и цену за лист.
+      </p>
 
-    <div class="top-actions">
-      <button class="btn-primary" id="addServiceBtn">+ Добавить услугу</button>
-      <button class="btn-secondary" id="calculateBtn">Рассчитать заказ</button>
-      <button class="btn-secondary" id="clearBtn">Сбросить всё</button>
-    </div>
+      <div class="top-actions">
+        <button class="btn-primary" id="addServiceBtn">+ Добавить услугу</button>
+        <button class="btn-secondary" id="calculateBtn">Рассчитать заказ</button>
+        <button class="btn-secondary" id="clearBtn">Сбросить всё</button>
+      </div>
+    </section>
 
     <div id="status" class="status"></div>
-    <div id="servicesContainer"></div>
 
-    <div id="resultBox" class="result-box" style="display:none;">
+    <div id="servicesContainer" class="services-stack"></div>
+
+    <section id="resultBox" class="result-box" style="display:none;">
       <div class="result-title">Результат расчёта</div>
+
       <div id="summary" class="summary"></div>
 
       <div class="table-wrap">
@@ -259,7 +500,7 @@
 
       <div id="notesBox" class="note-box" style="display:none;"></div>
       <div id="total" class="total"></div>
-    </div>
+    </section>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -282,9 +523,7 @@
       SRA3: { w: 320, h: 450 }
     };
 
-    const FORMAT_OPTIONS = [
-      "A6","A5","A4","A3","A2","A1","A0","SRA3"
-    ];
+    const FORMAT_OPTIONS = ["A6","A5","A4","A3","A2","A1","A0","SRA3"];
 
     const FORMAT_LABELS = {
       A6: "A6 (105×148 мм)",
@@ -497,8 +736,11 @@
       block.dataset.blockId = String(id);
       block.innerHTML = `
         <div class="service-header">
-          <div class="service-title">Услуга #${id}</div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div class="service-title-wrap">
+            <div class="service-kicker">Услуга</div>
+            <div class="service-title">Блок #${id}</div>
+          </div>
+          <div class="service-actions">
             <select class="service-type-select" data-block-id="${id}">
               <option value="documents"${type === "documents" ? " selected" : ""}>Документы (PDF)</option>
               <option value="copy"${type === "copy" ? " selected" : ""}>Ксерокопирование</option>
@@ -528,7 +770,7 @@
       if (type === "documents") {
         return `
           <div class="grid">
-            <div class="field" style="grid-column:1 / -1;">
+            <div class="field wide">
               <label>PDF-файлы</label>
               <input type="file" id="docs-files-${id}" accept="application/pdf" multiple />
               <div class="hint">Можно выбрать несколько PDF сразу.</div>
@@ -817,10 +1059,8 @@
       const rows = [];
       let totalPagesOneCopy = 0;
       let dominantFormatCounter = { A4: 0, A3: 0 };
-      let fileIndex = 0;
 
       for (const file of files) {
-        fileIndex++;
         if (file.type !== "application/pdf") continue;
 
         setStatus(`Анализирую PDF-файлы... ${file.name}`);
@@ -956,7 +1196,6 @@
       }
 
       if (lamination === "auto") {
-        // Ламинирование по всем страницам файлов, по одной операции на каждую страницу каждого экземпляра
         for (const file of files) {
           const buffer = await file.arrayBuffer();
           const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
@@ -1165,11 +1404,11 @@
     function renderResults(notes = []) {
       resultTable.innerHTML = "";
 
-      calculatedRows.forEach((row, index) => {
+      calculatedRows.forEach((row) => {
         const tr = document.createElement("tr");
 
         const billedFormatCell = row.billedFormatEditable
-          ? formatSelectHtml(row, index)
+          ? formatSelectHtml(row)
           : escapeHtml(row.billedFormat || "—");
 
         const unitPriceCell = row.unitPriceEditable
@@ -1205,9 +1444,18 @@
         .reduce((acc, r) => acc + (r.source && r.source.endsWith(".pdf") ? 1 : 0), 0);
 
       summaryBox.innerHTML = `
-        <strong>Услуг в заказе:</strong> ${servicesCount}<br>
-        <strong>Строк в расчёте:</strong> ${calculatedRows.length}<br>
-        <strong>PDF-источников в документах:</strong> ${filesCount}
+        <div class="summary-card">
+          <div class="label">Услуг в заказе</div>
+          <div class="value">${servicesCount}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Строк в расчёте</div>
+          <div class="value">${calculatedRows.length}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">PDF-источников</div>
+          <div class="value">${filesCount}</div>
+        </div>
       `;
 
       if (notes.length) {
@@ -1341,7 +1589,7 @@
 
     function setStatus(text, isError = false) {
       statusBox.textContent = text || "";
-      statusBox.style.color = isError ? "#b00020" : "#444";
+      statusBox.style.color = isError ? "var(--danger)" : "var(--muted)";
     }
 
     function money(value) {
