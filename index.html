@@ -74,6 +74,16 @@
       font-weight: 700;
       margin-bottom: 12px;
     }
+    .service-name-input {
+      width: 100%;
+      max-width: 380px;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      font-size: 14px;
+      background: #fff;
+      margin-bottom: 12px;
+    }
     .service-type-buttons {
       display: flex;
       gap: 10px;
@@ -101,6 +111,11 @@
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 14px;
     }
     .field {
@@ -160,7 +175,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1180px;
+      min-width: 1080px;
       background: #fff;
     }
     th, td {
@@ -184,22 +199,19 @@
       line-height: 1.35;
     }
     .row-input {
-      width: 130px;
-      min-width: 130px;
-      padding: 9px 10px;
-      border-radius: 10px;
+      width: 100%;
+      min-width: 90px;
+      padding: 12px;
+      border-radius: 12px;
       border: 1px solid #ccc;
       font-size: 14px;
       background: #fff;
     }
-    .row-qty-input {
-      width: 100px;
-      min-width: 100px;
-    }
     .row-select {
-      width: 190px;
-      padding: 8px 10px;
-      border-radius: 10px;
+      width: 100%;
+      min-width: 170px;
+      padding: 12px;
+      border-radius: 12px;
       border: 1px solid #ccc;
       font-size: 14px;
       background: #fff;
@@ -219,7 +231,8 @@
       line-height: 1.5;
       color: #444;
     }
-    .extras-box {
+    .extras-box,
+    .bulk-box {
       margin-top: 24px;
       padding: 16px;
       border: 1px solid #eee;
@@ -239,7 +252,7 @@
     }
 
     @media (max-width: 900px) {
-      .grid, .grid-3 {
+      .grid, .grid-3, .grid-4 {
         grid-template-columns: 1fr;
       }
       .service-header {
@@ -269,13 +282,35 @@
       <div class="result-title">Результат расчёта</div>
       <div id="summary" class="summary"></div>
 
+      <div class="bulk-box">
+        <div class="extras-title">Изменить цену за единицу сразу для всех строк</div>
+        <div class="grid-4">
+          <div class="field">
+            <label>Новая цена за единицу</label>
+            <input type="number" id="bulkPriceValue" min="0" step="0.01" value="0" />
+          </div>
+          <div class="field">
+            <label>К каким строкам применить</label>
+            <select id="bulkPriceTarget">
+              <option value="all">Ко всем строкам</option>
+              <option value="documents">Только документы</option>
+              <option value="fixed">Только доп. и прочие услуги</option>
+            </select>
+          </div>
+          <div class="field" style="justify-content:flex-end;">
+            <label>&nbsp;</label>
+            <button class="btn-secondary" id="applyBulkPriceBtn">Применить цену</button>
+          </div>
+          <div></div>
+        </div>
+      </div>
+
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>Услуга</th>
               <th>Позиция</th>
-              <th>Файл / источник</th>
               <th>Фактический размер</th>
               <th>Формат для расчёта</th>
               <th>Пункт прайса</th>
@@ -292,7 +327,7 @@
 
       <div class="extras-box">
         <div class="extras-title">Дополнительные услуги к заказу</div>
-        <div class="grid-3">
+        <div class="grid-4">
           <div class="field">
             <label>Ламинирование</label>
             <select id="extraLaminationFormat">
@@ -307,7 +342,20 @@
             <label>Количество ламинирования</label>
             <input type="number" id="extraLaminationQty" min="0" value="0" />
           </div>
-          <div></div>
+          <div class="field">
+            <label>Брошюровка</label>
+            <select id="extraBindingType">
+              <option value="none">Не добавлять</option>
+              <option value="staples2">2 скобы</option>
+              <option value="plastic">Пластиковая пружина</option>
+              <option value="metal">Металлическая пружина</option>
+              <option value="hardcover">Твердый переплет A4</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Количество брошюровки</label>
+            <input type="number" id="extraBindingQty" min="0" value="0" />
+          </div>
 
           <div class="field">
             <label>Мультифоры</label>
@@ -322,8 +370,6 @@
             <label>Количество мультифор</label>
             <input type="number" id="extraMultiforaQty" min="0" value="0" />
           </div>
-          <div></div>
-
           <div class="field">
             <label>Папка</label>
             <select id="extraFolderType">
@@ -334,7 +380,6 @@
               <option value="folder60">Папка на 60 мультифор</option>
             </select>
           </div>
-          <div></div>
           <div></div>
         </div>
 
@@ -461,42 +506,8 @@
       binding: {
         staples2: { price: 35.0, code: "1109", label: "Брошюровка на 2 скобы" },
         hardcover: { price: 550.0, code: "1084", label: "Твердый переплет MetalBind, формат А4" },
-        plastic: {
-          A4: [
-            { max: 40, price: 110.0, code: "1085", label: "Пласт. пружина А4 до 40 л." },
-            { max: 80, price: 140.0, code: "1086", label: "Пласт. пружина А4 до 80 л." },
-            { max: 120, price: 170.0, code: "1087", label: "Пласт. пружина А4 до 120 л." },
-            { max: 180, price: 200.0, code: "1088", label: "Пласт. пружина А4 до 180 л." },
-            { max: 240, price: 230.0, code: "1089", label: "Пласт. пружина А4 до 240 л." },
-            { max: 340, price: 260.0, code: "1090", label: "Пласт. пружина А4 до 340 л." },
-            { max: 500, price: 290.0, code: "1091", label: "Пласт. пружина А4 до 500 л." }
-          ],
-          A3: [
-            { max: 40, price: 135.0, code: "1092", label: "Пласт. пружина А3 до 40 л." },
-            { max: 80, price: 165.0, code: "1093", label: "Пласт. пружина А3 до 80 л." },
-            { max: 120, price: 195.0, code: "1094", label: "Пласт. пружина А3 до 120 л." },
-            { max: 180, price: 225.0, code: "1095", label: "Пласт. пружина А3 до 180 л." },
-            { max: 240, price: 255.0, code: "1096", label: "Пласт. пружина А3 до 240 л." },
-            { max: 340, price: 285.0, code: "1097", label: "Пласт. пружина А3 до 340 л." },
-            { max: 500, price: 315.0, code: "1098", label: "Пласт. пружина А3 до 500 л." }
-          ]
-        },
-        metal: {
-          A4: [
-            { max: 35, price: 125.0, code: "1099", label: "Металл. пружина А4 до 35 л." },
-            { max: 50, price: 140.0, code: "1100", label: "Металл. пружина А4 до 50 л." },
-            { max: 80, price: 155.0, code: "1101", label: "Металл. пружина А4 до 80 л." },
-            { max: 100, price: 170.0, code: "1102", label: "Металл. пружина А4 до 100 л." },
-            { max: 120, price: 185.0, code: "1103", label: "Металл. пружина А4 до 120 л." }
-          ],
-          A3: [
-            { max: 35, price: 150.0, code: "1104", label: "Металл. пружина А3 до 35 л." },
-            { max: 50, price: 165.0, code: "1105", label: "Металл. пружина А3 до 50 л." },
-            { max: 80, price: 180.0, code: "1106", label: "Металл. пружина А3 до 80 л." },
-            { max: 100, price: 195.0, code: "1107", label: "Металл. пружина А3 до 100 л." },
-            { max: 120, price: 210.0, code: "1108", label: "Металл. пружина А3 до 120 л." }
-          ]
-        }
+        plastic: { price: 290.0, code: "1091", label: "Брошюровка на пласт. пружину" },
+        metal: { price: 185.0, code: "1103", label: "Брошюровка на металл. пружину" }
       },
       photos: {
         doc10x15: { price: 120.0, code: "1124", label: "Печать фото на документы 10×15" },
@@ -575,11 +586,13 @@
     const totalBox = document.getElementById("total");
     const notesBox = document.getElementById("notesBox");
     const applyExtrasBtn = document.getElementById("applyExtrasBtn");
+    const applyBulkPriceBtn = document.getElementById("applyBulkPriceBtn");
 
     addServiceBtn.addEventListener("click", () => addServiceBlock());
     clearBtn.addEventListener("click", clearAll);
     calculateBtn.addEventListener("click", calculateOrder);
     applyExtrasBtn.addEventListener("click", applyExtras);
+    applyBulkPriceBtn.addEventListener("click", applyBulkPrice);
 
     addServiceBlock("documents");
 
@@ -594,7 +607,8 @@
         <div class="service-header">
           <div>
             <div class="service-title">Услуга #${id}</div>
-            <div class="service-type-buttons" id="service-type-buttons-${id}">
+            <input type="text" class="service-name-input" id="service-name-${id}" value="${escapeHtml(getDefaultServiceName(type, id))}" />
+            <div class="service-type-buttons">
               ${SERVICE_TYPES.map(item => `
                 <button type="button"
                         class="service-type-btn ${item.key === type ? "active" : ""}"
@@ -619,6 +633,9 @@
           block.querySelectorAll(".service-type-btn").forEach(b => b.classList.remove("active"));
           btn.classList.add("active");
 
+          const nameInput = block.querySelector(`#service-name-${id}`);
+          nameInput.value = getDefaultServiceName(newType, id);
+
           block.querySelector(".service-body").innerHTML = renderServiceFields(id, newType);
         });
       });
@@ -627,6 +644,18 @@
         block.remove();
         clearResults();
       });
+    }
+
+    function getDefaultServiceName(type, id) {
+      const map = {
+        documents: `Документы #${id}`,
+        copy: `Ксерокопирование #${id}`,
+        scan: `Сканирование #${id}`,
+        photos: `Фотографии #${id}`,
+        drawings: `Чертежи #${id}`,
+        stickers: `Стикеры #${id}`
+      };
+      return map[type] || `Услуга #${id}`;
     }
 
     function renderServiceFields(id, type) {
@@ -649,27 +678,8 @@
             </div>
 
             <div class="field">
-              <label>Режим печати</label>
-              <select id="docs-sides-${id}">
-                <option value="single">Односторонняя</option>
-                <option value="double">Двусторонняя</option>
-              </select>
-            </div>
-
-            <div class="field">
               <label>Количество экземпляров</label>
               <input type="number" id="docs-copies-${id}" min="1" value="1" />
-            </div>
-
-            <div class="field">
-              <label>Брошюровка</label>
-              <select id="docs-binding-${id}">
-                <option value="none">Без брошюровки</option>
-                <option value="staples2">2 скобы</option>
-                <option value="plastic">Пластиковая пружина</option>
-                <option value="metal">Металлическая пружина</option>
-                <option value="hardcover">Твердый переплет A4</option>
-              </select>
             </div>
           </div>
         `;
@@ -677,7 +687,7 @@
 
       if (type === "copy") {
         return `
-          <div class="grid-3">
+          <div class="grid-4">
             <div class="field">
               <label>Формат</label>
               <select id="copy-format-${id}">
@@ -847,20 +857,21 @@
         blockNumber++;
         const id = Number(block.dataset.blockId);
         const type = block.dataset.serviceType;
+        const customName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName(type, id);
 
         if (type === "documents") {
-          const docRows = await calculateDocumentsBlock(id, blockNumber, notes);
+          const docRows = await calculateDocumentsBlock(id, customName, notes);
           rows.push(...docRows);
         } else if (type === "copy") {
-          rows.push(...calculateCopyBlock(id, blockNumber));
+          rows.push(...calculateCopyBlock(id, customName));
         } else if (type === "scan") {
-          rows.push(...calculateScanBlock(id, blockNumber));
+          rows.push(...calculateScanBlock(id, customName));
         } else if (type === "photos") {
-          rows.push(...calculatePhotosBlock(id, blockNumber));
+          rows.push(...calculatePhotosBlock(id, customName));
         } else if (type === "drawings") {
-          rows.push(...calculateDrawingsBlock(id, blockNumber));
+          rows.push(...calculateDrawingsBlock(id, customName));
         } else if (type === "stickers") {
-          rows.push(...calculateStickersBlock(id, blockNumber));
+          rows.push(...calculateStickersBlock(id, customName));
         }
       }
 
@@ -869,21 +880,17 @@
       setStatus("Готово.");
     }
 
-    async function calculateDocumentsBlock(id, blockNumber, notes) {
+    async function calculateDocumentsBlock(id, customName, notes) {
       const filesInput = document.getElementById(`docs-files-${id}`);
       const file = (filesInput.files || [])[0];
       const printMode = document.getElementById(`docs-print-mode-${id}`).value;
-      const sides = document.getElementById(`docs-sides-${id}`).value;
       const copies = Math.max(1, parseInt(document.getElementById(`docs-copies-${id}`).value || "1", 10));
-      const binding = document.getElementById(`docs-binding-${id}`).value;
 
       if (!file) {
-        throw new Error(`В услуге #${blockNumber} не выбран PDF-файл.`);
+        throw new Error(`В услуге "${customName}" не выбран PDF-файл.`);
       }
 
       const rows = [];
-      let totalPagesOneCopy = 0;
-      let dominantFormatCounter = { A4: 0, A3: 0 };
 
       setStatus(`Анализирую ${file.name}...`);
       const buffer = await file.arrayBuffer();
@@ -910,29 +917,21 @@
           colorMode = await detectPageColorMode(page);
         }
 
-        totalPagesOneCopy += 1;
-        if (nearestFormat === "A4") dominantFormatCounter.A4 += 1;
-        if (nearestFormat === "A3") dominantFormatCounter.A3 += 1;
-
         const actualLabel = buildActualFormatLabel(widthMm, heightMm, exactFormat);
-        const key = [file.name, actualLabel, colorMode, nearestFormat].join("||");
+        const key = [actualLabel, colorMode, nearestFormat].join("||");
 
         if (!filePageGroups[key]) {
           filePageGroups[key] = {
-            serviceName: `Документы #${blockNumber}`,
+            serviceName: customName,
             position: colorMode === "color" ? "Цветная печать" : "Ч/б печать",
-            source: file.name,
             actualFormatLabel: actualLabel,
             billedFormat: nearestFormat,
             colorMode,
-            qty: 0,
-            copies,
-            pageCountOneCopy: 0
+            qty: 0
           };
         }
 
         filePageGroups[key].qty += copies;
-        filePageGroups[key].pageCountOneCopy += 1;
       }
 
       Object.values(filePageGroups).forEach(group => {
@@ -942,7 +941,6 @@
           serviceType: "documents",
           serviceName: group.serviceName,
           position: `${group.position}, ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}`,
-          source: group.source,
           actualFormatLabel: group.actualFormatLabel,
           billedFormat: group.billedFormat,
           qty: group.qty,
@@ -954,67 +952,18 @@
           billedFormatEditable: true,
           editableFormats: [...FORMAT_OPTIONS],
           colorMode: group.colorMode,
-          meta: {
-            copies,
-            sides,
-            pageCountOneCopy: group.pageCountOneCopy
-          }
+          meta: {}
         });
 
         if (group.actualFormatLabel.startsWith("≈")) {
-          notes.push(`В ${group.source} обнаружен нестандартный размер: ${group.actualFormatLabel}. Для расчёта он был округлён до ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}.`);
+          notes.push(`В услуге "${customName}" обнаружен нестандартный размер: ${group.actualFormatLabel}. Для расчёта он был округлён до ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}.`);
         }
       });
-
-      const dominantBindingFormat = dominantFormatCounter.A3 > dominantFormatCounter.A4 ? "A3" : "A4";
-      const sheetsPerCopy = sides === "double" ? Math.ceil(totalPagesOneCopy / 2) : totalPagesOneCopy;
-
-      if (binding !== "none" && totalPagesOneCopy > 0) {
-        if (binding === "staples2") {
-          const row = PRICES.binding.staples2;
-          rows.push(fixedRow({
-            serviceName: `Документы #${blockNumber}`,
-            position: "Брошюровка на 2 скобы",
-            source: "Постобработка",
-            actualFormatLabel: `${dominantBindingFormat} / ${FORMAT_LABELS[dominantBindingFormat]}`,
-            billedFormat: dominantBindingFormat,
-            tariff: row,
-            qty: copies
-          }));
-        } else if (binding === "hardcover") {
-          const row = PRICES.binding.hardcover;
-          rows.push(fixedRow({
-            serviceName: `Документы #${blockNumber}`,
-            position: "Твердый переплет",
-            source: "Постобработка",
-            actualFormatLabel: "A4 (210×297 мм)",
-            billedFormat: "A4",
-            tariff: row,
-            qty: copies
-          }));
-        } else {
-          const rowsMap = PRICES.binding[binding][dominantBindingFormat];
-          const bindRow = rowsMap.find(r => sheetsPerCopy <= r.max);
-          if (bindRow) {
-            rows.push(fixedRow({
-              serviceName: `Документы #${blockNumber}`,
-              position: `Брошюровка (${binding === "plastic" ? "пластик" : "металл"})`,
-              source: `Постобработка, ${sheetsPerCopy} л. на 1 экз.`,
-              actualFormatLabel: FORMAT_LABELS[dominantBindingFormat],
-              billedFormat: dominantBindingFormat,
-              tariff: bindRow,
-              qty: copies
-            }));
-          } else {
-            notes.push(`Для "Документы #${blockNumber}" объём брошюровки ${sheetsPerCopy} л. на 1 экземпляр превышает диапазон прайса.`);
-          }
-        }
-      }
 
       return rows;
     }
 
-    function calculateCopyBlock(id, blockNumber) {
+    function calculateCopyBlock(id, customName) {
       const format = document.getElementById(`copy-format-${id}`).value;
       const color = document.getElementById(`copy-color-${id}`).value;
       const source = document.getElementById(`copy-source-${id}`).value;
@@ -1022,9 +971,8 @@
       const row = PRICES.copy[format][color][source];
 
       return [fixedRow({
-        serviceName: `Ксерокопирование #${blockNumber}`,
+        serviceName: customName,
         position: `${color === "bw" ? "Ч/б" : "Цвет"}, ${FORMAT_LABELS[format]}`,
-        source: source === "feeder" ? "Автоподатчик" : "Со стекла",
         actualFormatLabel: FORMAT_LABELS[format],
         billedFormat: format,
         tariff: row,
@@ -1032,7 +980,7 @@
       })];
     }
 
-    function calculateScanBlock(id, blockNumber) {
+    function calculateScanBlock(id, customName) {
       const format = document.getElementById(`scan-format-${id}`).value;
       const source = document.getElementById(`scan-source-${id}`).value;
       const qty = Math.max(1, parseInt(document.getElementById(`scan-qty-${id}`).value || "1", 10));
@@ -1051,9 +999,8 @@
       }
 
       return [fixedRow({
-        serviceName: `Сканирование #${blockNumber}`,
+        serviceName: customName,
         position: `Сканирование ${FORMAT_LABELS[format]}`,
-        source: source === "feeder" ? "Автоподатчик" : source === "glass" ? "Со стекла" : "Широкоформатный",
         actualFormatLabel: FORMAT_LABELS[format],
         billedFormat: format,
         tariff: row,
@@ -1061,16 +1008,15 @@
       })];
     }
 
-    function calculatePhotosBlock(id, blockNumber) {
+    function calculatePhotosBlock(id, customName) {
       const format = document.getElementById(`photo-format-${id}`).value;
       const qty = Math.max(1, parseInt(document.getElementById(`photo-qty-${id}`).value || "1", 10));
 
       if (format === "10x15") {
         const row = getTierRow(PRICES.photos["10x15"], qty);
         return [fixedRow({
-          serviceName: `Фотографии #${blockNumber}`,
+          serviceName: customName,
           position: "Печать фотографий 10×15",
-          source: "Фотопечать",
           actualFormatLabel: "10×15 см",
           billedFormat: "10×15",
           tariff: row,
@@ -1080,9 +1026,8 @@
 
       const row = PRICES.photos[format];
       return [fixedRow({
-        serviceName: `Фотографии #${blockNumber}`,
+        serviceName: customName,
         position: row.label,
-        source: "Фотопечать",
         actualFormatLabel: row.label,
         billedFormat: row.label,
         tariff: row,
@@ -1090,7 +1035,7 @@
       })];
     }
 
-    function calculateDrawingsBlock(id, blockNumber) {
+    function calculateDrawingsBlock(id, customName) {
       const format = document.getElementById(`drawing-format-${id}`).value;
       const color = document.getElementById(`drawing-color-${id}`).value;
       const qty = Math.max(1, parseInt(document.getElementById(`drawing-qty-${id}`).value || "1", 10));
@@ -1098,9 +1043,8 @@
 
       const baseRow = PRICES.drawings[color][format];
       const rows = [fixedRow({
-        serviceName: `Чертежи #${blockNumber}`,
+        serviceName: customName,
         position: `${color === "bw" ? "Ч/б" : "Цвет"} чертеж`,
-        source: "Широкоформатная печать",
         actualFormatLabel: FORMAT_LABELS[format],
         billedFormat: format,
         tariff: baseRow,
@@ -1110,9 +1054,8 @@
       if (fold !== "none") {
         const foldRow = PRICES.drawings.fold[fold];
         rows.push(fixedRow({
-          serviceName: `Чертежи #${blockNumber}`,
+          serviceName: customName,
           position: "Фальцовка",
-          source: "Постобработка",
           actualFormatLabel: FORMAT_LABELS[format],
           billedFormat: format,
           tariff: foldRow,
@@ -1123,15 +1066,14 @@
       return rows;
     }
 
-    function calculateStickersBlock(id, blockNumber) {
+    function calculateStickersBlock(id, customName) {
       const type = document.getElementById(`sticker-type-${id}`).value;
       const qty = Math.max(1, parseInt(document.getElementById(`sticker-qty-${id}`).value || "1", 10));
       const row = PRICES.stickers[type];
 
       return [fixedRow({
-        serviceName: `Стикеры #${blockNumber}`,
+        serviceName: customName,
         position: row.label,
-        source: "Оперативная полиграфия",
         actualFormatLabel: row.label.indexOf("SRA3") >= 0 ? "SRA3 (320×450 мм)" : row.label,
         billedFormat: row.label.indexOf("SRA3") >= 0 ? "SRA3" : "—",
         tariff: row,
@@ -1139,13 +1081,12 @@
       })];
     }
 
-    function fixedRow({ serviceName, position, source, actualFormatLabel, billedFormat, tariff, qty }) {
+    function fixedRow({ serviceName, position, actualFormatLabel, billedFormat, tariff, qty }) {
       return {
         id: makeRowId(),
         serviceType: "fixed",
         serviceName,
         position,
-        source,
         actualFormatLabel,
         billedFormat,
         qty,
@@ -1171,8 +1112,10 @@
       const multiforaFormat = document.getElementById("extraMultiforaFormat").value;
       const multiforaQty = Math.max(0, parseInt(document.getElementById("extraMultiforaQty").value || "0", 10));
       const folderType = document.getElementById("extraFolderType").value;
+      const bindingType = document.getElementById("extraBindingType").value;
+      const bindingQty = Math.max(0, parseInt(document.getElementById("extraBindingQty").value || "0", 10));
 
-      calculatedRows = calculatedRows.filter(row => row.extraType !== "lamination" && row.extraType !== "multifora" && row.extraType !== "folder");
+      calculatedRows = calculatedRows.filter(row => !["lamination","multifora","folder","binding"].includes(row.extraType));
 
       if (laminationFormat !== "none" && laminationQty > 0) {
         const row = PRICES.lamination[laminationFormat];
@@ -1180,7 +1123,6 @@
           ...fixedRow({
             serviceName: "Доп. услуги",
             position: `Ламинирование ${laminationFormat}`,
-            source: "Доп. услуги",
             actualFormatLabel: FORMAT_LABELS[laminationFormat],
             billedFormat: laminationFormat,
             tariff: row,
@@ -1190,13 +1132,27 @@
         });
       }
 
+      if (bindingType !== "none" && bindingQty > 0) {
+        const row = PRICES.binding[bindingType];
+        calculatedRows.push({
+          ...fixedRow({
+            serviceName: "Доп. услуги",
+            position: row.label,
+            actualFormatLabel: bindingType === "hardcover" ? "A4 (210×297 мм)" : "—",
+            billedFormat: bindingType === "hardcover" ? "A4" : "—",
+            tariff: row,
+            qty: bindingQty
+          }),
+          extraType: "binding"
+        });
+      }
+
       if (multiforaFormat !== "none" && multiforaQty > 0) {
         const row = PRICES.multifora[multiforaFormat];
         calculatedRows.push({
           ...fixedRow({
             serviceName: "Доп. услуги",
             position: `Мультифоры ${multiforaFormat}`,
-            source: "Доп. услуги",
             actualFormatLabel: FORMAT_LABELS[multiforaFormat],
             billedFormat: multiforaFormat,
             tariff: row,
@@ -1212,7 +1168,6 @@
           ...fixedRow({
             serviceName: "Доп. услуги",
             position: row.label,
-            source: "Доп. услуги",
             actualFormatLabel: "—",
             billedFormat: "—",
             tariff: row,
@@ -1226,6 +1181,29 @@
       setStatus("Дополнительные услуги добавлены.");
     }
 
+    function applyBulkPrice() {
+      if (!calculatedRows.length) {
+        setStatus("Сначала рассчитай заказ.", true);
+        return;
+      }
+
+      const value = Math.max(0, parseFlexibleNumber(document.getElementById("bulkPriceValue").value));
+      const target = document.getElementById("bulkPriceTarget").value;
+
+      calculatedRows.forEach(row => {
+        if (target === "all") {
+          row.unitPrice = value;
+        } else if (target === "documents" && row.serviceType === "documents") {
+          row.unitPrice = value;
+        } else if (target === "fixed" && row.serviceType !== "documents") {
+          row.unitPrice = value;
+        }
+      });
+
+      renderResults([]);
+      setStatus("Цена применена.");
+    }
+
     function renderResults(notes = []) {
       resultTable.innerHTML = "";
 
@@ -1237,11 +1215,11 @@
           : escapeHtml(row.billedFormat || "—");
 
         const unitPriceCell = row.unitPriceEditable
-          ? `<input type="text" inputmode="decimal" class="row-input row-price-input" data-row-id="${row.id}" value="${formatInputNumber(row.unitPrice)}">`
+          ? `<input type="number" min="0" step="0.01" class="row-input row-price-input" data-row-id="${row.id}" value="${formatInputNumber(row.unitPrice)}">`
           : money(row.unitPrice);
 
         const qtyCell = row.qtyEditable
-          ? `<input type="text" inputmode="numeric" class="row-input row-qty-input" data-row-id="${row.id}" value="${escapeHtml(String(row.qty))}">`
+          ? `<input type="number" min="1" step="1" class="row-input row-qty-input" data-row-id="${row.id}" value="${escapeHtml(String(row.qty))}">`
           : escapeHtml(String(row.qty));
 
         tr.innerHTML = `
@@ -1250,7 +1228,6 @@
             <div>${escapeHtml(row.position)}</div>
             ${row.colorMode ? `<div class="small">${row.colorMode === "color" ? "Цвет" : "Ч/б"}</div>` : ""}
           </td>
-          <td>${escapeHtml(row.source || "—")}</td>
           <td>${escapeHtml(row.actualFormatLabel || "—")}</td>
           <td>${billedFormatCell}</td>
           <td>
@@ -1286,38 +1263,16 @@
 
     function bindResultEditors() {
       document.querySelectorAll(".row-price-input").forEach(input => {
-        attachFullEditBehavior(input);
-
         input.addEventListener("input", (e) => {
           const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
           if (!row) return;
-          row.unitPrice = parseFlexibleNumber(e.target.value);
-          refreshResultsOnly();
-        });
-
-        input.addEventListener("blur", (e) => {
-          const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
-          if (!row) return;
-          row.unitPrice = normalizeMoney(row.unitPrice);
+          row.unitPrice = Math.max(0, parseFlexibleNumber(e.target.value));
           refreshResultsOnly();
         });
       });
 
       document.querySelectorAll(".row-qty-input").forEach(input => {
-        attachFullEditBehavior(input);
-
         input.addEventListener("input", (e) => {
-          const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
-          if (!row) return;
-
-          row.qty = parsePositiveInt(e.target.value);
-          if (row.serviceType === "documents") {
-            recalculateDocumentRowByQty(row);
-          }
-          refreshResultsOnly();
-        });
-
-        input.addEventListener("blur", (e) => {
           const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
           if (!row) return;
 
@@ -1343,11 +1298,6 @@
           refreshResultsOnly();
         });
       });
-    }
-
-    function attachFullEditBehavior(input) {
-      input.addEventListener("focus", () => input.select());
-      input.addEventListener("click", () => input.select());
     }
 
     function recalculateDocumentRowByQty(row) {
@@ -1395,11 +1345,7 @@
     function getDocumentPriceInfo(format, colorMode, qty) {
       if (colorMode === "bw") {
         if (!PRICES.documentsBW[format]) {
-          return {
-            price: 0,
-            code: "—",
-            label: `Для ${format} нет автоматической цены ч/б`
-          };
+          return { price: 0, code: "—", label: `Для ${format} нет автоматической цены ч/б` };
         }
         const tier = getTierRow(PRICES.documentsBW[format], qty);
         return {
@@ -1410,16 +1356,12 @@
       }
 
       if (!PRICES.documentsColor[format]) {
-        return {
-          price: 0,
-          code: "—",
-          label: `Для ${format} нет автоматической цветной цены`
-        };
+        return { price: 0, code: "—", label: `Для ${format} нет автоматической цветной цены` };
       }
 
       const info = PRICES.documentsColor[format];
       return {
-        price: info.min,
+        price: info.max,
         code: info.code,
         label: `${info.label} (${money(info.min)} – ${money(info.max)})`
       };
@@ -1472,17 +1414,13 @@
     function parseFlexibleNumber(value) {
       const cleaned = String(value).replace(",", ".").replace(/[^\d.]/g, "");
       const num = parseFloat(cleaned);
-      return isFiniteNumber(num) ? Math.max(0, num) : 0;
+      return Number.isFinite(num) ? num : 0;
     }
 
     function parsePositiveInt(value) {
       const cleaned = String(value).replace(/[^\d]/g, "");
       const num = parseInt(cleaned || "0", 10);
       return Number.isFinite(num) && num > 0 ? num : 1;
-    }
-
-    function normalizeMoney(value) {
-      return Math.round(Number(value) * 100) / 100;
     }
 
     function isFiniteNumber(value) {
