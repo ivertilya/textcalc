@@ -21,6 +21,15 @@
       </div>
 
       <div>
+  <label style="display:block;margin-bottom:8px;font-weight:700;">Тип печати</label>
+  <select id="docPrintMode" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
+    <option value="auto">Автоопределение по страницам</option>
+    <option value="bw">Печатать всё в ч/б</option>
+    <option value="color">Печатать всё в цвете</option>
+  </select>
+</div>
+      
+      <div>
         <label style="display:block;margin-bottom:8px;font-weight:700;">Режим печати</label>
         <select id="docSidesType" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
           <option value="single">Односторонняя</option>
@@ -517,6 +526,7 @@
     const multiforaFormat = document.getElementById("docMultiforaFormat").value;
     const multiforaCount = Math.max(0, parseInt(document.getElementById("docMultiforaCount").value || "0", 10));
     const folderType = document.getElementById("docFolderType").value;
+    const printMode = document.getElementById("docPrintMode").value;
 
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -535,7 +545,15 @@
         ? findNearestPrintableFormat(widthMm, heightMm)
         : exactFormat;
 
-      const colorMode = await detectPageColorMode(page);
+      let colorMode;
+
+if (printMode === "bw") {
+  colorMode = "bw";
+} else if (printMode === "color") {
+  colorMode = "color";
+} else {
+  colorMode = await detectPageColorMode(page);
+}
 
       pages.push({
         pageNumber: i,
@@ -686,15 +704,22 @@
       renderCustomPages(stats.customPages);
     }
 
-    summaryTop.innerHTML = `
-      <strong>Услуга:</strong> Документы<br>
-      <strong>Страниц в файле:</strong> ${pdf.numPages}<br>
-      <strong>Экземпляров:</strong> ${copiesCount}<br>
-      <strong>A4 ч/б:</strong> ${stats.print.A4.bw} стр. &nbsp; | &nbsp; <strong>A4 цвет:</strong> ${stats.print.A4.color} стр.<br>
-      <strong>A3 ч/б:</strong> ${stats.print.A3.bw} стр. &nbsp; | &nbsp; <strong>A3 цвет:</strong> ${stats.print.A3.color} стр.<br>
-      <strong>Нестандартных страниц:</strong> ${stats.customPages.length}<br>
-      <strong>Листов для брошюровки на 1 экз.:</strong> ${getBindingSheetsPerCopy(stats, sidesType, getBindingBaseFormat(stats))} л.
-    `;
+   summaryTop.innerHTML = `
+  <strong>Услуга:</strong> Документы<br>
+  <strong>Тип печати:</strong> ${
+    printMode === "auto"
+      ? "автоопределение по страницам"
+      : printMode === "bw"
+      ? "всё в ч/б"
+      : "всё в цвете"
+  }<br>
+  <strong>Страниц в файле:</strong> ${pdf.numPages}<br>
+  <strong>Экземпляров:</strong> ${copiesCount}<br>
+  <strong>A4 ч/б:</strong> ${stats.print.A4.bw} стр. &nbsp; | &nbsp; <strong>A4 цвет:</strong> ${stats.print.A4.color} стр.<br>
+  <strong>A3 ч/б:</strong> ${stats.print.A3.bw} стр. &nbsp; | &nbsp; <strong>A3 цвет:</strong> ${stats.print.A3.color} стр.<br>
+  <strong>Нестандартных страниц:</strong> ${stats.customPages.length}<br>
+  <strong>Листов для брошюровки на 1 экз.:</strong> ${getBindingSheetsPerCopy(stats, sidesType, getBindingBaseFormat(stats))} л.
+`;
 
     totalPrice.textContent = `Итого: ${money(total)}`;
     resultBox.style.display = "block";
