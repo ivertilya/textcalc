@@ -17,11 +17,19 @@
     .wrap {
       max-width: 1280px;
       margin: 0 auto;
-      padding: 24px;
+      padding: 18px 24px 24px;
+    }
+
+    .top-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
     }
 
     h1 {
-      margin: 0 0 20px;
+      margin: 0 0 12px;
       font-size: 32px;
     }
 
@@ -29,7 +37,15 @@
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 20px;
+      margin: 0;
+    }
+
+    .status-inline {
+      font-size: 14px;
+      color: #444;
+      min-height: 20px;
+      display: flex;
+      align-items: center;
     }
 
     button {
@@ -53,80 +69,80 @@
     }
 
     .btn-danger {
-  background: #fff;
-  color: #b00020;
-  border: 1px solid #e0b4b4;
-  margin: 16px 16px 0 0;
-  align-self: flex-start;
-}
+      background: #fff;
+      color: #b00020;
+      border: 1px solid #e0b4b4;
+      margin-top: 0;
+      align-self: flex-start;
+    }
 
     .service-card {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 0 18px 18px 18px;
-  padding: 18px;
-  margin-bottom: 18px;
-}
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
 
- .service-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: flex-start;
-  margin-bottom: 16px;
-}
+    .service-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
 
-.service-header-main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
+    .service-header-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
 
-.service-title {
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0 0 12px;
-}
+    .service-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 10px;
+    }
 
-.service-name-input {
-  width: 100%;
-  max-width: 420px;
-  margin: 0 0 12px;
-  padding: 10px 12px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  font-size: 14px;
-  background: #fff;
-}
+    .service-name-input {
+      width: 100%;
+      max-width: 420px;
+      margin: 0;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      font-size: 14px;
+      background: #fff;
+    }
 
-.service-type-buttons {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  width: 100%;
-  gap: 8px;
-  margin-bottom: 14px;
-}
+    .service-type-buttons {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      width: 100%;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
 
-.service-type-btn {
-  width: 100%;
-  padding: 12px 8px;
-  border-radius: 12px 12px 0 0;
-  border: 1px solid #d8d8d8;
-  border-bottom: none;
-  background: #ececec;
-  color: #111;
-  font-weight: 700;
-  cursor: pointer;
-  text-align: center;
-}
+    .service-type-btn {
+      width: 100%;
+      padding: 12px 8px;
+      border-radius: 12px 12px 0 0;
+      border: 1px solid #d8d8d8;
+      border-bottom: none;
+      background: #ececec;
+      color: #111;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+    }
 
-.service-type-btn.active {
-  background: #fff;
-  color: #111;
-  position: relative;
-  top: 1px;
-}
+    .service-type-btn.active {
+      background: #fff;
+      color: #111;
+      position: relative;
+      top: 1px;
+    }
 
     .grid {
       display: grid;
@@ -177,13 +193,6 @@
       font-size: 12px;
       color: #666;
       line-height: 1.4;
-    }
-
-    .status {
-      margin: 8px 0 20px;
-      font-size: 14px;
-      color: #444;
-      min-height: 20px;
     }
 
     .extras-box {
@@ -260,14 +269,14 @@
     }
 
     th, td {
-  text-align: center;
-  vertical-align: middle;
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  font-size: 14px;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
+      text-align: center;
+      vertical-align: middle;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
 
     th {
       background: #fafafa;
@@ -275,24 +284,25 @@
     }
 
     .col-tariff { width: 24%; }
-.col-actual { width: 22%; }
-.col-format { width: 18%; }
-.col-qty { width: 10%; }
-.col-price { width: 12%; }
-.col-sum { width: 14%; text-align: center; }
+    .col-actual { width: 22%; }
+    .col-format { width: 18%; }
+    .col-qty { width: 10%; }
+    .col-price { width: 12%; }
+    .col-sum { width: 14%; }
 
     .money {
-  white-space: nowrap;
-  font-size: 20px;
-  font-weight: 400;
-  text-align: center;
-  vertical-align: middle;
-}
+      white-space: nowrap;
+      font-size: 20px;
+      font-weight: 400;
+      text-align: center;
+      vertical-align: middle;
+    }
 
     .money-input {
       font-size: 14px !important;
       font-weight: 400;
       color: #111;
+      text-align: center;
     }
 
     .small {
@@ -310,6 +320,7 @@
       border: 1px solid #ccc;
       font-size: 14px;
       background: #fff;
+      text-align: center;
     }
 
     .row-select {
@@ -320,6 +331,7 @@
       border: 1px solid #ccc;
       font-size: 14px;
       background: #fff;
+      text-align: center;
     }
 
     .note-box {
@@ -333,8 +345,14 @@
       color: #444;
     }
 
+    .after-cards-actions {
+      display: flex;
+      justify-content: flex-start;
+      margin: 8px 0 18px;
+    }
+
     .overall-total {
-      margin-top: 24px;
+      margin-top: 8px;
       font-size: 40px;
       font-weight: 800;
       line-height: 1.1;
@@ -359,6 +377,10 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .service-type-btn {
+        border-radius: 12px 12px 0 0;
+      }
+
       .overall-total {
         font-size: 32px;
       }
@@ -367,16 +389,22 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>Калькулятор печати</h1>
-
-    <div class="top-actions">
-      <button class="btn-primary" id="addServiceBtn">+ Добавить услугу</button>
-      <button class="btn-primary" id="calculateBtn">Рассчитать заказ</button>
-      <button class="btn-secondary" id="clearBtn">Сбросить всё</button>
+    <div class="top-bar">
+      <div class="top-actions">
+        <button class="btn-primary" id="calculateBtn">Рассчитать заказ</button>
+        <button class="btn-secondary" id="clearBtn">Сбросить всё</button>
+      </div>
+      <div id="status" class="status-inline"></div>
     </div>
 
-    <div id="status" class="status"></div>
+    <h1>Калькулятор печати</h1>
+
     <div id="servicesContainer"></div>
+
+    <div class="after-cards-actions">
+      <button class="btn-primary" id="addServiceBtn">+ Добавить услугу</button>
+    </div>
+
     <div id="overallTotal" class="overall-total" style="display:none;"></div>
   </div>
 
@@ -584,25 +612,25 @@
       block.dataset.serviceType = type;
 
       block.innerHTML = `
-  <div class="service-type-buttons">
-    ${SERVICE_TYPES.map(item => `
-      <button type="button"
-              class="service-type-btn ${item.key === type ? "active" : ""}"
-              data-service-type="${item.key}">
-        ${item.label}
-      </button>
-    `).join("")}
-  </div>
+        <div class="service-header">
+          <div class="service-header-main">
+            <div class="service-title">Услуга #${id}</div>
+            <input type="text" class="service-name-input" id="service-name-${id}" value="${escapeHtml(getDefaultServiceName(type, id))}" />
+          </div>
+          <button type="button" class="btn-danger remove-service-btn">Удалить</button>
+        </div>
 
-  <div class="service-header">
-    <div class="service-header-main">
-      <div class="service-title">Услуга #${id}</div>
-      <input type="text" class="service-name-input" id="service-name-${id}" value="${escapeHtml(getDefaultServiceName(type, id))}" />
-    </div>
-    <button type="button" class="btn-danger remove-service-btn">Удалить</button>
-  </div>
+        <div class="service-type-buttons">
+          ${SERVICE_TYPES.map(item => `
+            <button type="button"
+                    class="service-type-btn ${item.key === type ? "active" : ""}"
+                    data-service-type="${item.key}">
+              ${item.label}
+            </button>
+          `).join("")}
+        </div>
 
-  <div class="service-body">${renderServiceFields(id, type)}</div>
+        <div class="service-body">${renderServiceFields(id, type)}</div>
 
         <div class="extras-box">
           <button type="button" class="extras-toggle" data-target="extras-content-${id}">
@@ -910,7 +938,7 @@
       }
 
       calculatedRows = [];
-      setStatus("Считаю заказ...");
+      setStatus("Идёт анализ...");
 
       for (const block of blocks) {
         const resultBox = block.querySelector(".service-result");
@@ -946,7 +974,7 @@
         }
 
         recalcOverallTotal();
-setStatus("Готово.");
+        setStatus("Готово.");
       } catch (error) {
         console.error(error);
         setStatus(error.message || "Ошибка расчёта.", true);
@@ -968,7 +996,7 @@ setStatus("Готово.");
       const groups = {};
 
       for (let i = 1; i <= pdf.numPages; i++) {
-        setStatus(`Анализирую ${file.name}: страница ${i} из ${pdf.numPages}`);
+        setStatus(`Идёт анализ... ${file.name}: страница ${i} из ${pdf.numPages}`);
         const page = await pdf.getPage(i);
         const viewport = page.getViewport({ scale: 1 });
 
@@ -1041,7 +1069,7 @@ setStatus("Готово.");
         const groups = {};
 
         for (let i = 1; i <= pdf.numPages; i++) {
-          setStatus(`Анализирую чертежи ${file.name}: страница ${i} из ${pdf.numPages}`);
+          setStatus(`Идёт анализ... ${file.name}: страница ${i} из ${pdf.numPages}`);
           const page = await pdf.getPage(i);
           const viewport = page.getViewport({ scale: 1 });
 
@@ -1291,7 +1319,7 @@ setStatus("Готово.");
                 <th class="col-format">Формат для расчёта</th>
                 <th class="col-qty">Кол-во</th>
                 <th class="col-price">Цена за ед.</th>
-                <th class="col-sum" style="text-align:center;">Сумма</th>
+                <th class="col-sum">Сумма</th>
               </tr>
             </thead>
             <tbody>
@@ -1311,7 +1339,7 @@ setStatus("Готово.");
         : escapeHtml(row.billedFormat || "—");
 
       const qtyCell = row.qtyEditable
-        ? `<input type="number" min="1" step="1" class="row-input row-qty-input" data-row-id="${row.id}" value="${escapeHtml(String(row.qty))}">`
+        ? `<input type="number" min="1" step="1" class="row-input row-qty-input" data-row-id="${row.id}" value="${String(row.qty)}">`
         : escapeHtml(String(row.qty));
 
       const unitPriceCell = row.unitPriceEditable
@@ -1320,15 +1348,15 @@ setStatus("Готово.");
 
       return `
         <tr data-row-id="${row.id}">
-          <td style="text-align:center; vertical-align:middle;">
-  <div>${escapeHtml(row.tariffCode || "—")}</div>
-  <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
-</td>
+          <td>
+            <div>${escapeHtml(row.tariffCode || "—")}</div>
+            <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
+          </td>
           <td>${escapeHtml(row.actualFormatLabel || "—")}</td>
           <td>${billedFormatCell}</td>
           <td>${qtyCell}</td>
           <td>${unitPriceCell}</td>
-          <td class="money row-sum-cell" style="text-align:center; vertical-align:middle;">${money(row.qty * row.unitPrice)}</td>
+          <td class="money row-sum-cell">${money(row.qty * row.unitPrice)}</td>
         </tr>
       `;
     }
