@@ -183,8 +183,7 @@
 
     input[type="text"],
     input[type="file"],
-    select,
-    textarea {
+    select {
       width: 100%;
       padding: 12px;
       border: 1px solid #ccc;
@@ -215,64 +214,10 @@
       padding: 10px;
     }
 
-    .hint {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-
     .service-actions {
       display: flex;
       justify-content: flex-start;
       margin-top: 14px;
-    }
-
-    .extras-box {
-      margin-top: 18px;
-      border: 1px solid var(--line-soft);
-      border-radius: 14px;
-      background: #fafafa;
-      overflow: hidden;
-    }
-
-    .extras-toggle {
-      width: 100%;
-      background: transparent;
-      border: none;
-      border-radius: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 16px;
-      color: #111;
-      font-size: 16px;
-      font-weight: 700;
-      text-align: left;
-    }
-
-    .extras-toggle:hover {
-      background: #f3f3f3;
-    }
-
-    .extras-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin: 0;
-    }
-
-    .extras-chevron {
-      font-size: 18px;
-      line-height: 1;
-      flex: 0 0 auto;
-    }
-
-    .extras-content {
-      display: none;
-      padding: 0 16px 16px;
-    }
-
-    .extras-content.open {
-      display: block;
     }
 
     .service-result {
@@ -322,7 +267,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1020px;
+      min-width: 1100px;
       background: #fff;
       table-layout: fixed;
     }
@@ -347,12 +292,12 @@
     }
 
     .col-tariff { width: 22%; }
-    .col-actual { width: 21%; }
-    .col-custom-pages { width: 13%; }
-    .col-format { width: 16%; }
-    .col-qty { width: 9%; }
-    .col-price { width: 9%; }
-    .col-sum { width: 10%; }
+    .col-actual { width: 22%; }
+    .col-custom-pages { width: 14%; }
+    .col-format { width: 14%; }
+    .col-qty { width: 10%; }
+    .col-price { width: 10%; }
+    .col-sum { width: 8%; }
 
     .money {
       white-space: nowrap;
@@ -362,24 +307,25 @@
       vertical-align: middle;
     }
 
-    .money-input {
-      font-size: 14px !important;
-      font-weight: 400;
-      color: #111;
-      text-align: center;
-    }
-
     .small {
       font-size: 12px;
       color: #666;
       line-height: 1.35;
     }
 
-    .row-input {
-      width: 86px;
-      min-width: 86px;
-      max-width: 86px;
+    .row-qty-input {
+      width: 108px;
+      min-width: 108px;
+      max-width: 108px;
       text-align: center;
+    }
+
+    .row-price-input {
+      width: 128px;
+      min-width: 128px;
+      max-width: 128px;
+      text-align: center;
+      font-size: 14px;
     }
 
     .row-select {
@@ -404,29 +350,25 @@
       color: #444;
     }
 
-    .add-extra-row {
-      margin-top: 10px;
-      border: 1px dashed #ccc;
-      border-radius: 12px;
+    .add-extra-trigger-row {
+      cursor: pointer;
       background: #fcfcfc;
-      color: #111;
-      width: 100%;
-      text-align: center;
-      padding: 12px;
-      font-weight: 700;
     }
 
-    .extra-editor {
-      margin-top: 12px;
+    .add-extra-trigger-row:hover td {
+      background: #f6f6f6;
+    }
+
+    .extra-inline-row td {
+      background: #fafafa;
       padding: 14px;
+    }
+
+    .extra-inline-box {
       border: 1px solid #eee;
       border-radius: 12px;
-      background: #fafafa;
-      display: none;
-    }
-
-    .extra-editor.open {
-      display: block;
+      padding: 14px;
+      background: #fff;
     }
 
     .bottom-bar {
@@ -482,13 +424,8 @@
       z-index: 2;
     }
 
-    .step-btn.minus {
-      left: 6px;
-    }
-
-    .step-btn.plus {
-      right: 6px;
-    }
+    .step-btn.minus { left: 6px; }
+    .step-btn.plus { right: 6px; }
 
     .step-btn:hover {
       background: #f3f3f3;
@@ -592,6 +529,14 @@
       { key: "stickers", label: "Стикеры" }
     ];
 
+    const EXTRA_TYPES = [
+      { key: "binding", label: "+ Брошюровка" },
+      { key: "hole_punch", label: "+ Дыроколка" },
+      { key: "multifora", label: "+ Мультифоры" },
+      { key: "lamination", label: "+ Ламинирование" },
+      { key: "folder", label: "+ Папка" }
+    ];
+
     const PRICES = {
       documentsBW: {
         A4: [
@@ -667,6 +612,9 @@
         plastic: { price: 290.0, code: "1091", label: "Брошюровка на пласт. пружину" },
         metal: { price: 185.0, code: "1103", label: "Брошюровка на металл. пружину" }
       },
+      hole_punch: {
+        simple: { price: 10.0, code: "MANUAL", label: "Дыроколка" }
+      },
       photos: {
         doc10x15: { price: 120.0, code: "1124", label: "Печать фото на документы 10×15" },
         "10x15": [
@@ -730,14 +678,6 @@
       }
     };
 
-    const EXTRA_TYPES = [
-      { key: "binding", label: "+ Брошюровка" },
-      { key: "hole_punch", label: "+ Дыроколка" },
-      { key: "multifora", label: "+ Мультифоры" },
-      { key: "lamination", label: "+ Ламинирование" },
-      { key: "folder", label: "+ Папка" }
-    ];
-
     let blockCounter = 1;
     let calculatedRows = [];
     const serviceStates = {};
@@ -758,13 +698,11 @@
     function addServiceBlock(type = "documents") {
       const id = blockCounter++;
       serviceStates[id] = {
-        baseRows: [],
-        extraRows: [],
-        notes: [],
-        resultCollapsed: false,
-        extraEditorOpen: false,
-        selectedExtraType: "",
-        lastCalculatedType: type
+        resultsByType: {},
+        notesByType: {},
+        resultCollapsedByType: {},
+        extraEditorOpenByType: {},
+        selectedExtraTypeByType: {}
       };
 
       const block = document.createElement("div");
@@ -793,16 +731,6 @@
 
         <div class="service-body">${renderServiceFields(id, type)}</div>
 
-        <div class="extras-box">
-          <button type="button" class="extras-toggle" data-target="extras-content-${id}">
-            <span class="extras-title">Дополнительные настройки услуги</span>
-            <span class="extras-chevron">▾</span>
-          </button>
-          <div class="extras-content" id="extras-content-${id}">
-            ${renderExtrasSettingsFields(id)}
-          </div>
-        </div>
-
         <div class="service-actions">
           <button type="button" class="btn-secondary calc-service-btn">Рассчитать эту услугу</button>
         </div>
@@ -827,7 +755,7 @@
           block.querySelector(".service-body").innerHTML = renderServiceFields(id, newType);
           enhanceNumberControls(block.querySelector(".service-body"));
 
-          // Результат не удаляем намеренно, чтобы случайный клик не сбрасывал анализ.
+          restoreServiceResult(block);
         });
       });
 
@@ -841,71 +769,23 @@
       block.querySelector(".calc-service-btn").addEventListener("click", async () => {
         await calculateSingleService(block);
       });
-
-      const toggleBtn = block.querySelector(".extras-toggle");
-      const targetId = toggleBtn.dataset.target;
-      const target = block.querySelector(`#${targetId}`);
-      const chevron = toggleBtn.querySelector(".extras-chevron");
-
-      toggleBtn.addEventListener("click", () => {
-        target.classList.toggle("open");
-        chevron.textContent = target.classList.contains("open") ? "▴" : "▾";
-      });
     }
 
-    function renderExtrasSettingsFields(id) {
-      return `
-        <div class="grid-3">
-          <div class="field">
-            <label>Ламинирование</label>
-            <select id="extra-lamination-format-${id}">
-              <option value="none">Не добавлять</option>
-              <option value="A6">A6 (105×148 мм)</option>
-              <option value="A5">A5 (148×210 мм)</option>
-              <option value="A4">A4 (210×297 мм)</option>
-              <option value="A3">A3 (297×420 мм)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Количество ламинирования</label>
-            <input type="number" id="extra-lamination-qty-${id}" min="0" step="1" value="0" />
-          </div>
-          <div class="field">
-            <label>Брошюровка</label>
-            <select id="extra-binding-type-${id}">
-              <option value="none">Не добавлять</option>
-              <option value="staples2">2 скобы</option>
-              <option value="plastic">Пластиковая пружина</option>
-              <option value="metal">Металлическая пружина</option>
-              <option value="hardcover">Твердый переплет A4</option>
-            </select>
-          </div>
+    function getCurrentTypeForBlock(block) {
+      return block.dataset.serviceType;
+    }
 
-          <div class="field">
-            <label>Мультифоры</label>
-            <select id="extra-multifora-format-${id}">
-              <option value="none">Не добавлять</option>
-              <option value="A5">A5 (148×210 мм)</option>
-              <option value="A4">A4 (210×297 мм)</option>
-              <option value="A3">A3 (297×420 мм)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Количество мультифор</label>
-            <input type="number" id="extra-multifora-qty-${id}" min="0" step="1" value="0" />
-          </div>
-          <div class="field">
-            <label>Папка</label>
-            <select id="extra-folder-type-${id}">
-              <option value="none">Не добавлять</option>
-              <option value="folder20">Папка на 20 мультифор</option>
-              <option value="folder30">Папка на 30 мультифор</option>
-              <option value="folder40">Папка на 40 мультифор</option>
-              <option value="folder60">Папка на 60 мультифор</option>
-            </select>
-          </div>
-        </div>
-      `;
+    function getCurrentState(id, type) {
+      return serviceStates[id];
+    }
+
+    function ensureTypeBuckets(id, type) {
+      const state = serviceStates[id];
+      if (!state.resultsByType[type]) state.resultsByType[type] = [];
+      if (!state.notesByType[type]) state.notesByType[type] = [];
+      if (typeof state.resultCollapsedByType[type] !== "boolean") state.resultCollapsedByType[type] = false;
+      if (typeof state.extraEditorOpenByType[type] !== "boolean") state.extraEditorOpenByType[type] = false;
+      if (typeof state.selectedExtraTypeByType[type] !== "string") state.selectedExtraTypeByType[type] = "";
     }
 
     function getDefaultServiceName(type, id) {
@@ -1123,36 +1003,40 @@
 
     async function calculateSingleService(block, setReadyText = true) {
       const id = Number(block.dataset.blockId);
-      const type = block.dataset.serviceType;
-      const customName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName(type, id);
+      const type = getCurrentTypeForBlock(block);
+      ensureTypeBuckets(id, type);
 
+      const customName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName(type, id);
       const notes = [];
-      let rows = [];
+      let baseRows = [];
 
       setStatus("Идёт анализ...");
 
       if (type === "documents") {
-        rows = await calculateDocumentsBlock(id, customName, notes);
+        baseRows = await calculateDocumentsBlock(id, customName, notes);
       } else if (type === "drawings") {
-        rows = await calculateDrawingsBlock(id, customName, notes);
+        baseRows = await calculateDrawingsBlock(id, customName, notes);
       } else if (type === "copy") {
-        rows = calculateCopyBlock(id, customName);
+        baseRows = calculateCopyBlock(id, customName);
       } else if (type === "scan") {
-        rows = calculateScanBlock(id, customName);
+        baseRows = calculateScanBlock(id, customName);
       } else if (type === "photos") {
-        rows = calculatePhotosBlock(id, customName);
+        baseRows = calculatePhotosBlock(id, customName);
       } else if (type === "stickers") {
-        rows = calculateStickersBlock(id, customName);
+        baseRows = calculateStickersBlock(id, customName);
       }
 
-      serviceStates[id].baseRows = rows;
-      serviceStates[id].notes = notes;
-      serviceStates[id].lastCalculatedType = type;
+      const state = serviceStates[id];
+      const oldRows = state.resultsByType[type] || [];
+      const extraRows = oldRows.filter(r => r.isExtraRow);
+
+      state.resultsByType[type] = [...baseRows, ...extraRows];
+      state.notesByType[type] = notes;
 
       rebuildCalculatedRows();
       renderServiceResult(block);
-      recalcOverallTotal();
 
+      recalcOverallTotal();
       if (setReadyText) {
         setStatus("Готово.");
       }
@@ -1188,7 +1072,6 @@
         else colorMode = await detectPageColorMode(page);
 
         const actualLabel = buildActualFormatLabel(widthMm, heightMm, exactFormat);
-        const customPages = exactFormat === "CUSTOM" ? [i] : [];
         const key = [actualLabel, colorMode, nearestFormat].join("||");
 
         if (!groups[key]) {
@@ -1196,16 +1079,16 @@
             serviceCardId: id,
             serviceName: customName,
             actualFormatLabel: actualLabel,
+            customPageNumbers: [],
             billedFormat: nearestFormat,
             colorMode,
-            qty: 0,
-            customPageNumbers: []
+            qty: 0
           };
         }
 
         groups[key].qty += copies;
-        if (customPages.length) {
-          groups[key].customPageNumbers.push(...customPages);
+        if (exactFormat === "CUSTOM") {
+          groups[key].customPageNumbers.push(i);
         }
       }
 
@@ -1227,13 +1110,15 @@
           qtyEditable: true,
           billedFormatEditable: true,
           editableFormats: [...FORMAT_OPTIONS],
-          colorMode: group.colorMode
+          colorMode: group.colorMode,
+          isExtraRow: false
         });
-
-        if (group.customPageNumbers.length) {
-          notes.push(`Нестандартные страницы: ${group.customPageNumbers.join(", ")}. Они округлены до ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}.`);
-        }
       });
+
+      const allCustomPages = rows.flatMap(r => r.customPageNumbers || []);
+      if (allCustomPages.length) {
+        notes.push(`Нестандартные страницы: ${compressPageRanges(allCustomPages)}.`);
+      }
 
       return rows;
     }
@@ -1268,15 +1153,16 @@
               serviceCardId: id,
               serviceName: customName,
               actualFormatLabel: actualLabel,
+              customPageNumbers: [],
               billedFormat: nearestFormat,
-              qty: 0,
-              customPageNumbers: exactFormat === "CUSTOM" ? [i] : []
+              qty: 0
             };
-          } else if (exactFormat === "CUSTOM") {
-            groups[key].customPageNumbers.push(i);
           }
 
           groups[key].qty += 1;
+          if (exactFormat === "CUSTOM") {
+            groups[key].customPageNumbers.push(i);
+          }
         }
 
         Object.values(groups).forEach(group => {
@@ -1286,7 +1172,7 @@
               serviceCardId: id,
               serviceName: customName,
               actualFormatLabel: group.actualFormatLabel,
-              customPageNumbers: group.customPageNumbers || [],
+              customPageNumbers: group.customPageNumbers,
               billedFormat: group.billedFormat,
               tariff,
               qty: group.qty
@@ -1320,6 +1206,11 @@
           tariff: foldTariff,
           qty: rows.filter(r => r.tariffCode !== foldTariff.code).reduce((sum, r) => sum + r.qty, 0)
         }));
+      }
+
+      const allCustomPages = rows.flatMap(r => r.customPageNumbers || []);
+      if (allCustomPages.length) {
+        notes.push(`Нестандартные страницы: ${compressPageRanges(allCustomPages)}.`);
       }
 
       return rows;
@@ -1434,15 +1325,31 @@
         qtyEditable: true,
         billedFormatEditable: false,
         editableFormats: [],
-        colorMode: null
+        colorMode: null,
+        isExtraRow: false
       };
     }
 
-    function renderServiceResult(card) {
-      const id = Number(card.dataset.blockId);
+    function restoreServiceResult(block) {
+      const id = Number(block.dataset.blockId);
+      const type = getCurrentTypeForBlock(block);
+      ensureTypeBuckets(id, type);
+      renderServiceResult(block);
+    }
+
+    function renderServiceResult(block) {
+      const id = Number(block.dataset.blockId);
+      const type = getCurrentTypeForBlock(block);
+      ensureTypeBuckets(id, type);
+
       const state = serviceStates[id];
-      const rows = [...state.baseRows, ...state.extraRows];
-      const resultBox = card.querySelector(".service-result");
+      const rows = state.resultsByType[type] || [];
+      const notes = state.notesByType[type] || [];
+      const resultCollapsed = state.resultCollapsedByType[type];
+      const extraEditorOpen = state.extraEditorOpenByType[type];
+      const selectedExtraType = state.selectedExtraTypeByType[type] || "";
+
+      const resultBox = block.querySelector(".service-result");
 
       if (!rows.length) {
         resultBox.style.display = "none";
@@ -1455,10 +1362,10 @@
       resultBox.innerHTML = `
         <button type="button" class="result-toggle">
           <span class="service-result-title">Результат расчёта</span>
-          <span class="result-chevron">${state.resultCollapsed ? "▾" : "▴"}</span>
+          <span class="result-chevron">${resultCollapsed ? "▾" : "▴"}</span>
         </button>
 
-        <div class="result-content ${state.resultCollapsed ? "collapsed" : ""}">
+        <div class="result-content ${resultCollapsed ? "collapsed" : ""}">
           <div class="table-wrap">
             <table>
               <thead>
@@ -1474,21 +1381,33 @@
               </thead>
               <tbody>
                 ${rows.map(row => renderRowHtml(row)).join("")}
+
+                <tr class="add-extra-trigger-row">
+                  <td class="text-left"><strong>+ Добавить доп. услугу</strong></td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
+                </tr>
+
+                <tr class="extra-inline-row" style="${extraEditorOpen ? "" : "display:none;"}">
+                  <td colspan="7">
+                    <div class="extra-inline-box">
+                      ${renderInlineExtraEditor(id, type, selectedExtraType)}
+                    </div>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
 
-          <button type="button" class="add-extra-row">+ Добавить доп. услугу</button>
-
-          <div class="extra-editor ${state.extraEditorOpen ? "open" : ""}">
-            ${renderExtraEditor(id, state.selectedExtraType)}
-          </div>
-
-          ${state.notes.length ? `<div class="note-box">${state.notes.map(n => `• ${escapeHtml(n)}`).join("<br>")}</div>` : ""}
+          ${notes.length ? `<div class="note-box">${notes.map(n => `• ${escapeHtml(n)}`).join("<br>")}</div>` : ""}
         </div>
       `;
 
-      bindResultArea(card);
+      bindResultArea(block);
       enhanceNumberControls(resultBox);
     }
 
@@ -1498,15 +1417,15 @@
         : escapeHtml(row.billedFormat || "—");
 
       const qtyCell = row.qtyEditable
-        ? `<input type="number" min="1" step="1" class="row-input row-qty-input" data-row-id="${row.id}" value="${String(row.qty)}">`
+        ? `<input type="number" min="1" step="1" class="row-qty-input row-qty-editor" data-row-id="${row.id}" value="${String(row.qty)}">`
         : escapeHtml(String(row.qty));
 
       const unitPriceCell = row.unitPriceEditable
-        ? `<input type="number" min="0" step="0.01" class="row-input money-input row-price-input" data-row-id="${row.id}" value="${formatInputNumber(row.unitPrice)}">`
+        ? `<input type="number" min="0" step="0.01" class="row-price-input row-price-editor" data-row-id="${row.id}" value="${formatInputNumber(row.unitPrice)}">`
         : money(row.unitPrice);
 
       const customPagesText = row.customPageNumbers && row.customPageNumbers.length
-        ? row.customPageNumbers.join(", ")
+        ? compressPageRanges(row.customPageNumbers)
         : "—";
 
       return `
@@ -1525,32 +1444,33 @@
       `;
     }
 
-    function renderExtraEditor(id, selectedType) {
+    function renderInlineExtraEditor(id, type, selectedExtraType) {
       return `
         <div class="grid-3">
           <div class="field">
             <label>Тип доп. услуги</label>
-            <select id="extra-editor-type-${id}">
+            <select id="inline-extra-type-${id}-${type}">
               <option value="">Выбери пункт</option>
               ${EXTRA_TYPES.map(item => `
-                <option value="${item.key}"${item.key === selectedType ? " selected" : ""}>${item.label}</option>
+                <option value="${item.key}"${item.key === selectedExtraType ? " selected" : ""}>${item.label}</option>
               `).join("")}
             </select>
           </div>
-          ${renderExtraEditorOptions(id, selectedType)}
+          ${renderInlineExtraOptions(id, type, selectedExtraType)}
         </div>
+
         <div style="margin-top:12px;">
-          <button type="button" class="btn-secondary add-extra-confirm-btn">Добавить в расчёт</button>
+          <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
         </div>
       `;
     }
 
-    function renderExtraEditorOptions(id, type) {
-      if (type === "binding") {
+    function renderInlineExtraOptions(id, type, selectedExtraType) {
+      if (selectedExtraType === "binding") {
         return `
           <div class="field">
             <label>Вид брошюровки</label>
-            <select id="extra-editor-binding-type-${id}">
+            <select id="inline-binding-type-${id}-${type}">
               <option value="staples2">2 скобы</option>
               <option value="plastic">Пластиковая пружина</option>
               <option value="metal">Металлическая пружина</option>
@@ -1559,29 +1479,29 @@
           </div>
           <div class="field">
             <label>Количество</label>
-            <input type="number" id="extra-editor-binding-qty-${id}" min="1" step="1" value="1" />
+            <input type="number" id="inline-binding-qty-${id}-${type}" min="1" step="1" value="1" />
           </div>
         `;
       }
 
-      if (type === "hole_punch") {
+      if (selectedExtraType === "hole_punch") {
         return `
           <div class="field">
             <label>Количество</label>
-            <input type="number" id="extra-editor-hole-qty-${id}" min="1" step="1" value="1" />
+            <input type="number" id="inline-hole-qty-${id}-${type}" min="1" step="1" value="1" />
           </div>
           <div class="field">
             <label>Цена за ед.</label>
-            <input type="number" id="extra-editor-hole-price-${id}" min="0" step="0.01" value="0.00" />
+            <input type="number" id="inline-hole-price-${id}-${type}" min="0" step="0.01" value="10.00" />
           </div>
         `;
       }
 
-      if (type === "multifora") {
+      if (selectedExtraType === "multifora") {
         return `
           <div class="field">
             <label>Формат мультифор</label>
-            <select id="extra-editor-multifora-format-${id}">
+            <select id="inline-multifora-format-${id}-${type}">
               <option value="A5">A5</option>
               <option value="A4">A4</option>
               <option value="A3">A3</option>
@@ -1589,16 +1509,16 @@
           </div>
           <div class="field">
             <label>Количество</label>
-            <input type="number" id="extra-editor-multifora-qty-${id}" min="1" step="1" value="1" />
+            <input type="number" id="inline-multifora-qty-${id}-${type}" min="1" step="1" value="1" />
           </div>
         `;
       }
 
-      if (type === "lamination") {
+      if (selectedExtraType === "lamination") {
         return `
           <div class="field">
             <label>Формат ламинирования</label>
-            <select id="extra-editor-lamination-format-${id}">
+            <select id="inline-lamination-format-${id}-${type}">
               <option value="A6">A6</option>
               <option value="A5">A5</option>
               <option value="A4">A4</option>
@@ -1607,16 +1527,16 @@
           </div>
           <div class="field">
             <label>Количество</label>
-            <input type="number" id="extra-editor-lamination-qty-${id}" min="1" step="1" value="1" />
+            <input type="number" id="inline-lamination-qty-${id}-${type}" min="1" step="1" value="1" />
           </div>
         `;
       }
 
-      if (type === "folder") {
+      if (selectedExtraType === "folder") {
         return `
           <div class="field">
             <label>Вид папки</label>
-            <select id="extra-editor-folder-type-${id}">
+            <select id="inline-folder-type-${id}-${type}">
               <option value="folder20">Папка на 20 мультифор</option>
               <option value="folder30">Папка на 30 мультифор</option>
               <option value="folder40">Папка на 40 мультифор</option>
@@ -1625,7 +1545,7 @@
           </div>
           <div class="field">
             <label>Количество</label>
-            <input type="number" id="extra-editor-folder-qty-${id}" min="1" step="1" value="1" />
+            <input type="number" id="inline-folder-qty-${id}-${type}" min="1" step="1" value="1" />
           </div>
         `;
       }
@@ -1636,78 +1556,90 @@
       `;
     }
 
-    function bindResultArea(card) {
-      const id = Number(card.dataset.blockId);
+    function bindResultArea(block) {
+      const id = Number(block.dataset.blockId);
+      const type = getCurrentTypeForBlock(block);
+      ensureTypeBuckets(id, type);
+
       const state = serviceStates[id];
-      const resultBox = card.querySelector(".service-result");
+      const resultBox = block.querySelector(".service-result");
 
       const toggleBtn = resultBox.querySelector(".result-toggle");
-      const addExtraBtn = resultBox.querySelector(".add-extra-row");
-      const extraEditor = resultBox.querySelector(".extra-editor");
+      const addExtraTriggerRow = resultBox.querySelector(".add-extra-trigger-row");
+      const extraTypeSelect = resultBox.querySelector(`#inline-extra-type-${id}-${type}`);
+      const inlineAddBtn = resultBox.querySelector(".inline-add-extra-btn");
 
       toggleBtn.addEventListener("click", () => {
-        state.resultCollapsed = !state.resultCollapsed;
-        renderServiceResult(card);
+        state.resultCollapsedByType[type] = !state.resultCollapsedByType[type];
+        renderServiceResult(block);
       });
 
-      addExtraBtn.addEventListener("click", () => {
-        state.extraEditorOpen = !state.extraEditorOpen;
-        if (!state.extraEditorOpen) {
-          state.selectedExtraType = "";
+      addExtraTriggerRow.addEventListener("click", () => {
+        state.extraEditorOpenByType[type] = !state.extraEditorOpenByType[type];
+        if (!state.extraEditorOpenByType[type]) {
+          state.selectedExtraTypeByType[type] = "";
         }
-        renderServiceResult(card);
+        renderServiceResult(block);
       });
 
-      const extraTypeSelect = resultBox.querySelector(`#extra-editor-type-${id}`);
       if (extraTypeSelect) {
         extraTypeSelect.addEventListener("change", (e) => {
-          state.selectedExtraType = e.target.value;
-          state.extraEditorOpen = true;
-          renderServiceResult(card);
+          state.selectedExtraTypeByType[type] = e.target.value;
+          state.extraEditorOpenByType[type] = true;
+          renderServiceResult(block);
         });
       }
 
-      const addExtraConfirmBtn = resultBox.querySelector(".add-extra-confirm-btn");
-      if (addExtraConfirmBtn) {
-        addExtraConfirmBtn.addEventListener("click", () => {
-          const extraRow = buildExtraRowFromEditor(id);
+      if (inlineAddBtn) {
+        inlineAddBtn.addEventListener("click", () => {
+          const extraRow = buildInlineExtraRow(id, type);
           if (!extraRow) return;
-          state.extraRows.push(extraRow);
-          state.extraEditorOpen = false;
-          state.selectedExtraType = "";
+
+          const rows = state.resultsByType[type] || [];
+          rows.push(extraRow);
+          state.resultsByType[type] = rows;
+          state.extraEditorOpenByType[type] = false;
+          state.selectedExtraTypeByType[type] = "";
+
           rebuildCalculatedRows();
-          renderServiceResult(card);
+          renderServiceResult(block);
           recalcOverallTotal();
         });
       }
 
-      bindEditorsInCard(card);
+      bindRowEditors(block);
     }
 
-    function buildExtraRowFromEditor(id) {
-      const type = document.getElementById(`extra-editor-type-${id}`)?.value;
-      const serviceName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName("documents", id);
+    function buildInlineExtraRow(id, type) {
+      const serviceName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName(type, id);
+      const extraType = document.getElementById(`inline-extra-type-${id}-${type}`)?.value;
 
-      if (!type) return null;
+      if (!extraType) return null;
 
-      if (type === "binding") {
-        const bindingType = document.getElementById(`extra-editor-binding-type-${id}`).value;
-        const qty = Math.max(1, parseInt(document.getElementById(`extra-editor-binding-qty-${id}`).value || "1", 10));
+      if (extraType === "binding") {
+        const bindingType = document.getElementById(`inline-binding-type-${id}-${type}`).value;
+        const qty = Math.max(1, parseInt(document.getElementById(`inline-binding-qty-${id}-${type}`).value || "1", 10));
         const tariff = PRICES.binding[bindingType];
-        return fixedRow({
-          serviceCardId: id,
-          serviceName,
-          actualFormatLabel: bindingType === "hardcover" ? "A4 (210×297 мм)" : "Постобработка",
-          customPageNumbers: [],
-          billedFormat: bindingType === "hardcover" ? "A4" : "—",
-          tariff,
-          qty
-        });
+
+        return {
+          ...fixedRow({
+            serviceCardId: id,
+            serviceName,
+            actualFormatLabel: bindingType === "hardcover" ? "A4 (210×297 мм)" : "Постобработка",
+            customPageNumbers: [],
+            billedFormat: bindingType === "hardcover" ? "A4" : "—",
+            tariff,
+            qty
+          }),
+          isExtraRow: true
+        };
       }
 
-      if (type === "hole_punch") {
-        const qty = Math.max(1, parseInt(document.getElementById(`extra-editor-hole-qty-${id}`).value || "1", 10));
-        const price = Math.max(0, parseFlexibleNumber(document.getElementById(`extra-editor-hole-price-${id}`).value || "0"));
+      if (extraType === "hole_punch") {
+        const qty = Math.max(1, parseInt(document.getElementById(`inline-hole-qty-${id}-${type}`).value || "1", 10));
+        const price = Math.max(0, parseFlexibleNumber(document.getElementById(`inline-hole-price-${id}-${type}`).value || "10"));
+        const tariff = PRICES.hole_punch.simple;
+
         return {
           id: makeRowId(),
           serviceCardId: id,
@@ -1718,105 +1650,119 @@
           billedFormat: "—",
           qty,
           unitPrice: price,
-          tariffCode: "—",
-          tariffLabel: "Дыроколка (цена введена вручную)",
+          tariffCode: tariff.code,
+          tariffLabel: tariff.label,
           unitPriceEditable: true,
           qtyEditable: true,
           billedFormatEditable: false,
           editableFormats: [],
-          colorMode: null
+          colorMode: null,
+          isExtraRow: true
         };
       }
 
-      if (type === "multifora") {
-        const format = document.getElementById(`extra-editor-multifora-format-${id}`).value;
-        const qty = Math.max(1, parseInt(document.getElementById(`extra-editor-multifora-qty-${id}`).value || "1", 10));
+      if (extraType === "multifora") {
+        const format = document.getElementById(`inline-multifora-format-${id}-${type}`).value;
+        const qty = Math.max(1, parseInt(document.getElementById(`inline-multifora-qty-${id}-${type}`).value || "1", 10));
         const tariff = PRICES.multifora[format];
-        return fixedRow({
-          serviceCardId: id,
-          serviceName,
-          actualFormatLabel: FORMAT_LABELS[format],
-          customPageNumbers: [],
-          billedFormat: format,
-          tariff,
-          qty
-        });
+
+        return {
+          ...fixedRow({
+            serviceCardId: id,
+            serviceName,
+            actualFormatLabel: FORMAT_LABELS[format],
+            customPageNumbers: [],
+            billedFormat: format,
+            tariff,
+            qty
+          }),
+          isExtraRow: true
+        };
       }
 
-      if (type === "lamination") {
-        const format = document.getElementById(`extra-editor-lamination-format-${id}`).value;
-        const qty = Math.max(1, parseInt(document.getElementById(`extra-editor-lamination-qty-${id}`).value || "1", 10));
+      if (extraType === "lamination") {
+        const format = document.getElementById(`inline-lamination-format-${id}-${type}`).value;
+        const qty = Math.max(1, parseInt(document.getElementById(`inline-lamination-qty-${id}-${type}`).value || "1", 10));
         const tariff = PRICES.lamination[format];
-        return fixedRow({
-          serviceCardId: id,
-          serviceName,
-          actualFormatLabel: FORMAT_LABELS[format],
-          customPageNumbers: [],
-          billedFormat: format,
-          tariff,
-          qty
-        });
+
+        return {
+          ...fixedRow({
+            serviceCardId: id,
+            serviceName,
+            actualFormatLabel: FORMAT_LABELS[format],
+            customPageNumbers: [],
+            billedFormat: format,
+            tariff,
+            qty
+          }),
+          isExtraRow: true
+        };
       }
 
-      if (type === "folder") {
-        const folderType = document.getElementById(`extra-editor-folder-type-${id}`).value;
-        const qty = Math.max(1, parseInt(document.getElementById(`extra-editor-folder-qty-${id}`).value || "1", 10));
+      if (extraType === "folder") {
+        const folderType = document.getElementById(`inline-folder-type-${id}-${type}`).value;
+        const qty = Math.max(1, parseInt(document.getElementById(`inline-folder-qty-${id}-${type}`).value || "1", 10));
         const tariff = PRICES.folders[folderType];
-        return fixedRow({
-          serviceCardId: id,
-          serviceName,
-          actualFormatLabel: "—",
-          customPageNumbers: [],
-          billedFormat: "—",
-          tariff,
-          qty
-        });
+
+        return {
+          ...fixedRow({
+            serviceCardId: id,
+            serviceName,
+            actualFormatLabel: "—",
+            customPageNumbers: [],
+            billedFormat: "—",
+            tariff,
+            qty
+          }),
+          isExtraRow: true
+        };
       }
 
       return null;
     }
 
-    function bindEditorsInCard(card) {
-      card.querySelectorAll(".row-price-input").forEach(input => {
+    function bindRowEditors(block) {
+      block.querySelectorAll(".row-price-editor").forEach(input => {
         input.addEventListener("input", (e) => {
           const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
           if (!row) return;
 
           row.unitPrice = Math.max(0, parseFlexibleNumber(e.target.value));
 
-          calculatedRows
-            .filter(r => r.tariffCode === row.tariffCode && row.tariffCode !== "—")
-            .forEach(r => {
-              r.unitPrice = row.unitPrice;
-              updateRowDom(r.id, { updatePriceInput: r.id !== row.id });
-            });
-
-          if (row.tariffCode === "—") {
+          if (row.tariffCode && row.tariffCode !== "—" && row.tariffCode !== "MANUAL") {
+            calculatedRows
+              .filter(r => r.tariffCode === row.tariffCode)
+              .forEach(r => {
+                r.unitPrice = row.unitPrice;
+                updateRowDom(r.id, { updatePriceInput: r.id !== row.id });
+              });
+          } else {
             updateRowDom(row.id, { updatePriceInput: false });
           }
 
-          syncStateRowsFromCalculated();
+          syncStatesFromCalculatedRows();
           recalcOverallTotal();
         });
       });
 
-      card.querySelectorAll(".row-qty-input").forEach(input => {
+      block.querySelectorAll(".row-qty-editor").forEach(input => {
         input.addEventListener("input", (e) => {
           const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
           if (!row) return;
 
           row.qty = Math.max(1, parsePositiveInt(e.target.value));
+
           if (row.serviceType === "documents") {
             recalculateDocumentRowByQty(row);
           }
 
           updateRowDom(row.id, { updateQtyInput: false, updatePriceInput: true });
-          syncStateRowsFromCalculated();
+          syncStatesFromCalculatedRows();
           recalcOverallTotal();
         });
       });
 
-      card.querySelectorAll(".row-format-select").forEach(select => {
+      block.querySelectorAll(".row-format-select").forEach(select => {
         select.addEventListener("change", (e) => {
           const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
           if (!row) return;
@@ -1826,8 +1772,9 @@
           row.tariffCode = newInfo.code;
           row.tariffLabel = newInfo.label;
           row.unitPrice = newInfo.price;
+
           updateRowDom(row.id, { updatePriceInput: true });
-          syncStateRowsFromCalculated();
+          syncStatesFromCalculatedRows();
           recalcOverallTotal();
         });
       });
@@ -1845,7 +1792,7 @@
         <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
       `;
       cells[1].textContent = row.actualFormatLabel || "—";
-      cells[2].textContent = row.customPageNumbers && row.customPageNumbers.length ? row.customPageNumbers.join(", ") : "—";
+      cells[2].textContent = row.customPageNumbers && row.customPageNumbers.length ? compressPageRanges(row.customPageNumbers) : "—";
 
       if (row.billedFormatEditable) {
         const select = tr.querySelector(".row-format-select");
@@ -1854,12 +1801,12 @@
         }
       }
 
-      const qtyInput = tr.querySelector(".row-qty-input");
+      const qtyInput = tr.querySelector(".row-qty-editor");
       if (qtyInput && options.updateQtyInput !== false) {
         qtyInput.value = row.qty;
       }
 
-      const priceInput = tr.querySelector(".row-price-input");
+      const priceInput = tr.querySelector(".row-price-editor");
       if (priceInput && options.updatePriceInput !== false) {
         priceInput.value = formatInputNumber(row.unitPrice);
       }
@@ -1882,18 +1829,27 @@
       }
     }
 
-    function rebuildCalculatedRows() {
-      calculatedRows = [];
-      Object.values(serviceStates).forEach(state => {
-        calculatedRows.push(...state.baseRows, ...state.extraRows);
+    function restoreAllVisibleResults() {
+      document.querySelectorAll(".service-card").forEach(block => {
+        restoreServiceResult(block);
       });
     }
 
-    function syncStateRowsFromCalculated() {
+    function rebuildCalculatedRows() {
+      calculatedRows = [];
       Object.entries(serviceStates).forEach(([id, state]) => {
-        const serviceId = Number(id);
-        state.baseRows = calculatedRows.filter(r => r.serviceCardId === serviceId).filter(r => state.baseRows.some(b => b.id === r.id));
-        state.extraRows = calculatedRows.filter(r => r.serviceCardId === serviceId).filter(r => state.extraRows.some(b => b.id === r.id));
+        Object.values(state.resultsByType).forEach(rows => {
+          calculatedRows.push(...rows);
+        });
+      });
+    }
+
+    function syncStatesFromCalculatedRows() {
+      Object.entries(serviceStates).forEach(([id, state]) => {
+        Object.keys(state.resultsByType).forEach(type => {
+          const knownIds = new Set((state.resultsByType[type] || []).map(r => r.id));
+          state.resultsByType[type] = calculatedRows.filter(r => knownIds.has(r.id));
+        });
       });
     }
 
@@ -2071,6 +2027,29 @@
 
       const nearest = findNearestFormat(widthMm, heightMm);
       return `≈ ${nearest} (${FORMATS[nearest].w}×${FORMATS[nearest].h} мм), файл: ${w}×${h} мм`;
+    }
+
+    function compressPageRanges(pages) {
+      const unique = [...new Set((pages || []).filter(n => Number.isFinite(n)).sort((a, b) => a - b))];
+      if (!unique.length) return "";
+
+      const ranges = [];
+      let start = unique[0];
+      let prev = unique[0];
+
+      for (let i = 1; i < unique.length; i++) {
+        const current = unique[i];
+        if (current === prev + 1) {
+          prev = current;
+          continue;
+        }
+        ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+        start = current;
+        prev = current;
+      }
+
+      ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+      return ranges.join(", ");
     }
 
     async function detectPageColorMode(page) {
