@@ -1,4 +1,4 @@
-<div id="print-calc" style="max-width:980px;margin:40px auto;padding:24px;border:1px solid #ddd;border-radius:16px;background:#fff;box-sizing:border-box;font-family:Arial,sans-serif;">
+<div id="print-calc" style="max-width:1100px;margin:40px auto;padding:24px;border:1px solid #ddd;border-radius:16px;background:#fff;box-sizing:border-box;font-family:Arial,sans-serif;">
   <h2 style="margin:0 0 20px;font-size:28px;line-height:1.2;">Калькулятор стоимости печати</h2>
 
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
@@ -6,14 +6,6 @@
       <label style="display:block;margin-bottom:8px;font-weight:700;">Загрузите PDF</label>
       <input type="file" id="pdfFile" accept="application/pdf" style="display:block;width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;">
       <div id="fileInfo" style="margin-top:8px;font-size:14px;color:#666;"></div>
-    </div>
-
-    <div>
-      <label style="display:block;margin-bottom:8px;font-weight:700;">Тип печати</label>
-      <select id="printType" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-        <option value="bw">Чёрно-белая</option>
-        <option value="color">Цветная</option>
-      </select>
     </div>
 
     <div>
@@ -91,10 +83,11 @@
 
     <div id="summaryTop" style="margin-bottom:16px;font-size:15px;line-height:1.6;"></div>
 
-    <table style="width:100%;border-collapse:collapse;font-size:15px;">
+    <table style="width:100%;border-collapse:collapse;font-size:14px;">
       <thead>
         <tr>
           <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Позиция</th>
+          <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Пункт прайса</th>
           <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Кол-во</th>
           <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Цена</th>
           <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Сумма</th>
@@ -104,6 +97,21 @@
     </table>
 
     <div id="totalPrice" style="margin-top:18px;font-size:24px;font-weight:700;"></div>
+
+    <div id="customSizesBox" style="display:none;margin-top:24px;">
+      <h4 style="margin:0 0 10px;">Нестандартные размеры</h4>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Стр.</th>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Точный размер</th>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Округлено к</th>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Цветность</th>
+          </tr>
+        </thead>
+        <tbody id="customSizesTable"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -113,6 +121,8 @@
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
   const TOLERANCE_MM = 8;
+  const COLOR_TOLERANCE = 18;   // насколько каналы RGB должны отличаться, чтобы считать пиксель цветным
+  const SAMPLE_STEP = 8;        // шаг выборки пикселей для ускорения анализа
 
   const FORMATS = {
     A6:   { w: 105, h: 148 },
@@ -128,87 +138,96 @@
   const PRICES = {
     digitalBW: {
       A4: [
-        { max: 10, price: 10.0 },
-        { max: 50, price: 7.0 },
-        { max: 100, price: 6.0 },
-        { max: 500, price: 5.5 },
-        { max: Infinity, price: 5.0 }
+        { max: 10, price: 10.0, code: "1001", label: "Цифровая печать, ч/б, формат А4 до 10 прог." },
+        { max: 50, price: 7.0,  code: "1002", label: "Цифровая печать, ч/б, формат А4 от 11-50 прог." },
+        { max: 100, price: 6.0, code: "1003", label: "Цифровая печать, ч/б, формат А4 от 51-100 прог." },
+        { max: 500, price: 5.5, code: "1004", label: "Цифровая печать, ч/б, формат А4 от 101-500 прог." },
+        { max: Infinity, price: 5.0, code: "1005", label: "Цифровая печать, ч/б, формат А4 от 501 прог." }
       ],
       A3: [
-        { max: 10, price: 20.0 },
-        { max: 50, price: 16.0 },
-        { max: 100, price: 14.0 },
-        { max: 500, price: 12.0 },
-        { max: Infinity, price: 11.0 }
+        { max: 10, price: 20.0, code: "1008", label: "Цифровая печать, ч/б, формат А3 до 10 прог." },
+        { max: 50, price: 16.0, code: "1009", label: "Цифровая печать, ч/б, формат А3 от 11-50 прог." },
+        { max: 100, price: 14.0, code: "1010", label: "Цифровая печать, ч/б, формат А3 от 51-100 прог." },
+        { max: 500, price: 12.0, code: "1011", label: "Цифровая печать, ч/б, формат А3 от 101-500 прог." },
+        { max: Infinity, price: 11.0, code: "1012", label: "Цифровая печать, ч/б, формат А3 от 501 прог." }
       ]
     },
 
-    // В прайсе строки обрезаны парсером, поэтому привязано так:
-    // single = "от", double = "до"
+    // В PDF у цветной цифровой печати в строках 1006/1007 и 1013/1014
+    // нет явной подписи "1 сторона/2 стороны", поэтому оставляю рабочее правило:
+    // smaller price = 1 сторона, larger price = 2 стороны.
     digitalColor: {
-      A4: { single: 15.0, double: 30.0 },
-      A3: { single: 30.0, double: 45.0 }
+      A4: {
+        single: { price: 15.0, code: "1006", label: "Цифровая печать, цветн, формат А4 от 15,0 ₽" },
+        double: { price: 30.0, code: "1007", label: "Цифровая печать, цветн, формат А4 до 30,0 ₽" }
+      },
+      A3: {
+        single: { price: 30.0, code: "1013", label: "Цифровая печать, цветн, формат А3 от 30,0 ₽" },
+        double: { price: 45.0, code: "1014", label: "Цифровая печать, цветн, формат А3 до 45,0 ₽" }
+      }
     },
 
     lamination: {
-      A6: 25.0,
-      A5: 40.0,
-      A4: 60.0,
-      A3: 110.0
+      A6: { price: 25.0, code: "1120", label: "Ламинирование пакетное, пленка 125мкм, формат А6" },
+      A5: { price: 40.0, code: "1121", label: "Ламинирование пакетное, пленка 125мкм, формат А5" },
+      A4: { price: 60.0, code: "1122", label: "Ламинирование пакетное, пленка 125мкм, формат А4" },
+      A3: { price: 110.0, code: "1123", label: "Ламинирование пакетное, пленка 125мкм, формат А3" }
     },
 
     binding: {
-      staples2: 35.0,
-      hardcoverA4: 550.0,
+      staples2: { price: 35.0, code: "1109", label: "Брошюровка на 2 скобы (автореферат и тд)" },
+      hardcoverA4: { price: 550.0, code: "1084", label: "Твердый переплет MetalBind, обложка O.hardCOVER, формат А4, книжн." },
+
       plastic: {
         A4: [
-          { max: 40, price: 110.0, label: "8 мм, до 40 л" },
-          { max: 80, price: 140.0, label: "12 мм, до 80 л" },
-          { max: 120, price: 170.0, label: "16 мм, до 120 л" },
-          { max: 180, price: 200.0, label: "22 мм, до 180 л" },
-          { max: 240, price: 230.0, label: "28 мм, до 240 л" },
-          { max: 340, price: 260.0, label: "38 мм, до 340 л" },
-          { max: 500, price: 290.0, label: "51 мм, до 500 л" }
+          { max: 40, price: 110.0, code: "1085", label: "Брошюровка на пласт.пружину, формат А4, 8мм, до 40л" },
+          { max: 80, price: 140.0, code: "1086", label: "Брошюровка на пласт.пружину, формат А4, 12мм, до 80л" },
+          { max: 120, price: 170.0, code: "1087", label: "Брошюровка на пласт.пружину, формат А4, 16мм, до 120л" },
+          { max: 180, price: 200.0, code: "1088", label: "Брошюровка на пласт.пружину, формат А4, 22мм, до 180л" },
+          { max: 240, price: 230.0, code: "1089", label: "Брошюровка на пласт.пружину, формат А4, 28мм, до 240л" },
+          { max: 340, price: 260.0, code: "1090", label: "Брошюровка на пласт.пружину, формат А4, 38мм, до 340л" },
+          { max: 500, price: 290.0, code: "1091", label: "Брошюровка на пласт.пружину, формат А4, 51мм, до 500л" }
         ],
         A3: [
-          { max: 40, price: 135.0, label: "8 мм, до 40 л" },
-          { max: 80, price: 165.0, label: "12 мм, до 80 л" },
-          { max: 120, price: 195.0, label: "16 мм, до 120 л" },
-          { max: 180, price: 225.0, label: "22 мм, до 180 л" },
-          { max: 240, price: 255.0, label: "28 мм, до 240 л" },
-          { max: 340, price: 285.0, label: "38 мм, до 340 л" },
-          { max: 500, price: 315.0, label: "51 мм, до 500 л" }
+          { max: 40, price: 135.0, code: "1092", label: "Брошюровка на пласт.пружину, формат А3, 8мм, до 40л" },
+          { max: 80, price: 165.0, code: "1093", label: "Брошюровка на пласт.пружину, формат А3, 12мм, до 80л" },
+          { max: 120, price: 195.0, code: "1094", label: "Брошюровка на пласт.пружину, формат А3, 16мм, до 120л" },
+          { max: 180, price: 225.0, code: "1095", label: "Брошюровка на пласт.пружину, формат А3, 22мм, до 180л" },
+          { max: 240, price: 255.0, code: "1096", label: "Брошюровка на пласт.пружину, формат А3, 28мм, до 240л" },
+          { max: 340, price: 285.0, code: "1097", label: "Брошюровка на пласт.пружину, формат А3, 38мм, до 340л" },
+          { max: 500, price: 315.0, code: "1098", label: "Брошюровка на пласт.пружину, формат А3, 51мм, до 500л" }
         ]
       },
+
       metal: {
         A4: [
-          { max: 35, price: 125.0, label: "6 мм, до 35 л" },
-          { max: 50, price: 140.0, label: "8 мм, до 50 л" },
-          { max: 80, price: 155.0, label: "10 мм, до 80 л" },
-          { max: 100, price: 170.0, label: "12 мм, до 100 л" },
-          { max: 120, price: 185.0, label: "14 мм, до 120 л" }
+          { max: 35, price: 125.0, code: "1099", label: "Брошюровка на металл.пружину, формат А4, 6мм, до 35л" },
+          { max: 50, price: 140.0, code: "1100", label: "Брошюровка на металл.пружину, формат А4, 8мм, до 50л" },
+          { max: 80, price: 155.0, code: "1101", label: "Брошюровка на металл.пружину, формат А4, 10мм, до 80л" },
+          { max: 100, price: 170.0, code: "1102", label: "Брошюровка на металл.пружину, формат А4, 12мм, до 100л" },
+          { max: 120, price: 185.0, code: "1103", label: "Брошюровка на металл.пружину, формат А4, 14мм, до 120л" }
         ],
         A3: [
-          { max: 35, price: 150.0, label: "6 мм, до 35 л" },
-          { max: 50, price: 165.0, label: "8 мм, до 50 л" },
-          { max: 80, price: 180.0, label: "10 мм, до 80 л" },
-          { max: 100, price: 195.0, label: "12 мм, до 100 л" },
-          { max: 120, price: 210.0, label: "14 мм, до 120 л" }
+          { max: 35, price: 150.0, code: "1104", label: "Брошюровка на металл.пружину, формат А3, 6мм, до 35л" },
+          { max: 50, price: 165.0, code: "1105", label: "Брошюровка на металл.пружину, формат А3, 8мм, до 50л" },
+          { max: 80, price: 180.0, code: "1106", label: "Брошюровка на металл.пружину, формат А3, 10мм, до 80л" },
+          { max: 100, price: 195.0, code: "1107", label: "Брошюровка на металл.пружину, формат А3, 12мм, до 100л" },
+          { max: 120, price: 210.0, code: "1108", label: "Брошюровка на металл.пружину, формат А3, 14мм, до 120л" }
         ]
       }
     },
 
     multifora: {
-      A5: 5.0,
-      A4: 7.0,
-      A3: 14.0
+      A5: { price: 5.0, code: "1178", label: "Папка-вкладыш с перфорацией А5 (мульфора)" },
+      A4: { price: 7.0, code: "1179", label: "Папка-вкладыш с перфорацией А4 (мульфора)" },
+      A3: { price: 14.0, code: "1180", label: "Папка-вкладыш с перфорацией А3 (мульфора)" }
     },
 
     folders: {
-      folder20: { name: "Папка на 20 мультифор", price: 200.0 },
-      folder30: { name: "Папка на 30 мультифор", price: 250.0 },
-      folder40: { name: "Папка на 40 мультифор", price: 300.0 },
-      folder60: { name: "Папка на 60 мультифор", price: 350.0 }
+      folder20: { name: "Папка на 20 мультифор", price: 200.0, code: "1172", label: "Папка на 20 мультифор" },
+      folder30: { name: "Папка на 30 мультифор", price: 250.0, code: "1173", label: "Папка на 30 мультифор" },
+      folder40: { name: "Папка на 40 мультифор", price: 300.0, code: "1174", label: "Папка на 40 мультифор" },
+      folder60: { name: "Папка на 60 мультифор", price: 350.0, code: "1175", label: "Папка на 60 мультифор" }
     }
   };
 
@@ -221,6 +240,8 @@
   const resultTable = document.getElementById("resultTable");
   const totalPrice = document.getElementById("totalPrice");
   const summaryTop = document.getElementById("summaryTop");
+  const customSizesBox = document.getElementById("customSizesBox");
+  const customSizesTable = document.getElementById("customSizesTable");
 
   pdfFileInput.addEventListener("change", () => {
     const file = pdfFileInput.files[0];
@@ -236,9 +257,10 @@
       setStatus("Анализирую PDF...");
       resultBox.style.display = "none";
       resultTable.innerHTML = "";
+      customSizesTable.innerHTML = "";
+      customSizesBox.style.display = "none";
 
       const copiesCount = Math.max(1, parseInt(document.getElementById("copiesCount").value || "1", 10));
-      const printType = document.getElementById("printType").value;
       const sidesType = document.getElementById("sidesType").value;
       const laminationType = document.getElementById("laminationType").value;
       const bindingType = document.getElementById("bindingType").value;
@@ -249,152 +271,148 @@
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-      const pageStats = {
-        A6: 0, A5: 0, A4: 0, A3: 0, A2: 0, A1: 0, A0: 0, SRA3: 0, CUSTOM: 0
-      };
-
+      const pages = [];
       for (let i = 1; i <= pdf.numPages; i++) {
+        setStatus(`Анализирую PDF... страница ${i} из ${pdf.numPages}`);
         const page = await pdf.getPage(i);
         const viewport = page.getViewport({ scale: 1 });
+
         const widthMm = ptToMm(viewport.width);
         const heightMm = ptToMm(viewport.height);
-        const format = detectFormat(widthMm, heightMm);
-        pageStats[format]++;
+
+        const exactFormat = detectFormat(widthMm, heightMm);
+        const nearestFormat = exactFormat === "CUSTOM"
+          ? findNearestPrintableFormat(widthMm, heightMm)
+          : exactFormat;
+
+        const colorMode = await detectPageColorMode(page);
+
+        pages.push({
+          pageNumber: i,
+          widthMm: round1(widthMm),
+          heightMm: round1(heightMm),
+          exactFormat,
+          billedFormat: nearestFormat,
+          colorMode
+        });
       }
 
+      const stats = buildStats(pages, copiesCount);
       const items = [];
       let total = 0;
 
-      const totalPagesOneCopy = pdf.numPages;
-      const totalPagesAllCopies = totalPagesOneCopy * copiesCount;
+      // ПЕЧАТЬ A4/A3 отдельно по цвету и ч/б
+      for (const format of ["A4", "A3"]) {
+        const bwCount = stats.print[format].bw;
+        const colorCount = stats.print[format].color;
 
-      // ПЕЧАТЬ
-      const printableFormats = ["A4", "A3"];
-      for (const format of printableFormats) {
-        const countPerCopy = pageStats[format];
-        if (!countPerCopy) continue;
-
-        const countAllCopies = countPerCopy * copiesCount;
-
-        if (printType === "bw") {
-          const unitPrice = getTierPrice(PRICES.digitalBW[format], countAllCopies);
-          const sum = countAllCopies * unitPrice;
+        if (bwCount > 0) {
+          const tier = getTierRow(PRICES.digitalBW[format], bwCount);
+          const sum = bwCount * tier.price;
           total += sum;
 
           items.push({
-            name: `Цифровая печать, ч/б, ${format}`,
-            qty: `${countAllCopies} стр.`,
-            price: money(unitPrice),
+            name: `Печать документов, ч/б, ${format}`,
+            tariff: `${tier.code} — ${tier.label}`,
+            qty: `${bwCount} стр.`,
+            price: money(tier.price),
             sum: money(sum)
           });
-        } else {
-          const unitPrice = PRICES.digitalColor[format][sidesType];
-          const sum = countAllCopies * unitPrice;
+        }
+
+        if (colorCount > 0) {
+          const colorRow = PRICES.digitalColor[format][sidesType];
+          const sum = colorCount * colorRow.price;
           total += sum;
 
           items.push({
-            name: `Цифровая печать, цветн., ${format}, ${sidesType === "single" ? "1 сторона" : "2 стороны"}`,
-            qty: `${countAllCopies} стр.`,
-            price: money(unitPrice),
+            name: `Печать документов, цвет, ${format}, ${sidesType === "single" ? "1 сторона" : "2 стороны"}`,
+            tariff: `${colorRow.code} — ${colorRow.label}`,
+            qty: `${colorCount} стр.`,
+            price: money(colorRow.price),
             sum: money(sum)
           });
         }
       }
 
-      // Нестандарт
-      const unsupportedCount =
-        pageStats.A6 + pageStats.A5 + pageStats.A2 + pageStats.A1 + pageStats.A0 + pageStats.SRA3 + pageStats.CUSTOM;
-
-      if (unsupportedCount > 0) {
-        items.push({
-          name: "Нестандартные форматы",
-          qty: `${unsupportedCount * copiesCount} стр.`,
-          price: "—",
-          sum: "Требуется ручной расчёт"
-        });
+      // Нестандартные форматы, округляем к A4/A3/A2/A1/A0/SRA3 и показываем отдельно
+      if (stats.customPages.length > 0) {
+        renderCustomPages(stats.customPages);
       }
 
       // ЛАМИНИРОВАНИЕ
       if (laminationType === "auto") {
-        ["A6", "A5", "A4", "A3"].forEach(format => {
-          const countPerCopy = pageStats[format];
-          if (!countPerCopy) return;
+        for (const format of ["A6", "A5", "A4", "A3"]) {
+          const lamCount = stats.lamination[format];
+          if (!lamCount) continue;
 
-          const countAllCopies = countPerCopy * copiesCount;
-          const unitPrice = PRICES.lamination[format];
-          const sum = countAllCopies * unitPrice;
+          const lamRow = PRICES.lamination[format];
+          const sum = lamCount * lamRow.price;
           total += sum;
 
           items.push({
             name: `Ламинирование ${format}`,
-            qty: `${countAllCopies} шт.`,
-            price: money(unitPrice),
+            tariff: `${lamRow.code} — ${lamRow.label}`,
+            qty: `${lamCount} шт.`,
+            price: money(lamRow.price),
             sum: money(sum)
           });
-        });
+        }
       }
 
       // БРОШЮРОВКА
       if (bindingType !== "none") {
-        const dominantFormat = pageStats.A3 > 0 && pageStats.A4 === 0 ? "A3" : "A4";
-        const sheetsForBinding = totalPagesOneCopy; // здесь логичнее от страниц одного экземпляра
+        const bindingBaseFormat = getBindingBaseFormat(stats);
+        const bindingSheetsPerCopy = getBindingSheetsPerCopy(stats, sidesType, bindingBaseFormat);
 
         if (bindingType === "staples2") {
-          total += PRICES.binding.staples2;
+          const row = PRICES.binding.staples2;
+          const sum = row.price * copiesCount;
+          total += sum;
           items.push({
-            name: "Брошюровка на 2 скобы",
-            qty: "1",
-            price: money(PRICES.binding.staples2),
-            sum: money(PRICES.binding.staples2)
+            name: `Брошюровка на 2 скобы (${bindingBaseFormat})`,
+            tariff: `${row.code} — ${row.label}`,
+            qty: `${copiesCount} экз.`,
+            price: money(row.price),
+            sum: money(sum)
           });
         }
 
         if (bindingType === "hardcover") {
-          total += PRICES.binding.hardcoverA4;
+          const row = PRICES.binding.hardcoverA4;
+          const sum = row.price * copiesCount;
+          total += sum;
           items.push({
-            name: "Твердый переплет A4",
-            qty: "1",
-            price: money(PRICES.binding.hardcoverA4),
-            sum: money(PRICES.binding.hardcoverA4)
+            name: `Твердый переплет A4`,
+            tariff: `${row.code} — ${row.label}`,
+            qty: `${copiesCount} экз.`,
+            price: money(row.price),
+            sum: money(sum)
           });
         }
 
-        if (bindingType === "plastic") {
-          const row = findBindingRow(PRICES.binding.plastic[dominantFormat], sheetsForBinding);
-          if (row) {
-            total += row.price;
-            items.push({
-              name: `Брошюровка на пласт. пружину ${dominantFormat} (${row.label})`,
-              qty: "1",
-              price: money(row.price),
-              sum: money(row.price)
-            });
-          } else {
-            items.push({
-              name: `Брошюровка на пласт. пружину ${dominantFormat}`,
-              qty: "1",
-              price: "—",
-              sum: "Слишком большой объём"
-            });
-          }
-        }
+        if (bindingType === "plastic" || bindingType === "metal") {
+          const rows = PRICES.binding[bindingType][bindingBaseFormat];
+          const selectedRow = findBindingRow(rows, bindingSheetsPerCopy);
 
-        if (bindingType === "metal") {
-          const row = findBindingRow(PRICES.binding.metal[dominantFormat], sheetsForBinding);
-          if (row) {
-            total += row.price;
+          if (selectedRow) {
+            const sum = selectedRow.price * copiesCount;
+            total += sum;
+
             items.push({
-              name: `Брошюровка на металл. пружину ${dominantFormat} (${row.label})`,
-              qty: "1",
-              price: money(row.price),
-              sum: money(row.price)
+              name: `Брошюровка на ${bindingType === "plastic" ? "пласт." : "металл."} пружину ${bindingBaseFormat}`,
+              tariff: `${selectedRow.code} — ${selectedRow.label}`,
+              qty: `${copiesCount} экз. × ${bindingSheetsPerCopy} л.`,
+              price: money(selectedRow.price),
+              sum: money(sum)
             });
           } else {
             items.push({
-              name: `Брошюровка на металл. пружину ${dominantFormat}`,
-              qty: "1",
+              name: `Брошюровка на ${bindingType === "plastic" ? "пласт." : "металл."} пружину ${bindingBaseFormat}`,
+              tariff: "—",
+              qty: `${copiesCount} экз. × ${bindingSheetsPerCopy} л.`,
               price: "—",
-              sum: "Слишком большой объём"
+              sum: "Объём превышает прайс"
             });
           }
         }
@@ -402,27 +420,30 @@
 
       // МУЛЬТИФОРЫ
       if (multiforaFormat !== "none" && multiforaCount > 0) {
-        const unitPrice = PRICES.multifora[multiforaFormat];
-        const sum = multiforaCount * unitPrice;
+        const row = PRICES.multifora[multiforaFormat];
+        const sum = row.price * multiforaCount;
         total += sum;
 
         items.push({
-          name: `Папка-вкладыш с перфорацией ${multiforaFormat}`,
+          name: `Мультифоры ${multiforaFormat}`,
+          tariff: `${row.code} — ${row.label}`,
           qty: `${multiforaCount} шт.`,
-          price: money(unitPrice),
+          price: money(row.price),
           sum: money(sum)
         });
       }
 
       // ПАПКА
       if (folderType !== "none") {
-        const folder = PRICES.folders[folderType];
-        total += folder.price;
+        const row = PRICES.folders[folderType];
+        total += row.price;
+
         items.push({
-          name: folder.name,
-          qty: "1",
-          price: money(folder.price),
-          sum: money(folder.price)
+          name: row.name,
+          tariff: `${row.code} — ${row.label}`,
+          qty: `1 шт.`,
+          price: money(row.price),
+          sum: money(row.price)
         });
       }
 
@@ -431,10 +452,12 @@
       summaryTop.innerHTML = `
         <strong>Страниц в файле:</strong> ${pdf.numPages}<br>
         <strong>Экземпляров:</strong> ${copiesCount}<br>
-        <strong>Всего печатных страниц:</strong> ${totalPagesAllCopies}<br>
-        <strong>Тип печати:</strong> ${printType === "bw" ? "чёрно-белая" : "цветная"}<br>
-        <strong>Режим:</strong> ${sidesType === "single" ? "односторонняя" : "двусторонняя"}<br>
-        <strong>Форматы в PDF:</strong> ${buildFormatSummary(pageStats)}
+        <strong>A4 ч/б:</strong> ${stats.print.A4.bw} стр. &nbsp; | &nbsp;
+        <strong>A4 цвет:</strong> ${stats.print.A4.color} стр.<br>
+        <strong>A3 ч/б:</strong> ${stats.print.A3.bw} стр. &nbsp; | &nbsp;
+        <strong>A3 цвет:</strong> ${stats.print.A3.color} стр.<br>
+        <strong>Нестандартных страниц:</strong> ${stats.customPages.length}<br>
+        <strong>Листов для брошюровки на 1 экземпляр:</strong> ${getBindingSheetsPerCopy(stats, sidesType, getBindingBaseFormat(stats))} л.
       `;
 
       totalPrice.textContent = `Итого: ${money(total)}`;
@@ -454,7 +477,8 @@
     resultTable.innerHTML = "";
     totalPrice.textContent = "";
     summaryTop.innerHTML = "";
-    document.getElementById("printType").value = "bw";
+    customSizesTable.innerHTML = "";
+    customSizesBox.style.display = "none";
     document.getElementById("sidesType").value = "single";
     document.getElementById("copiesCount").value = "1";
     document.getElementById("laminationType").value = "none";
@@ -466,6 +490,25 @@
 
   function ptToMm(pt) {
     return pt * 25.4 / 72;
+  }
+
+  function round1(num) {
+    return Math.round(num * 10) / 10;
+  }
+
+  function money(value) {
+    return `${Number(value).toFixed(2)} ₽`;
+  }
+
+  function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  }
+
+  function setStatus(text, isError = false) {
+    statusBox.textContent = text;
+    statusBox.style.color = isError ? "#c62828" : "#444";
   }
 
   function detectFormat(widthMm, heightMm) {
@@ -483,11 +526,131 @@
     return "CUSTOM";
   }
 
-  function getTierPrice(tiers, qty) {
-    for (const tier of tiers) {
-      if (qty <= tier.max) return tier.price;
+  function distanceToFormat(widthMm, heightMm, size) {
+    const d1 = Math.abs(widthMm - size.w) + Math.abs(heightMm - size.h);
+    const d2 = Math.abs(widthMm - size.h) + Math.abs(heightMm - size.w);
+    return Math.min(d1, d2);
+  }
+
+  function findNearestPrintableFormat(widthMm, heightMm) {
+    const candidates = ["A4", "A3", "A2", "A1", "A0", "SRA3", "A5", "A6"];
+    let best = candidates[0];
+    let bestDistance = Infinity;
+
+    for (const name of candidates) {
+      const dist = distanceToFormat(widthMm, heightMm, FORMATS[name]);
+      if (dist < bestDistance) {
+        bestDistance = dist;
+        best = name;
+      }
     }
-    return tiers[tiers.length - 1].price;
+    return best;
+  }
+
+  async function detectPageColorMode(page) {
+    // Это эвристика: если на странице есть заметное количество несерых пикселей,
+    // считаем её цветной. Для большинства офисных PDF этого достаточно.
+    const viewport = page.getViewport({ scale: 0.5 });
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+    canvas.width = Math.max(1, Math.floor(viewport.width));
+    canvas.height = Math.max(1, Math.floor(viewport.height));
+
+    await page.render({ canvasContext: ctx, viewport }).promise;
+
+    const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let coloredPixels = 0;
+    let checked = 0;
+
+    for (let y = 0; y < height; y += SAMPLE_STEP) {
+      for (let x = 0; x < width; x += SAMPLE_STEP) {
+        const idx = (y * width + x) * 4;
+        const r = data[idx];
+        const g = data[idx + 1];
+        const b = data[idx + 2];
+        const a = data[idx + 3];
+
+        if (a < 10) continue; // прозрачность игнорируем
+        checked++;
+
+        const diffRG = Math.abs(r - g);
+        const diffGB = Math.abs(g - b);
+        const diffRB = Math.abs(r - b);
+
+        if (diffRG > COLOR_TOLERANCE || diffGB > COLOR_TOLERANCE || diffRB > COLOR_TOLERANCE) {
+          coloredPixels++;
+          if (coloredPixels >= 5) return "color";
+        }
+      }
+    }
+
+    return "bw";
+  }
+
+  function buildStats(pages, copiesCount) {
+    const stats = {
+      print: {
+        A4: { bw: 0, color: 0 },
+        A3: { bw: 0, color: 0 }
+      },
+      lamination: {
+        A6: 0, A5: 0, A4: 0, A3: 0
+      },
+      pagesOneCopyByBilledFormat: {
+        A4: 0, A3: 0, A2: 0, A1: 0, A0: 0, SRA3: 0, A5: 0, A6: 0
+      },
+      customPages: []
+    };
+
+    pages.forEach(p => {
+      // Для печати считаем только A4/A3.
+      if (p.billedFormat === "A4" || p.billedFormat === "A3") {
+        stats.print[p.billedFormat][p.colorMode] += copiesCount;
+      }
+
+      if (stats.lamination[p.billedFormat] !== undefined) {
+        stats.lamination[p.billedFormat] += copiesCount;
+      }
+
+      if (stats.pagesOneCopyByBilledFormat[p.billedFormat] !== undefined) {
+        stats.pagesOneCopyByBilledFormat[p.billedFormat] += 1;
+      }
+
+      if (p.exactFormat === "CUSTOM") {
+        stats.customPages.push({
+          pageNumber: p.pageNumber,
+          widthMm: p.widthMm,
+          heightMm: p.heightMm,
+          billedFormat: p.billedFormat,
+          colorMode: p.colorMode
+        });
+      }
+    });
+
+    return stats;
+  }
+
+  function getTierRow(tiers, qty) {
+    for (const tier of tiers) {
+      if (qty <= tier.max) return tier;
+    }
+    return tiers[tiers.length - 1];
+  }
+
+  function getBindingBaseFormat(stats) {
+    // Если есть A3 и нет A4 — считаем A3.
+    // Во всех смешанных случаях по умолчанию A4.
+    const a3Pages = stats.pagesOneCopyByBilledFormat.A3;
+    const a4Pages = stats.pagesOneCopyByBilledFormat.A4;
+    if (a3Pages > 0 && a4Pages === 0) return "A3";
+    return "A4";
+  }
+
+  function getBindingSheetsPerCopy(stats, sidesType, bindingBaseFormat) {
+    const pagesPerCopy = stats.pagesOneCopyByBilledFormat[bindingBaseFormat] || 0;
+    if (pagesPerCopy === 0) return 0;
+    return sidesType === "double" ? Math.ceil(pagesPerCopy / 2) : pagesPerCopy;
   }
 
   function findBindingRow(rows, sheetCount) {
@@ -500,6 +663,7 @@
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td style="padding:10px;border-bottom:1px solid #eee;">${item.name}</td>
+        <td style="padding:10px;border-bottom:1px solid #eee;">${item.tariff}</td>
         <td style="padding:10px;border-bottom:1px solid #eee;">${item.qty}</td>
         <td style="padding:10px;border-bottom:1px solid #eee;">${item.price}</td>
         <td style="padding:10px;border-bottom:1px solid #eee;">${item.sum}</td>
@@ -508,26 +672,18 @@
     });
   }
 
-  function buildFormatSummary(stats) {
-    const parts = [];
-    Object.entries(stats).forEach(([key, value]) => {
-      if (value > 0) parts.push(`${key}: ${value}`);
+  function renderCustomPages(customPages) {
+    customSizesTable.innerHTML = "";
+    customPages.forEach(p => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="padding:10px;border-bottom:1px solid #eee;">${p.pageNumber}</td>
+        <td style="padding:10px;border-bottom:1px solid #eee;">${p.widthMm} × ${p.heightMm} мм</td>
+        <td style="padding:10px;border-bottom:1px solid #eee;">${p.billedFormat}</td>
+        <td style="padding:10px;border-bottom:1px solid #eee;">${p.colorMode === "color" ? "цвет" : "ч/б"}</td>
+      `;
+      customSizesTable.appendChild(tr);
     });
-    return parts.length ? parts.join(", ") : "не определены";
-  }
-
-  function money(value) {
-    return `${Number(value).toFixed(2)} ₽`;
-  }
-
-  function formatBytes(bytes) {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-  }
-
-  function setStatus(text, isError = false) {
-    statusBox.textContent = text;
-    statusBox.style.color = isError ? "#c62828" : "#444";
+    customSizesBox.style.display = "block";
   }
 </script>
