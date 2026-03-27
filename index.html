@@ -26,8 +26,7 @@
       color: #555;
       line-height: 1.5;
     }
-    .top-actions,
-    .bottom-actions {
+    .top-actions {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
@@ -61,18 +60,38 @@
       border-radius: 18px;
       padding: 18px;
       margin-bottom: 18px;
+      position: relative;
     }
     .service-header {
       display: flex;
       justify-content: space-between;
       gap: 12px;
-      align-items: center;
+      align-items: flex-start;
       margin-bottom: 16px;
-      flex-wrap: wrap;
     }
     .service-title {
       font-size: 20px;
       font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .service-type-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .service-type-btn {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #111;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .service-type-btn.active {
+      background: #111;
+      border-color: #111;
+      color: #fff;
     }
     .grid {
       display: grid;
@@ -96,8 +115,7 @@
     input[type="text"],
     input[type="number"],
     input[type="file"],
-    select,
-    textarea {
+    select {
       width: 100%;
       padding: 12px;
       border: 1px solid #ccc;
@@ -142,7 +160,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1120px;
+      min-width: 1180px;
       background: #fff;
     }
     th, td {
@@ -186,15 +204,6 @@
       font-size: 14px;
       background: #fff;
     }
-    .tag {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: #f0f0f0;
-      font-size: 12px;
-      margin-right: 6px;
-      margin-bottom: 4px;
-    }
     .total {
       margin-top: 18px;
       font-size: 28px;
@@ -210,10 +219,31 @@
       line-height: 1.5;
       color: #444;
     }
+    .extras-box {
+      margin-top: 24px;
+      padding: 16px;
+      border: 1px solid #eee;
+      border-radius: 14px;
+      background: #fafafa;
+    }
+    .extras-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .extras-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
 
     @media (max-width: 900px) {
       .grid, .grid-3 {
         grid-template-columns: 1fr;
+      }
+      .service-header {
+        flex-direction: column;
       }
     }
   </style>
@@ -223,7 +253,7 @@
     <h1>Калькулятор заказа</h1>
     <p class="lead">
       Добавляй в один заказ несколько услуг: документы, фото, чертежи, сканирование, копирование, стикеры.
-      Для документов можно загружать несколько PDF сразу.
+      Для документов — один PDF на одну услугу.
     </p>
 
     <div class="top-actions">
@@ -259,6 +289,60 @@
       </div>
 
       <div id="notesBox" class="note-box" style="display:none;"></div>
+
+      <div class="extras-box">
+        <div class="extras-title">Дополнительные услуги к заказу</div>
+        <div class="grid-3">
+          <div class="field">
+            <label>Ламинирование</label>
+            <select id="extraLaminationFormat">
+              <option value="none">Не добавлять</option>
+              <option value="A6">A6 (105×148 мм)</option>
+              <option value="A5">A5 (148×210 мм)</option>
+              <option value="A4">A4 (210×297 мм)</option>
+              <option value="A3">A3 (297×420 мм)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Количество ламинирования</label>
+            <input type="number" id="extraLaminationQty" min="0" value="0" />
+          </div>
+          <div></div>
+
+          <div class="field">
+            <label>Мультифоры</label>
+            <select id="extraMultiforaFormat">
+              <option value="none">Не добавлять</option>
+              <option value="A5">A5 (148×210 мм)</option>
+              <option value="A4">A4 (210×297 мм)</option>
+              <option value="A3">A3 (297×420 мм)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Количество мультифор</label>
+            <input type="number" id="extraMultiforaQty" min="0" value="0" />
+          </div>
+          <div></div>
+
+          <div class="field">
+            <label>Папка</label>
+            <select id="extraFolderType">
+              <option value="none">Не добавлять</option>
+              <option value="folder20">Папка на 20 мультифор</option>
+              <option value="folder30">Папка на 30 мультифор</option>
+              <option value="folder40">Папка на 40 мультифор</option>
+              <option value="folder60">Папка на 60 мультифор</option>
+            </select>
+          </div>
+          <div></div>
+          <div></div>
+        </div>
+
+        <div class="extras-actions">
+          <button class="btn-secondary" id="applyExtrasBtn">Добавить доп. услуги в результат</button>
+        </div>
+      </div>
+
       <div id="total" class="total"></div>
     </div>
   </div>
@@ -295,6 +379,15 @@
       A0: "A0 (841×1189 мм)",
       SRA3: "SRA3 (320×450 мм)"
     };
+
+    const SERVICE_TYPES = [
+      { key: "documents", label: "Документы" },
+      { key: "copy", label: "Ксерокопирование" },
+      { key: "scan", label: "Сканирование" },
+      { key: "photos", label: "Фотографии" },
+      { key: "drawings", label: "Чертежи" },
+      { key: "stickers", label: "Стикеры" }
+    ];
 
     const PRICES = {
       documentsBW: {
@@ -481,10 +574,12 @@
     const summaryBox = document.getElementById("summary");
     const totalBox = document.getElementById("total");
     const notesBox = document.getElementById("notesBox");
+    const applyExtrasBtn = document.getElementById("applyExtrasBtn");
 
     addServiceBtn.addEventListener("click", () => addServiceBlock());
     clearBtn.addEventListener("click", clearAll);
     calculateBtn.addEventListener("click", calculateOrder);
+    applyExtrasBtn.addEventListener("click", applyExtras);
 
     addServiceBlock("documents");
 
@@ -493,27 +588,39 @@
       const block = document.createElement("div");
       block.className = "service-card";
       block.dataset.blockId = String(id);
+      block.dataset.serviceType = type;
+
       block.innerHTML = `
         <div class="service-header">
-          <div class="service-title">Услуга #${id}</div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <select class="service-type-select" data-block-id="${id}">
-              <option value="documents"${type === "documents" ? " selected" : ""}>Документы (PDF)</option>
-              <option value="copy"${type === "copy" ? " selected" : ""}>Ксерокопирование</option>
-              <option value="scan"${type === "scan" ? " selected" : ""}>Сканирование</option>
-              <option value="photos"${type === "photos" ? " selected" : ""}>Фотографии</option>
-              <option value="drawings"${type === "drawings" ? " selected" : ""}>Чертежи</option>
-              <option value="stickers"${type === "stickers" ? " selected" : ""}>Стикеры</option>
-            </select>
-            <button type="button" class="btn-danger remove-service-btn">Удалить</button>
+          <div>
+            <div class="service-title">Услуга #${id}</div>
+            <div class="service-type-buttons" id="service-type-buttons-${id}">
+              ${SERVICE_TYPES.map(item => `
+                <button type="button"
+                        class="service-type-btn ${item.key === type ? "active" : ""}"
+                        data-service-type="${item.key}">
+                  ${item.label}
+                </button>
+              `).join("")}
+            </div>
           </div>
+          <button type="button" class="btn-danger remove-service-btn">Удалить</button>
         </div>
         <div class="service-body">${renderServiceFields(id, type)}</div>
       `;
+
       servicesContainer.appendChild(block);
 
-      block.querySelector(".service-type-select").addEventListener("change", (e) => {
-        block.querySelector(".service-body").innerHTML = renderServiceFields(id, e.target.value);
+      block.querySelectorAll(".service-type-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const newType = btn.dataset.serviceType;
+          block.dataset.serviceType = newType;
+
+          block.querySelectorAll(".service-type-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          block.querySelector(".service-body").innerHTML = renderServiceFields(id, newType);
+        });
       });
 
       block.querySelector(".remove-service-btn").addEventListener("click", () => {
@@ -527,9 +634,9 @@
         return `
           <div class="grid">
             <div class="field" style="grid-column:1 / -1;">
-              <label>PDF-файлы</label>
-              <input type="file" id="docs-files-${id}" accept="application/pdf" multiple />
-              <div class="hint">Можно выбрать несколько PDF сразу.</div>
+              <label>PDF-файл</label>
+              <input type="file" id="docs-files-${id}" accept="application/pdf" />
+              <div class="hint">Один файл на одну услугу.</div>
             </div>
 
             <div class="field">
@@ -562,40 +669,6 @@
                 <option value="plastic">Пластиковая пружина</option>
                 <option value="metal">Металлическая пружина</option>
                 <option value="hardcover">Твердый переплет A4</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label>Ламинирование</label>
-              <select id="docs-lamination-${id}">
-                <option value="none">Без ламинирования</option>
-                <option value="auto">По формату страниц</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label>Мультифоры</label>
-              <select id="docs-multifora-format-${id}">
-                <option value="none">Не нужны</option>
-                <option value="A5">A5</option>
-                <option value="A4">A4</option>
-                <option value="A3">A3</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label>Количество мультифор</label>
-              <input type="number" id="docs-multifora-count-${id}" min="0" value="0" />
-            </div>
-
-            <div class="field">
-              <label>Папка</label>
-              <select id="docs-folder-${id}">
-                <option value="none">Без папки</option>
-                <option value="folder20">Папка на 20 мультифор</option>
-                <option value="folder30">Папка на 30 мультифор</option>
-                <option value="folder40">Папка на 40 мультифор</option>
-                <option value="folder60">Папка на 60 мультифор</option>
               </select>
             </div>
           </div>
@@ -773,7 +846,7 @@
       for (const block of blocks) {
         blockNumber++;
         const id = Number(block.dataset.blockId);
-        const type = block.querySelector(".service-type-select").value;
+        const type = block.dataset.serviceType;
 
         if (type === "documents") {
           const docRows = await calculateDocumentsBlock(id, blockNumber, notes);
@@ -798,112 +871,100 @@
 
     async function calculateDocumentsBlock(id, blockNumber, notes) {
       const filesInput = document.getElementById(`docs-files-${id}`);
-      const files = [...(filesInput.files || [])];
+      const file = (filesInput.files || [])[0];
       const printMode = document.getElementById(`docs-print-mode-${id}`).value;
       const sides = document.getElementById(`docs-sides-${id}`).value;
       const copies = Math.max(1, parseInt(document.getElementById(`docs-copies-${id}`).value || "1", 10));
       const binding = document.getElementById(`docs-binding-${id}`).value;
-      const lamination = document.getElementById(`docs-lamination-${id}`).value;
-      const multiforaFormat = document.getElementById(`docs-multifora-format-${id}`).value;
-      const multiforaCount = Math.max(0, parseInt(document.getElementById(`docs-multifora-count-${id}`).value || "0", 10));
-      const folder = document.getElementById(`docs-folder-${id}`).value;
 
-      if (!files.length) {
-        throw new Error(`В услуге #${blockNumber} не выбраны PDF-файлы.`);
+      if (!file) {
+        throw new Error(`В услуге #${blockNumber} не выбран PDF-файл.`);
       }
 
       const rows = [];
       let totalPagesOneCopy = 0;
       let dominantFormatCounter = { A4: 0, A3: 0 };
 
-      for (const file of files) {
-        if (file.type !== "application/pdf") continue;
+      setStatus(`Анализирую ${file.name}...`);
+      const buffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
 
-        setStatus(`Анализирую PDF-файлы... ${file.name}`);
-        const buffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+      const filePageGroups = {};
 
-        const filePageGroups = {};
+      for (let i = 1; i <= pdf.numPages; i++) {
+        setStatus(`Анализирую ${file.name}: страница ${i} из ${pdf.numPages}`);
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1 });
 
-        for (let i = 1; i <= pdf.numPages; i++) {
-          setStatus(`Анализирую ${file.name}: страница ${i} из ${pdf.numPages}`);
-          const page = await pdf.getPage(i);
-          const viewport = page.getViewport({ scale: 1 });
+        const widthMm = ptToMm(viewport.width);
+        const heightMm = ptToMm(viewport.height);
+        const exactFormat = detectFormat(widthMm, heightMm);
+        const nearestFormat = exactFormat === "CUSTOM" ? findNearestFormat(widthMm, heightMm) : exactFormat;
 
-          const widthMm = ptToMm(viewport.width);
-          const heightMm = ptToMm(viewport.height);
-          const exactFormat = detectFormat(widthMm, heightMm);
-          const nearestFormat = exactFormat === "CUSTOM" ? findNearestFormat(widthMm, heightMm) : exactFormat;
-
-          let colorMode = "bw";
-          if (printMode === "bw") {
-            colorMode = "bw";
-          } else if (printMode === "color") {
-            colorMode = "color";
-          } else {
-            colorMode = await detectPageColorMode(page);
-          }
-
-          totalPagesOneCopy += 1;
-          if (nearestFormat === "A4") dominantFormatCounter.A4 += 1;
-          if (nearestFormat === "A3") dominantFormatCounter.A3 += 1;
-
-          const actualLabel = buildActualFormatLabel(widthMm, heightMm, exactFormat);
-          const key = [file.name, actualLabel, colorMode, nearestFormat].join("||");
-
-          if (!filePageGroups[key]) {
-            filePageGroups[key] = {
-              serviceType: "documents",
-              serviceName: `Документы #${blockNumber}`,
-              position: colorMode === "color" ? "Цветная печать" : "Ч/б печать",
-              source: file.name,
-              actualFormatLabel: actualLabel,
-              billedFormat: nearestFormat,
-              colorMode,
-              qty: 0,
-              copies,
-              sides,
-              pageCountOneCopy: 0,
-              pricingMode: colorMode === "color" ? "manual-range" : "auto-tier"
-            };
-          }
-
-          filePageGroups[key].qty += copies;
-          filePageGroups[key].pageCountOneCopy += 1;
+        let colorMode = "bw";
+        if (printMode === "bw") {
+          colorMode = "bw";
+        } else if (printMode === "color") {
+          colorMode = "color";
+        } else {
+          colorMode = await detectPageColorMode(page);
         }
 
-        Object.values(filePageGroups).forEach(group => {
-          const priceInfo = getDocumentPriceInfo(group.billedFormat, group.colorMode, group.qty);
-          rows.push({
-            id: makeRowId(),
-            serviceType: "documents",
-            serviceName: group.serviceName,
-            position: `${group.position}, ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}`,
-            source: group.source,
-            actualFormatLabel: group.actualFormatLabel,
-            billedFormat: group.billedFormat,
-            qty: group.qty,
-            unitPrice: priceInfo.price,
-            tariffCode: priceInfo.code,
-            tariffLabel: priceInfo.label,
-            unitPriceEditable: true,
-            qtyEditable: true,
-            billedFormatEditable: true,
-            editableFormats: [...FORMAT_OPTIONS],
-            colorMode: group.colorMode,
-            pricingMode: group.pricingMode,
-            meta: {
-              copies,
-              sides,
-              pageCountOneCopy: group.pageCountOneCopy
-            }
-          });
+        totalPagesOneCopy += 1;
+        if (nearestFormat === "A4") dominantFormatCounter.A4 += 1;
+        if (nearestFormat === "A3") dominantFormatCounter.A3 += 1;
 
-          if (group.actualFormatLabel.startsWith("≈")) {
-            notes.push(`В ${group.source} обнаружен нестандартный размер: ${group.actualFormatLabel}. Для расчёта он был округлён до ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}.`);
+        const actualLabel = buildActualFormatLabel(widthMm, heightMm, exactFormat);
+        const key = [file.name, actualLabel, colorMode, nearestFormat].join("||");
+
+        if (!filePageGroups[key]) {
+          filePageGroups[key] = {
+            serviceName: `Документы #${blockNumber}`,
+            position: colorMode === "color" ? "Цветная печать" : "Ч/б печать",
+            source: file.name,
+            actualFormatLabel: actualLabel,
+            billedFormat: nearestFormat,
+            colorMode,
+            qty: 0,
+            copies,
+            pageCountOneCopy: 0
+          };
+        }
+
+        filePageGroups[key].qty += copies;
+        filePageGroups[key].pageCountOneCopy += 1;
+      }
+
+      Object.values(filePageGroups).forEach(group => {
+        const priceInfo = getDocumentPriceInfo(group.billedFormat, group.colorMode, group.qty);
+        rows.push({
+          id: makeRowId(),
+          serviceType: "documents",
+          serviceName: group.serviceName,
+          position: `${group.position}, ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}`,
+          source: group.source,
+          actualFormatLabel: group.actualFormatLabel,
+          billedFormat: group.billedFormat,
+          qty: group.qty,
+          unitPrice: priceInfo.price,
+          tariffCode: priceInfo.code,
+          tariffLabel: priceInfo.label,
+          unitPriceEditable: true,
+          qtyEditable: true,
+          billedFormatEditable: true,
+          editableFormats: [...FORMAT_OPTIONS],
+          colorMode: group.colorMode,
+          meta: {
+            copies,
+            sides,
+            pageCountOneCopy: group.pageCountOneCopy
           }
         });
-      }
+
+        if (group.actualFormatLabel.startsWith("≈")) {
+          notes.push(`В ${group.source} обнаружен нестандартный размер: ${group.actualFormatLabel}. Для расчёта он был округлён до ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}.`);
+        }
+      });
 
       const dominantBindingFormat = dominantFormatCounter.A3 > dominantFormatCounter.A4 ? "A3" : "A4";
       const sheetsPerCopy = sides === "double" ? Math.ceil(totalPagesOneCopy / 2) : totalPagesOneCopy;
@@ -948,64 +1009,6 @@
             notes.push(`Для "Документы #${blockNumber}" объём брошюровки ${sheetsPerCopy} л. на 1 экземпляр превышает диапазон прайса.`);
           }
         }
-      }
-
-      if (lamination === "auto") {
-        for (const file of files) {
-          const buffer = await file.arrayBuffer();
-          const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-          const lamCounter = { A6: 0, A5: 0, A4: 0, A3: 0 };
-
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const viewport = page.getViewport({ scale: 1 });
-            const widthMm = ptToMm(viewport.width);
-            const heightMm = ptToMm(viewport.height);
-            const exactFormat = detectFormat(widthMm, heightMm);
-            const nearest = exactFormat === "CUSTOM" ? findNearestFormat(widthMm, heightMm) : exactFormat;
-            if (lamCounter[nearest] !== undefined) lamCounter[nearest] += copies;
-          }
-
-          Object.entries(lamCounter).forEach(([fmt, qty]) => {
-            if (!qty) return;
-            const row = PRICES.lamination[fmt];
-            rows.push(fixedRow({
-              serviceName: `Документы #${blockNumber}`,
-              position: `Ламинирование ${fmt}`,
-              source: file.name,
-              actualFormatLabel: FORMAT_LABELS[fmt],
-              billedFormat: fmt,
-              tariff: row,
-              qty
-            }));
-          });
-        }
-      }
-
-      if (multiforaFormat !== "none" && multiforaCount > 0) {
-        const row = PRICES.multifora[multiforaFormat];
-        rows.push(fixedRow({
-          serviceName: `Документы #${blockNumber}`,
-          position: `Мультифоры ${multiforaFormat}`,
-          source: "Доп. материалы",
-          actualFormatLabel: FORMAT_LABELS[multiforaFormat],
-          billedFormat: multiforaFormat,
-          tariff: row,
-          qty: multiforaCount
-        }));
-      }
-
-      if (folder !== "none") {
-        const row = PRICES.folders[folder];
-        rows.push(fixedRow({
-          serviceName: `Документы #${blockNumber}`,
-          position: row.label,
-          source: "Доп. материалы",
-          actualFormatLabel: "—",
-          billedFormat: "—",
-          tariff: row,
-          qty: 1
-        }));
       }
 
       return rows;
@@ -1157,6 +1160,72 @@
       };
     }
 
+    function applyExtras() {
+      if (!calculatedRows.length) {
+        setStatus("Сначала рассчитай заказ.", true);
+        return;
+      }
+
+      const laminationFormat = document.getElementById("extraLaminationFormat").value;
+      const laminationQty = Math.max(0, parseInt(document.getElementById("extraLaminationQty").value || "0", 10));
+      const multiforaFormat = document.getElementById("extraMultiforaFormat").value;
+      const multiforaQty = Math.max(0, parseInt(document.getElementById("extraMultiforaQty").value || "0", 10));
+      const folderType = document.getElementById("extraFolderType").value;
+
+      calculatedRows = calculatedRows.filter(row => row.extraType !== "lamination" && row.extraType !== "multifora" && row.extraType !== "folder");
+
+      if (laminationFormat !== "none" && laminationQty > 0) {
+        const row = PRICES.lamination[laminationFormat];
+        calculatedRows.push({
+          ...fixedRow({
+            serviceName: "Доп. услуги",
+            position: `Ламинирование ${laminationFormat}`,
+            source: "Доп. услуги",
+            actualFormatLabel: FORMAT_LABELS[laminationFormat],
+            billedFormat: laminationFormat,
+            tariff: row,
+            qty: laminationQty
+          }),
+          extraType: "lamination"
+        });
+      }
+
+      if (multiforaFormat !== "none" && multiforaQty > 0) {
+        const row = PRICES.multifora[multiforaFormat];
+        calculatedRows.push({
+          ...fixedRow({
+            serviceName: "Доп. услуги",
+            position: `Мультифоры ${multiforaFormat}`,
+            source: "Доп. услуги",
+            actualFormatLabel: FORMAT_LABELS[multiforaFormat],
+            billedFormat: multiforaFormat,
+            tariff: row,
+            qty: multiforaQty
+          }),
+          extraType: "multifora"
+        });
+      }
+
+      if (folderType !== "none") {
+        const row = PRICES.folders[folderType];
+        calculatedRows.push({
+          ...fixedRow({
+            serviceName: "Доп. услуги",
+            position: row.label,
+            source: "Доп. услуги",
+            actualFormatLabel: "—",
+            billedFormat: "—",
+            tariff: row,
+            qty: 1
+          }),
+          extraType: "folder"
+        });
+      }
+
+      renderResults([]);
+      setStatus("Дополнительные услуги добавлены.");
+    }
+
     function renderResults(notes = []) {
       resultTable.innerHTML = "";
 
@@ -1199,14 +1268,9 @@
       bindResultEditors();
 
       const servicesCount = [...new Set(calculatedRows.map(r => r.serviceName))].length;
-      const filesCount = calculatedRows
-        .filter(r => r.serviceType === "documents")
-        .reduce((acc, r) => acc + (r.source && r.source.endsWith(".pdf") ? 1 : 0), 0);
-
       summaryBox.innerHTML = `
         <strong>Услуг в заказе:</strong> ${servicesCount}<br>
-        <strong>Строк в расчёте:</strong> ${calculatedRows.length}<br>
-        <strong>PDF-источников в документах:</strong> ${filesCount}
+        <strong>Строк в расчёте:</strong> ${calculatedRows.length}
       `;
 
       if (notes.length) {
@@ -1227,16 +1291,13 @@
         input.addEventListener("input", (e) => {
           const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
           if (!row) return;
-
-          const parsed = parseFlexibleNumber(e.target.value);
-          row.unitPrice = parsed;
+          row.unitPrice = parseFlexibleNumber(e.target.value);
           refreshResultsOnly();
         });
 
         input.addEventListener("blur", (e) => {
           const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
           if (!row) return;
-
           row.unitPrice = normalizeMoney(row.unitPrice);
           refreshResultsOnly();
         });
@@ -1249,13 +1310,10 @@
           const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
           if (!row) return;
 
-          const parsedQty = parsePositiveInt(e.target.value);
-          row.qty = parsedQty;
-
+          row.qty = parsePositiveInt(e.target.value);
           if (row.serviceType === "documents") {
             recalculateDocumentRowByQty(row);
           }
-
           refreshResultsOnly();
         });
 
@@ -1288,13 +1346,8 @@
     }
 
     function attachFullEditBehavior(input) {
-      input.addEventListener("focus", () => {
-        input.select();
-      });
-
-      input.addEventListener("click", () => {
-        input.select();
-      });
+      input.addEventListener("focus", () => input.select());
+      input.addEventListener("click", () => input.select());
     }
 
     function recalculateDocumentRowByQty(row) {
