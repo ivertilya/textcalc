@@ -265,7 +265,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1180px;
+      min-width: 1160px;
       background: #fff;
       table-layout: fixed;
     }
@@ -289,13 +289,13 @@
       text-align: left !important;
     }
 
-    .col-tariff { width: 22%; }
-    .col-actual { width: 21%; }
-    .col-custom-pages { width: 12%; }
-    .col-format { width: 12%; }
-    .col-qty { width: 9%; }
-    .col-price { width: 13%; }
-    .col-sum { width: 11%; }
+    .col-tariff { width: 23%; }
+    .col-actual { width: 22%; }
+    .col-custom-pages { width: 10%; }
+    .col-format { width: 13%; }
+    .col-qty { width: 10%; }
+    .col-price { width: 10%; }
+    .col-sum { width: 12%; }
 
     .money {
       white-space: nowrap;
@@ -320,9 +320,9 @@
     }
 
     .row-price-input {
-      width: 150px;
-      min-width: 150px;
-      max-width: 150px;
+      width: 116px;
+      min-width: 116px;
+      max-width: 116px;
       text-align: center;
       font-size: 14px;
       height: 44px;
@@ -352,12 +352,7 @@
     }
 
     .add-extra-trigger-row {
-      cursor: pointer;
       background: #fcfcfc;
-    }
-
-    .add-extra-trigger-row:hover td {
-      background: #f6f6f6;
     }
 
     .extra-inline-row td {
@@ -377,6 +372,7 @@
       gap: 8px;
       flex-wrap: wrap;
       margin-top: 8px;
+      margin-bottom: 14px;
     }
 
     .extra-type-btn {
@@ -741,7 +737,6 @@
           nameInput.value = getDefaultServiceName(newType, id);
 
           block.querySelector(".service-body").innerHTML = renderServiceFields(id, newType);
-
           restoreServiceResult(block);
         });
       });
@@ -767,7 +762,7 @@
       if (!state.resultsByType[type]) state.resultsByType[type] = [];
       if (!state.notesByType[type]) state.notesByType[type] = [];
       if (typeof state.resultCollapsedByType[type] !== "boolean") state.resultCollapsedByType[type] = false;
-      if (typeof state.extraEditorOpenByType[type] !== "boolean") state.extraEditorOpenByType[type] = false;
+      if (typeof state.extraEditorOpenByType[type] !== "boolean") state.extraEditorOpenByType[type] = true;
       if (typeof state.selectedExtraTypeByType[type] !== "string") state.selectedExtraTypeByType[type] = "";
     }
 
@@ -1329,7 +1324,6 @@
       const rows = state.resultsByType[type] || [];
       const notes = state.notesByType[type] || [];
       const resultCollapsed = state.resultCollapsedByType[type];
-      const extraEditorOpen = state.extraEditorOpenByType[type];
       const selectedExtraType = state.selectedExtraTypeByType[type] || "";
 
       const resultBox = block.querySelector(".service-result");
@@ -1375,7 +1369,7 @@
                   <td>—</td>
                 </tr>
 
-                <tr class="extra-inline-row" style="${extraEditorOpen ? "" : "display:none;"}">
+                <tr class="extra-inline-row">
                   <td colspan="7">
                     <div class="extra-inline-box">
                       ${renderInlineExtraEditor(id, type, selectedExtraType)}
@@ -1440,7 +1434,7 @@
           `).join("")}
         </div>
 
-        <div style="margin-top:14px;">
+        <div>
           ${renderInlineExtraOptions(id, type, selectedExtraType)}
         </div>
 
@@ -1573,17 +1567,12 @@
       });
 
       addExtraTriggerRow.addEventListener("click", () => {
-        state.extraEditorOpenByType[type] = !state.extraEditorOpenByType[type];
-        if (!state.extraEditorOpenByType[type]) {
-          state.selectedExtraTypeByType[type] = "";
-        }
         renderServiceResult(block);
       });
 
       resultBox.querySelectorAll(".extra-type-btn").forEach(btn => {
         btn.addEventListener("click", () => {
           state.selectedExtraTypeByType[type] = btn.dataset.extraType;
-          state.extraEditorOpenByType[type] = true;
           renderServiceResult(block);
         });
       });
@@ -1596,7 +1585,6 @@
           const rows = state.resultsByType[type] || [];
           rows.push(extraRow);
           state.resultsByType[type] = rows;
-          state.extraEditorOpenByType[type] = false;
           state.selectedExtraTypeByType[type] = "";
 
           rebuildCalculatedRows();
