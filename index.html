@@ -6,32 +6,32 @@
   <title>Калькулятор печати</title>
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #f6f6f7;
       color: #111;
     }
+
     .wrap {
       max-width: 1280px;
       margin: 0 auto;
       padding: 24px;
     }
+
     h1 {
-      margin: 0 0 10px;
+      margin: 0 0 20px;
       font-size: 32px;
     }
-    .lead {
-      margin: 0 0 24px;
-      color: #555;
-      line-height: 1.5;
-    }
+
     .top-actions {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
       margin-bottom: 20px;
     }
+
     button {
       cursor: pointer;
       border: none;
@@ -40,20 +40,24 @@
       font-weight: 700;
       font-size: 14px;
     }
+
     .btn-primary {
       background: #111;
       color: #fff;
     }
+
     .btn-secondary {
       background: #fff;
       color: #111;
       border: 1px solid #ccc;
     }
+
     .btn-danger {
       background: #fff;
       color: #b00020;
       border: 1px solid #e0b4b4;
     }
+
     .service-card {
       background: #fff;
       border: 1px solid #ddd;
@@ -61,6 +65,7 @@
       padding: 18px;
       margin-bottom: 18px;
     }
+
     .service-header {
       display: flex;
       justify-content: space-between;
@@ -68,11 +73,18 @@
       align-items: flex-start;
       margin-bottom: 16px;
     }
+
+    .service-header-main {
+      flex: 1;
+      min-width: 0;
+    }
+
     .service-title {
       font-size: 20px;
       font-weight: 700;
       margin-bottom: 12px;
     }
+
     .service-name-input {
       width: 100%;
       max-width: 420px;
@@ -83,49 +95,61 @@
       background: #fff;
       margin-bottom: 12px;
     }
+
     .service-type-buttons {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 10px;
-      flex-wrap: wrap;
+      width: 100%;
     }
+
     .service-type-btn {
-      padding: 10px 14px;
+      width: 100%;
+      padding: 10px 8px;
       border-radius: 10px;
       border: 1px solid #ccc;
       background: #fff;
       color: #111;
       font-weight: 700;
       cursor: pointer;
+      text-align: center;
     }
+
     .service-type-btn.active {
       background: #111;
       border-color: #111;
       color: #fff;
     }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
     }
+
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
     }
+
     .grid-4 {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 14px;
     }
+
     .field {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
+
     .field label {
       font-size: 14px;
       font-weight: 700;
     }
+
     input[type="text"],
     input[type="number"],
     input[type="file"],
@@ -137,95 +161,158 @@
       font-size: 14px;
       background: #fff;
     }
+
     input[type="file"] {
       padding: 10px;
     }
+
     .hint {
       font-size: 12px;
       color: #666;
       line-height: 1.4;
     }
+
     .status {
       margin: 8px 0 20px;
       font-size: 14px;
       color: #444;
+      min-height: 20px;
     }
+
     .extras-box {
       margin-top: 18px;
-      padding: 16px;
       border: 1px solid #eee;
       border-radius: 14px;
       background: #fafafa;
+      overflow: hidden;
     }
+
+    .extras-toggle {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      color: #111;
+      font-size: 16px;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .extras-toggle:hover {
+      background: #f3f3f3;
+    }
+
     .extras-title {
       font-size: 16px;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin: 0;
     }
+
+    .extras-chevron {
+      font-size: 18px;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+
+    .extras-content {
+      display: none;
+      padding: 0 16px 16px;
+    }
+
+    .extras-content.open {
+      display: block;
+    }
+
     .service-result {
       margin-top: 20px;
       padding-top: 18px;
       border-top: 1px solid #eee;
     }
+
     .service-result-title {
       font-size: 18px;
       font-weight: 700;
       margin-bottom: 12px;
     }
+
     .table-wrap {
       overflow-x: auto;
       margin-top: 12px;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 860px;
+      min-width: 900px;
       background: #fff;
+      table-layout: fixed;
     }
+
     th, td {
       text-align: left;
       vertical-align: top;
       padding: 10px;
       border-bottom: 1px solid #eee;
       font-size: 14px;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
+
     th {
       background: #fafafa;
       font-weight: 700;
     }
+
+    .col-tariff { width: 24%; }
+    .col-actual { width: 22%; }
+    .col-format { width: 18%; }
+    .col-qty { width: 10%; }
+    .col-price { width: 12%; }
+    .col-sum { width: 14%; }
+
     .money {
       white-space: nowrap;
-      font-weight: 800;
-      font-size: 18px;
+      font-size: 20px;
+      font-weight: 400;
     }
+
     .money-input {
-      font-size: 18px !important;
-      font-weight: 700;
+      font-size: 14px !important;
+      font-weight: 400;
       color: #111;
     }
+
     .small {
       font-size: 12px;
       color: #666;
       line-height: 1.35;
     }
+
     .row-input {
-      width: 100%;
-      min-width: 90px;
-      padding: 12px;
+      width: 84px;
+      min-width: 84px;
+      max-width: 84px;
+      padding: 10px 10px;
       border-radius: 12px;
       border: 1px solid #ccc;
       font-size: 14px;
       background: #fff;
     }
+
     .row-select {
       width: 100%;
-      min-width: 170px;
-      padding: 12px;
+      min-width: 160px;
+      padding: 10px 12px;
       border-radius: 12px;
       border: 1px solid #ccc;
       font-size: 14px;
       background: #fff;
     }
+
     .note-box {
       margin-top: 14px;
       padding: 12px 14px;
@@ -236,6 +323,7 @@
       line-height: 1.5;
       color: #444;
     }
+
     .overall-total {
       margin-top: 24px;
       font-size: 40px;
@@ -243,13 +331,25 @@
       line-height: 1.1;
     }
 
+    @media (max-width: 1100px) {
+      .service-type-buttons {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
     @media (max-width: 900px) {
       .grid, .grid-3, .grid-4 {
         grid-template-columns: 1fr;
       }
+
       .service-header {
         flex-direction: column;
       }
+
+      .service-type-buttons {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .overall-total {
         font-size: 32px;
       }
@@ -259,9 +359,6 @@
 <body>
   <div class="wrap">
     <h1>Калькулятор печати</h1>
-    <p class="lead">
-      Добавляй в один заказ несколько услуг. Результат считается внутри каждой карточки.
-    </p>
 
     <div class="top-actions">
       <button class="btn-primary" id="addServiceBtn">+ Добавить услугу</button>
@@ -479,7 +576,7 @@
 
       block.innerHTML = `
         <div class="service-header">
-          <div>
+          <div class="service-header-main">
             <div class="service-title">Услуга #${id}</div>
             <input type="text" class="service-name-input" id="service-name-${id}" value="${escapeHtml(getDefaultServiceName(type, id))}" />
             <div class="service-type-buttons">
@@ -498,8 +595,13 @@
         <div class="service-body">${renderServiceFields(id, type)}</div>
 
         <div class="extras-box">
-          <div class="extras-title">Дополнительные услуги</div>
-          ${renderExtrasFields(id)}
+          <button type="button" class="extras-toggle" data-target="extras-content-${id}">
+            <span class="extras-title">Дополнительные услуги</span>
+            <span class="extras-chevron">▾</span>
+          </button>
+          <div class="extras-content" id="extras-content-${id}">
+            ${renderExtrasFields(id)}
+          </div>
         </div>
 
         <div class="service-result" id="service-result-${id}" style="display:none;"></div>
@@ -527,6 +629,16 @@
       block.querySelector(".remove-service-btn").addEventListener("click", () => {
         block.remove();
         recalcOverallTotal();
+      });
+
+      const toggleBtn = block.querySelector(".extras-toggle");
+      const targetId = toggleBtn.dataset.target;
+      const target = block.querySelector(`#${targetId}`);
+      const chevron = toggleBtn.querySelector(".extras-chevron");
+
+      toggleBtn.addEventListener("click", () => {
+        target.classList.toggle("open");
+        chevron.textContent = target.classList.contains("open") ? "▴" : "▾";
       });
     }
 
@@ -796,34 +908,39 @@
         resultBox.innerHTML = "";
       }
 
-      for (const block of blocks) {
-        const id = Number(block.dataset.blockId);
-        const type = block.dataset.serviceType;
-        const customName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName(type, id);
-        const notes = [];
-        let rows = [];
+      try {
+        for (const block of blocks) {
+          const id = Number(block.dataset.blockId);
+          const type = block.dataset.serviceType;
+          const customName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName(type, id);
+          const notes = [];
+          let rows = [];
 
-        if (type === "documents") {
-          rows = await calculateDocumentsBlock(id, customName, notes);
-        } else if (type === "drawings") {
-          rows = await calculateDrawingsBlock(id, customName, notes);
-        } else if (type === "copy") {
-          rows = calculateCopyBlock(id, customName);
-        } else if (type === "scan") {
-          rows = calculateScanBlock(id, customName);
-        } else if (type === "photos") {
-          rows = calculatePhotosBlock(id, customName);
-        } else if (type === "stickers") {
-          rows = calculateStickersBlock(id, customName);
+          if (type === "documents") {
+            rows = await calculateDocumentsBlock(id, customName, notes);
+          } else if (type === "drawings") {
+            rows = await calculateDrawingsBlock(id, customName, notes);
+          } else if (type === "copy") {
+            rows = calculateCopyBlock(id, customName);
+          } else if (type === "scan") {
+            rows = calculateScanBlock(id, customName);
+          } else if (type === "photos") {
+            rows = calculatePhotosBlock(id, customName);
+          } else if (type === "stickers") {
+            rows = calculateStickersBlock(id, customName);
+          }
+
+          rows.push(...calculateExtrasRows(id, customName));
+          calculatedRows.push(...rows);
+          renderServiceResult(block, rows, notes);
         }
 
-        rows.push(...calculateExtrasRows(id, customName));
-        calculatedRows.push(...rows);
-        renderServiceResult(block, rows, notes);
+        recalcOverallTotal();
+        setStatus("");
+      } catch (error) {
+        console.error(error);
+        setStatus(error.message || "Ошибка расчёта.", true);
       }
-
-      recalcOverallTotal();
-      setStatus("Готово.");
     }
 
     async function calculateDocumentsBlock(id, customName, notes) {
@@ -921,7 +1038,7 @@
           const widthMm = ptToMm(viewport.width);
           const heightMm = ptToMm(viewport.height);
           const exactFormat = detectFormat(widthMm, heightMm);
-          const nearestFormat = exactFormat === "CUSTOM" ? findNearestDrawingFormat(widthMm, heightMm) : findNearestDrawingFormat(widthMm, heightMm);
+          const nearestFormat = findNearestDrawingFormat(widthMm, heightMm);
           const actualLabel = buildActualFormatLabel(widthMm, heightMm, exactFormat);
           const key = [actualLabel, nearestFormat].join("||");
 
@@ -1159,12 +1276,12 @@
           <table>
             <thead>
               <tr>
-                <th>Пункт прайса</th>
-                <th>Фактический размер</th>
-                <th>Формат для расчёта</th>
-                <th>Кол-во</th>
-                <th>Цена за ед.</th>
-                <th>Сумма</th>
+                <th class="col-tariff">Пункт прайса</th>
+                <th class="col-actual">Фактический размер</th>
+                <th class="col-format">Формат для расчёта</th>
+                <th class="col-qty">Кол-во</th>
+                <th class="col-price">Цена за ед.</th>
+                <th class="col-sum">Сумма</th>
               </tr>
             </thead>
             <tbody>
@@ -1200,7 +1317,7 @@
           <td>${escapeHtml(row.actualFormatLabel || "—")}</td>
           <td>${billedFormatCell}</td>
           <td>${qtyCell}</td>
-          <td class="money">${unitPriceCell}</td>
+          <td>${unitPriceCell}</td>
           <td class="money row-sum-cell">${money(row.qty * row.unitPrice)}</td>
         </tr>
       `;
@@ -1234,6 +1351,7 @@
           if (row.serviceType === "documents") {
             recalculateDocumentRowByQty(row);
           }
+
           updateRowDom(row.id, { updateQtyInput: false, updatePriceInput: true });
           recalcOverallTotal();
         });
@@ -1373,12 +1491,12 @@
     }
 
     function money(value) {
-      return `${Number(value).toFixed(2)} ₽`;
+      return `${Number(value).toFixed(2).replace(".", ",")} ₽`;
     }
 
     function formatInputNumber(value) {
-      if (!isFiniteNumber(value)) return "0";
-      return Number(value).toString();
+      if (!isFiniteNumber(value)) return "0.00";
+      return Number(value).toFixed(2);
     }
 
     function parseFlexibleNumber(value) {
