@@ -27,7 +27,7 @@
     }
 
     .wrap {
-      max-width: 1320px;
+      max-width: 1280px;
       margin: 0 auto;
       padding: 18px 24px 24px;
     }
@@ -67,7 +67,6 @@
       padding: 12px 18px;
       font-weight: 700;
       font-size: 14px;
-      font-family: inherit;
     }
 
     .btn-primary {
@@ -266,7 +265,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1160px;
+      min-width: 1180px;
       background: #fff;
       table-layout: fixed;
     }
@@ -292,11 +291,11 @@
 
     .col-tariff { width: 22%; }
     .col-actual { width: 21%; }
-    .col-custom-pages { width: 11%; }
-    .col-format { width: 14%; }
-    .col-qty { width: 10%; }
-    .col-price { width: 14%; }
-    .col-sum { width: 8%; }
+    .col-custom-pages { width: 12%; }
+    .col-format { width: 12%; }
+    .col-qty { width: 9%; }
+    .col-price { width: 13%; }
+    .col-sum { width: 11%; }
 
     .money {
       white-space: nowrap;
@@ -313,9 +312,9 @@
     }
 
     .row-qty-input {
-      width: 116px;
-      min-width: 116px;
-      max-width: 116px;
+      width: 118px;
+      min-width: 118px;
+      max-width: 118px;
       text-align: center;
       height: 44px;
     }
@@ -331,7 +330,7 @@
 
     .row-select {
       width: 100%;
-      min-width: 150px;
+      min-width: 140px;
       padding: 10px 12px;
       border-radius: 12px;
       border: 1px solid #ccc;
@@ -355,47 +354,10 @@
     .add-extra-trigger-row {
       cursor: pointer;
       background: #fcfcfc;
-      position: relative;
     }
 
     .add-extra-trigger-row:hover td {
       background: #f6f6f6;
-    }
-
-    .extra-button-popover {
-      display: none;
-      position: absolute;
-      left: 10px;
-      top: calc(100% + 8px);
-      z-index: 20;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 10px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      min-width: 340px;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .add-extra-trigger-row:hover .extra-button-popover,
-    .extra-button-popover.open {
-      display: flex;
-    }
-
-    .extra-option-btn {
-      background: #fff;
-      color: #111;
-      border: 1px solid #ccc;
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-weight: 700;
-    }
-
-    .extra-option-btn.active {
-      background: #111;
-      border-color: #111;
-      color: #fff;
     }
 
     .extra-inline-row td {
@@ -408,6 +370,35 @@
       border-radius: 12px;
       padding: 14px;
       background: #fff;
+    }
+
+    .extra-type-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .extra-type-btn {
+      background: #fff;
+      color: #111;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .extra-type-btn.active {
+      background: #111;
+      color: #fff;
+      border-color: #111;
+    }
+
+    .inline-extra-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
     }
 
     .bottom-bar {
@@ -532,11 +523,11 @@
     ];
 
     const EXTRA_TYPES = [
-      { key: "binding", label: "+ Брошюровка" },
-      { key: "hole_punch", label: "+ Дыроколка" },
-      { key: "multifora", label: "+ Мультифоры" },
-      { key: "lamination", label: "+ Ламинирование" },
-      { key: "folder", label: "+ Папка" }
+      { key: "binding", label: "Брошюровка" },
+      { key: "hole_punch", label: "Дыроколка" },
+      { key: "multifora", label: "Мультифоры" },
+      { key: "lamination", label: "Ламинирование" },
+      { key: "folder", label: "Папка" }
     ];
 
     const PRICES = {
@@ -595,12 +586,8 @@
           glass_lt50: { price: 32.0, code: "1071", label: "Сканирование 400dpi, формат А3, стекло до 50 прог." },
           glass_gte50: { price: 24.0, code: "1072", label: "Сканирование 400dpi, формат А3, стекло от 51 прог." }
         },
-        A2: {
-          wide: { price: 120.0, code: "1073", label: "Сканирование 400dpi, формат А2, широкоформ." }
-        },
-        A1: {
-          wide: { price: 170.0, code: "1074", label: "Сканирование 400dpi, формат А1, широкоформ." }
-        }
+        A2: { wide: { price: 120.0, code: "1073", label: "Сканирование 400dpi, формат А2, широкоформ." } },
+        A1: { wide: { price: 170.0, code: "1074", label: "Сканирование 400dpi, формат А1, широкоформ." } }
       },
       lamination: {
         A6: { price: 25.0, code: "1120", label: "Ламинирование, А6" },
@@ -754,6 +741,7 @@
           nameInput.value = getDefaultServiceName(newType, id);
 
           block.querySelector(".service-body").innerHTML = renderServiceFields(id, newType);
+
           restoreServiceResult(block);
         });
       });
@@ -1030,8 +1018,8 @@
 
       rebuildCalculatedRows();
       renderServiceResult(block);
-      recalcOverallTotal();
 
+      recalcOverallTotal();
       if (setReadyText) {
         setStatus("Готово.");
       }
@@ -1378,21 +1366,16 @@
                 ${rows.map(row => renderRowHtml(row)).join("")}
 
                 <tr class="add-extra-trigger-row">
-                  <td class="text-left" colspan="7" style="position:relative;">
-                    <strong>+ Добавить доп. услугу</strong>
-                    <div class="extra-button-popover ${extraEditorOpen ? "open" : ""}">
-                      ${EXTRA_TYPES.map(item => `
-                        <button type="button"
-                                class="extra-option-btn ${item.key === selectedExtraType ? "active" : ""}"
-                                data-extra-type="${item.key}">
-                          ${item.label}
-                        </button>
-                      `).join("")}
-                    </div>
-                  </td>
+                  <td class="text-left"><strong>Добавить доп. услугу</strong></td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
                 </tr>
 
-                <tr class="extra-inline-row" style="${extraEditorOpen && selectedExtraType ? "" : "display:none;"}">
+                <tr class="extra-inline-row" style="${extraEditorOpen ? "" : "display:none;"}">
                   <td colspan="7">
                     <div class="extra-inline-box">
                       ${renderInlineExtraEditor(id, type, selectedExtraType)}
@@ -1444,8 +1427,32 @@
     }
 
     function renderInlineExtraEditor(id, type, selectedExtraType) {
-      if (!selectedExtraType) return "";
+      return `
+        <div class="inline-extra-title">Добавить доп. услугу</div>
 
+        <div class="extra-type-buttons">
+          ${EXTRA_TYPES.map(item => `
+            <button type="button"
+                    class="extra-type-btn ${item.key === selectedExtraType ? "active" : ""}"
+                    data-extra-type="${item.key}">
+              ${item.label}
+            </button>
+          `).join("")}
+        </div>
+
+        <div style="margin-top:14px;">
+          ${renderInlineExtraOptions(id, type, selectedExtraType)}
+        </div>
+
+        ${selectedExtraType ? `
+          <div style="margin-top:12px;">
+            <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
+          </div>
+        ` : ""}
+      `;
+    }
+
+    function renderInlineExtraOptions(id, type, selectedExtraType) {
       if (selectedExtraType === "binding") {
         return `
           <div class="grid-3">
@@ -1462,10 +1469,7 @@
               <label>Количество</label>
               <input type="number" id="inline-binding-qty-${id}-${type}" min="1" step="1" value="1" />
             </div>
-            <div class="field" style="justify-content:flex-end;">
-              <label>&nbsp;</label>
-              <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
-            </div>
+            <div></div>
           </div>
         `;
       }
@@ -1481,10 +1485,7 @@
               <label>Цена за ед.</label>
               <input type="number" id="inline-hole-price-${id}-${type}" min="0" step="0.01" value="10.00" />
             </div>
-            <div class="field" style="justify-content:flex-end;">
-              <label>&nbsp;</label>
-              <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
-            </div>
+            <div></div>
           </div>
         `;
       }
@@ -1504,10 +1505,7 @@
               <label>Количество</label>
               <input type="number" id="inline-multifora-qty-${id}-${type}" min="1" step="1" value="1" />
             </div>
-            <div class="field" style="justify-content:flex-end;">
-              <label>&nbsp;</label>
-              <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
-            </div>
+            <div></div>
           </div>
         `;
       }
@@ -1528,10 +1526,7 @@
               <label>Количество</label>
               <input type="number" id="inline-lamination-qty-${id}-${type}" min="1" step="1" value="1" />
             </div>
-            <div class="field" style="justify-content:flex-end;">
-              <label>&nbsp;</label>
-              <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
-            </div>
+            <div></div>
           </div>
         `;
       }
@@ -1552,15 +1547,12 @@
               <label>Количество</label>
               <input type="number" id="inline-folder-qty-${id}-${type}" min="1" step="1" value="1" />
             </div>
-            <div class="field" style="justify-content:flex-end;">
-              <label>&nbsp;</label>
-              <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
-            </div>
+            <div></div>
           </div>
         `;
       }
 
-      return "";
+      return `<div style="color:#666;">Выбери кнопку нужной дополнительной услуги.</div>`;
     }
 
     function bindResultArea(block) {
@@ -1572,8 +1564,7 @@
       const resultBox = block.querySelector(".service-result");
 
       const toggleBtn = resultBox.querySelector(".result-toggle");
-      const triggerRow = resultBox.querySelector(".add-extra-trigger-row");
-      const extraButtons = resultBox.querySelectorAll(".extra-option-btn");
+      const addExtraTriggerRow = resultBox.querySelector(".add-extra-trigger-row");
       const inlineAddBtn = resultBox.querySelector(".inline-add-extra-btn");
 
       toggleBtn.addEventListener("click", () => {
@@ -1581,7 +1572,7 @@
         renderServiceResult(block);
       });
 
-      triggerRow.addEventListener("click", () => {
+      addExtraTriggerRow.addEventListener("click", () => {
         state.extraEditorOpenByType[type] = !state.extraEditorOpenByType[type];
         if (!state.extraEditorOpenByType[type]) {
           state.selectedExtraTypeByType[type] = "";
@@ -1589,11 +1580,10 @@
         renderServiceResult(block);
       });
 
-      extraButtons.forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          state.extraEditorOpenByType[type] = true;
+      resultBox.querySelectorAll(".extra-type-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
           state.selectedExtraTypeByType[type] = btn.dataset.extraType;
+          state.extraEditorOpenByType[type] = true;
           renderServiceResult(block);
         });
       });
@@ -1603,11 +1593,11 @@
           const extraRow = buildInlineExtraRow(id, type);
           if (!extraRow) return;
 
-          const rows = serviceStates[id].resultsByType[type] || [];
+          const rows = state.resultsByType[type] || [];
           rows.push(extraRow);
-          serviceStates[id].resultsByType[type] = rows;
-          serviceStates[id].extraEditorOpenByType[type] = false;
-          serviceStates[id].selectedExtraTypeByType[type] = "";
+          state.resultsByType[type] = rows;
+          state.extraEditorOpenByType[type] = false;
+          state.selectedExtraTypeByType[type] = "";
 
           rebuildCalculatedRows();
           renderServiceResult(block);
