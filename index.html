@@ -1,1034 +1,1454 @@
-<div id="print-calc" style="max-width:1120px;margin:40px auto;padding:24px;border:1px solid #ddd;border-radius:16px;background:#fff;box-sizing:border-box;font-family:Arial,sans-serif;">
-  <h2 style="margin:0 0 20px;font-size:28px;line-height:1.2;">Калькулятор стоимости</h2>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Калькулятор печати</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f6f6f7;
+      color: #111;
+    }
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 32px;
+    }
+    .lead {
+      margin: 0 0 24px;
+      color: #555;
+      line-height: 1.5;
+    }
+    .top-actions,
+    .bottom-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: #111;
+      color: #fff;
+    }
+    .btn-secondary {
+      background: #fff;
+      color: #111;
+      border: 1px solid #ccc;
+    }
+    .btn-danger {
+      background: #fff;
+      color: #b00020;
+      border: 1px solid #e0b4b4;
+    }
+    .service-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    .service-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .service-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .field label {
+      font-size: 14px;
+      font-weight: 700;
+    }
+    input[type="text"],
+    input[type="number"],
+    input[type="file"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      font-size: 14px;
+      background: #fff;
+    }
+    input[type="file"] {
+      padding: 10px;
+    }
+    .hint {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.4;
+    }
+    .status {
+      margin: 8px 0 20px;
+      font-size: 14px;
+      color: #444;
+    }
+    .result-box {
+      margin-top: 24px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 18px;
+      padding: 18px;
+    }
+    .result-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .summary {
+      margin-bottom: 16px;
+      line-height: 1.6;
+      color: #222;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+      background: #fff;
+    }
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+    th {
+      background: #fafafa;
+      font-weight: 700;
+    }
+    .money {
+      white-space: nowrap;
+      font-weight: 700;
+    }
+    .small {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.35;
+    }
+    .row-input {
+      width: 110px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    .row-select {
+      width: 180px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      background: #fff;
+    }
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #f0f0f0;
+      font-size: 12px;
+      margin-right: 6px;
+      margin-bottom: 4px;
+    }
+    .total {
+      margin-top: 18px;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .subsection-title {
+      margin: 18px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .note-box {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      background: #fafafa;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #444;
+    }
 
-  <div style="margin-bottom:20px;">
-    <div style="margin-bottom:10px;font-weight:700;">Что вы хотите напечатать?</div>
-    <div id="serviceTabs" style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button type="button" class="service-tab active" data-service="documents" style="padding:12px 16px;border:1px solid #111;border-radius:10px;background:#111;color:#fff;cursor:pointer;">Документы</button>
-      <button type="button" class="service-tab" data-service="drawings" style="padding:12px 16px;border:1px solid #ccc;border-radius:10px;background:#fff;color:#111;cursor:pointer;">Чертежи</button>
-      <button type="button" class="service-tab" data-service="photos" style="padding:12px 16px;border:1px solid #ccc;border-radius:10px;background:#fff;color:#111;cursor:pointer;">Фотографии</button>
-      <button type="button" class="service-tab" data-service="stickers" style="padding:12px 16px;border:1px solid #ccc;border-radius:10px;background:#fff;color:#111;cursor:pointer;">Стикеры</button>
+    @media (max-width: 900px) {
+      .grid, .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Калькулятор заказа</h1>
+    <p class="lead">
+      Добавляй в один заказ несколько услуг: документы, фото, чертежи, сканирование, копирование, стикеры.
+      Для документов можно загружать несколько PDF сразу.
+    </p>
+
+    <div class="top-actions">
+      <button class="btn-primary" id="addServiceBtn">+ Добавить услугу</button>
+      <button class="btn-secondary" id="calculateBtn">Рассчитать заказ</button>
+      <button class="btn-secondary" id="clearBtn">Сбросить всё</button>
+    </div>
+
+    <div id="status" class="status"></div>
+    <div id="servicesContainer"></div>
+
+    <div id="resultBox" class="result-box" style="display:none;">
+      <div class="result-title">Результат расчёта</div>
+      <div id="summary" class="summary"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Услуга</th>
+              <th>Позиция</th>
+              <th>Файл / источник</th>
+              <th>Фактический размер</th>
+              <th>Формат для расчёта</th>
+              <th>Пункт прайса</th>
+              <th>Кол-во</th>
+              <th>Цена за ед.</th>
+              <th>Сумма</th>
+            </tr>
+          </thead>
+          <tbody id="resultTable"></tbody>
+        </table>
+      </div>
+
+      <div id="notesBox" class="note-box" style="display:none;"></div>
+      <div id="total" class="total"></div>
     </div>
   </div>
 
-  <!-- DOCUMENTS -->
-  <div class="service-section" id="section-documents">
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
-      <div style="grid-column:1 / -1;">
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Загрузите PDF</label>
-        <input type="file" id="pdfFile" accept="application/pdf" style="display:block;width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;">
-        <div id="fileInfo" style="margin-top:8px;font-size:14px;color:#666;"></div>
-      </div>
-
-      <div>
-  <label style="display:block;margin-bottom:8px;font-weight:700;">Тип печати</label>
-  <select id="docPrintMode" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-    <option value="auto">Автоопределение по страницам</option>
-    <option value="bw">Печатать всё в ч/б</option>
-    <option value="color">Печатать всё в цвете</option>
-  </select>
-</div>
-      
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Режим печати</label>
-        <select id="docSidesType" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-          <option value="single">Односторонняя</option>
-          <option value="double">Двусторонняя</option>
-        </select>
-      </div>
-
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Количество экземпляров</label>
-        <input type="number" id="docCopiesCount" min="1" value="1" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-      </div>
-
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Ламинирование</label>
-        <select id="docLaminationType" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-          <option value="none">Без ламинирования</option>
-          <option value="auto">По формату страниц</option>
-        </select>
-      </div>
-
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Брошюровка</label>
-        <select id="docBindingType" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-          <option value="none">Без брошюровки</option>
-          <option value="staples2">2 скобы</option>
-          <option value="plastic">Пластиковая пружина</option>
-          <option value="metal">Металлическая пружина</option>
-          <option value="hardcover">Твердый переплет A4</option>
-        </select>
-      </div>
-
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Мультифоры</label>
-        <select id="docMultiforaFormat" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-          <option value="none">Не нужны</option>
-          <option value="A5">A5</option>
-          <option value="A4">A4</option>
-          <option value="A3">A3</option>
-        </select>
-      </div>
-
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Количество мультифор</label>
-        <input type="number" id="docMultiforaCount" min="0" value="0" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-      </div>
-
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Папка</label>
-        <select id="docFolderType" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-          <option value="none">Без папки</option>
-          <option value="folder20">Папка на 20 мультифор</option>
-          <option value="folder30">Папка на 30 мультифор</option>
-          <option value="folder40">Папка на 40 мультифор</option>
-          <option value="folder60">Папка на 60 мультифор</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- DRAWINGS -->
-  <div class="service-section" id="section-drawings" style="display:none;">
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Формат</label>
-        <select id="drawFormat" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-          <option value="A2">A2</option>
-          <option value="A1">A1</option>
-          <option value="A0">A0</option>
-          <option value="A4x3">A4×3</option>
-          <option value="A4x4">A4×4</option>
-          <option value="A4x5">A4×5</option>
-          <option value="A4x6">A4×6</option>
-          <option value="A4x7">A4×7</option>
-          <option value="A4x8">A4×8</option>
-          <option value="A3x3">A3×3</option>
-          <option value="A3x4">A3×4</option>
-          <option value="A3x5">A3×5</option>
-          <option value="A3x6">A3×6</option>
-          <option value="A3x7">A3×7</option>
-          <option value="A3x8">A3×8</option>
-          <option value="A2x3">A2×3</option>
-          <option value="A2x4">A2×4</option>
-          <option value="A2x5">A2×5</option>
-          <option value="A2x6">A2×6</option>
-        </select>
-      </div>
-
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Цветность</label>
-        <select id="drawColorMode" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-          <option value="bw">Ч/б</option>
-          <option value="color">Цвет</option>
-        </select>
-      </div>
-
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Количество</label>
-        <input type="number" id="drawQty" min="1" value="1" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-      </div>
-
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Фальцовка</label>
-        <select id="drawFold" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-          <option value="none">Без фальцовки</option>
-          <option value="A3-A4">A3 → A4</option>
-          <option value="A2-A4">A2 → A4</option>
-          <option value="A1-A4">A1 → A4</option>
-          <option value="A2-A3">A2 → A3</option>
-          <option value="A1-A3">A1 → A3</option>
-          <option value="custom">Нестандарт</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- PHOTOS -->
-  <div class="service-section" id="section-photos" style="display:none;">
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Размер</label>
-        <select id="photoFormat" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-          <option value="doc10x15">Фото на документы 10×15</option>
-          <option value="10x15">10×15</option>
-          <option value="15x21_super">15×21 Super Glossy</option>
-          <option value="15x21_satin">15×21 Satin Warm</option>
-          <option value="21x30_super">21×30 Super Glossy</option>
-          <option value="21x30_satin">21×30 Satin Warm</option>
-          <option value="30x42_super">30×42 Super Glossy</option>
-          <option value="30x42_satin">30×42 Satin Warm</option>
-          <option value="42x60_satin">42×60 Satin Warm</option>
-          <option value="60x84_satin">60×84 Satin Warm</option>
-        </select>
-      </div>
-
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Количество</label>
-        <input type="number" id="photoQty" min="1" value="1" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-      </div>
-    </div>
-  </div>
-
-  <!-- STICKERS -->
-  <div class="service-section" id="section-stickers" style="display:none;">
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Тип</label>
-        <select id="stickerType" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-          <option value="paper30">Бумага Ø30 мм</option>
-          <option value="film30">Пленка Ø30 мм</option>
-          <option value="paper40">Бумага Ø40 мм</option>
-          <option value="film40">Пленка Ø40 мм</option>
-          <option value="paper50">Бумага Ø50 мм</option>
-          <option value="film50">Пленка Ø50 мм</option>
-          <option value="sra3_gloss_paper">Глянцевая самоклейка SRA3</option>
-          <option value="sra3_matte_paper">Матовая самоклейка SRA3</option>
-          <option value="sra3_clear_matte">Прозрачная матовая пленка SRA3</option>
-          <option value="sra3_clear_gloss">Прозрачная глянцевая пленка SRA3</option>
-          <option value="sra3_white_matte">Белая матовая пленка SRA3</option>
-          <option value="sra3_white_gloss">Белая глянцевая пленка SRA3</option>
-        </select>
-      </div>
-
-      <div>
-        <label style="display:block;margin-bottom:8px;font-weight:700;">Количество</label>
-        <input type="number" id="stickerQty" min="1" value="1" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;">
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
-    <button id="analyzeBtn" style="padding:14px 22px;border:none;border-radius:10px;background:#111;color:#fff;cursor:pointer;font-weight:700;">
-      Рассчитать
-    </button>
-    <button id="resetBtn" type="button" style="padding:14px 22px;border:1px solid #ccc;border-radius:10px;background:#fff;color:#111;cursor:pointer;font-weight:700;">
-      Сбросить
-    </button>
-  </div>
-
-  <div id="status" style="margin-top:16px;color:#444;font-size:14px;"></div>
-
-  <div id="resultBox" style="display:none;margin-top:24px;padding:20px;border:1px solid #e5e5e5;border-radius:14px;background:#fafafa;">
-    <h3 style="margin:0 0 16px;font-size:22px;">Результат расчёта</h3>
-    <div id="summaryTop" style="margin-bottom:16px;font-size:15px;line-height:1.6;"></div>
-
-    <table style="width:100%;border-collapse:collapse;font-size:14px;">
-      <thead>
-        <tr>
-          <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Позиция</th>
-          <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Пункт прайса</th>
-          <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Кол-во</th>
-          <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Цена</th>
-          <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Сумма</th>
-        </tr>
-      </thead>
-      <tbody id="resultTable"></tbody>
-    </table>
-
-    <div id="totalPrice" style="margin-top:18px;font-size:24px;font-weight:700;"></div>
-
-    <div id="customSizesBox" style="display:none;margin-top:24px;">
-      <h4 style="margin:0 0 10px;">Нестандартные размеры</h4>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;">
-        <thead>
-          <tr>
-            <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Стр.</th>
-            <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Точный размер</th>
-            <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Округлено к</th>
-            <th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">Цветность</th>
-          </tr>
-        </thead>
-        <tbody id="customSizesTable"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-
-  const TOLERANCE_MM = 8;
-  const COLOR_TOLERANCE = 18;
-  const SAMPLE_STEP = 8;
-  let currentService = "documents";
-
-  const FORMATS = {
-    A6:   { w: 105, h: 148 },
-    A5:   { w: 148, h: 210 },
-    A4:   { w: 210, h: 297 },
-    A3:   { w: 297, h: 420 },
-    A2:   { w: 420, h: 594 },
-    A1:   { w: 594, h: 841 },
-    A0:   { w: 841, h: 1189 },
-    SRA3: { w: 320, h: 450 }
-  };
-
-  const PRICES = {
-    digitalBW: {
-      A4: [
-        { max: 10, price: 10.0, code: "1001", label: "Цифровая печать, ч/б, формат А4 до 10 прог." },
-        { max: 50, price: 7.0, code: "1002", label: "Цифровая печать, ч/б, формат А4 от 11-50 прог." },
-        { max: 100, price: 6.0, code: "1003", label: "Цифровая печать, ч/б, формат А4 от 51-100 прог." },
-        { max: 500, price: 5.5, code: "1004", label: "Цифровая печать, ч/б, формат А4 от 101-500 прог." },
-        { max: Infinity, price: 5.0, code: "1005", label: "Цифровая печать, ч/б, формат А4 от 501 прог." }
-      ],
-      A3: [
-        { max: 10, price: 20.0, code: "1008", label: "Цифровая печать, ч/б, формат А3 до 10 прог." },
-        { max: 50, price: 16.0, code: "1009", label: "Цифровая печать, ч/б, формат А3 от 11-50 прог." },
-        { max: 100, price: 14.0, code: "1010", label: "Цифровая печать, ч/б, формат А3 от 51-100 прог." },
-        { max: 500, price: 12.0, code: "1011", label: "Цифровая печать, ч/б, формат А3 от 101-500 прог." },
-        { max: Infinity, price: 11.0, code: "1012", label: "Цифровая печать, ч/б, формат А3 от 501 прог." }
-      ]
-    },
-    digitalColor: {
-      A4: {
-        single: { price: 15.0, code: "1006", label: "Цифровая печать, цветн, формат А4" },
-        double: { price: 30.0, code: "1007", label: "Цифровая печать, цветн, формат А4" }
-      },
-      A3: {
-        single: { price: 30.0, code: "1013", label: "Цифровая печать, цветн, формат А3" },
-        double: { price: 45.0, code: "1014", label: "Цифровая печать, цветн, формат А3" }
-      }
-    },
-    lamination: {
-      A6: { price: 25.0, code: "1120", label: "Ламинирование А6" },
-      A5: { price: 40.0, code: "1121", label: "Ламинирование А5" },
-      A4: { price: 60.0, code: "1122", label: "Ламинирование А4" },
-      A3: { price: 110.0, code: "1123", label: "Ламинирование А3" }
-    },
-    binding: {
-      staples2: { price: 35.0, code: "1109", label: "Брошюровка на 2 скобы" },
-      hardcoverA4: { price: 550.0, code: "1084", label: "Твердый переплет A4" },
-      plastic: {
-        A4: [
-          { max: 40, price: 110.0, code: "1085", label: "Пласт. пружина A4 до 40 л" },
-          { max: 80, price: 140.0, code: "1086", label: "Пласт. пружина A4 до 80 л" },
-          { max: 120, price: 170.0, code: "1087", label: "Пласт. пружина A4 до 120 л" },
-          { max: 180, price: 200.0, code: "1088", label: "Пласт. пружина A4 до 180 л" },
-          { max: 240, price: 230.0, code: "1089", label: "Пласт. пружина A4 до 240 л" },
-          { max: 340, price: 260.0, code: "1090", label: "Пласт. пружина A4 до 340 л" },
-          { max: 500, price: 290.0, code: "1091", label: "Пласт. пружина A4 до 500 л" }
-        ],
-        A3: [
-          { max: 40, price: 135.0, code: "1092", label: "Пласт. пружина A3 до 40 л" },
-          { max: 80, price: 165.0, code: "1093", label: "Пласт. пружина A3 до 80 л" },
-          { max: 120, price: 195.0, code: "1094", label: "Пласт. пружина A3 до 120 л" },
-          { max: 180, price: 225.0, code: "1095", label: "Пласт. пружина A3 до 180 л" },
-          { max: 240, price: 255.0, code: "1096", label: "Пласт. пружина A3 до 240 л" },
-          { max: 340, price: 285.0, code: "1097", label: "Пласт. пружина A3 до 340 л" },
-          { max: 500, price: 315.0, code: "1098", label: "Пласт. пружина A3 до 500 л" }
-        ]
-      },
-      metal: {
-        A4: [
-          { max: 35, price: 125.0, code: "1099", label: "Металл. пружина A4 до 35 л" },
-          { max: 50, price: 140.0, code: "1100", label: "Металл. пружина A4 до 50 л" },
-          { max: 80, price: 155.0, code: "1101", label: "Металл. пружина A4 до 80 л" },
-          { max: 100, price: 170.0, code: "1102", label: "Металл. пружина A4 до 100 л" },
-          { max: 120, price: 185.0, code: "1103", label: "Металл. пружина A4 до 120 л" }
-        ],
-        A3: [
-          { max: 35, price: 150.0, code: "1104", label: "Металл. пружина A3 до 35 л" },
-          { max: 50, price: 165.0, code: "1105", label: "Металл. пружина A3 до 50 л" },
-          { max: 80, price: 180.0, code: "1106", label: "Металл. пружина A3 до 80 л" },
-          { max: 100, price: 195.0, code: "1107", label: "Металл. пружина A3 до 100 л" },
-          { max: 120, price: 210.0, code: "1108", label: "Металл. пружина A3 до 120 л" }
-        ]
-      }
-    },
-    multifora: {
-      A5: { price: 5.0, code: "1178", label: "Мультифора A5" },
-      A4: { price: 7.0, code: "1179", label: "Мультифора A4" },
-      A3: { price: 14.0, code: "1180", label: "Мультифора A3" }
-    },
-    folders: {
-      folder20: { name: "Папка на 20 мультифор", price: 200.0, code: "1172", label: "Папка на 20 мультифор" },
-      folder30: { name: "Папка на 30 мультифор", price: 250.0, code: "1173", label: "Папка на 30 мультифор" },
-      folder40: { name: "Папка на 40 мультифор", price: 300.0, code: "1174", label: "Папка на 40 мультифор" },
-      folder60: { name: "Папка на 60 мультифор", price: 350.0, code: "1175", label: "Папка на 60 мультифор" }
-    },
-
-    drawings: {
-      bw: {
-        A2:   { price: 65.0, code: "1039", label: "Чертеж, ч/б, А2" },
-        A1:   { price: 110.0, code: "1049", label: "Чертеж, ч/б, А1" },
-        A0:   { price: 220.0, code: "1051", label: "Чертеж, ч/б, А0" },
-        A4x3: { price: 52.0, code: "1015", label: "Чертеж, ч/б, А4×3" },
-        A4x4: { price: 69.0, code: "1017", label: "Чертеж, ч/б, А4×4" },
-        A4x5: { price: 86.0, code: "1019", label: "Чертеж, ч/б, А4×5" },
-        A4x6: { price: 104.0, code: "1021", label: "Чертеж, ч/б, А4×6" },
-        A4x7: { price: 121.0, code: "1023", label: "Чертеж, ч/б, А4×7" },
-        A4x8: { price: 138.0, code: "1025", label: "Чертеж, ч/б, А4×8" },
-        A3x3: { price: 104.0, code: "1027", label: "Чертеж, ч/б, А3×3" },
-        A3x4: { price: 138.0, code: "1029", label: "Чертеж, ч/б, А3×4" },
-        A3x5: { price: 173.0, code: "1031", label: "Чертеж, ч/б, А3×5" },
-        A3x6: { price: 207.0, code: "1033", label: "Чертеж, ч/б, А3×6" },
-        A3x7: { price: 242.0, code: "1035", label: "Чертеж, ч/б, А3×7" },
-        A3x8: { price: 276.0, code: "1037", label: "Чертеж, ч/б, А3×8" },
-        A2x3: { price: 207.0, code: "1041", label: "Чертеж, ч/б, А2×3" },
-        A2x4: { price: 276.0, code: "1043", label: "Чертеж, ч/б, А2×4" },
-        A2x5: { price: 345.0, code: "1045", label: "Чертеж, ч/б, А2×5" },
-        A2x6: { price: 414.0, code: "1047", label: "Чертеж, ч/б, А2×6" }
-      },
-      color: {
-        A2:   { price: 75.0, code: "1040", label: "Чертеж, цвет, А2" },
-        A1:   { price: 130.0, code: "1050", label: "Чертеж, цвет, А1" },
-        A0:   { price: 260.0, code: "1052", label: "Чертеж, цвет, А0" },
-        A4x3: { price: 60.0, code: "1016", label: "Чертеж, цвет, А4×3" },
-        A4x4: { price: 81.0, code: "1018", label: "Чертеж, цвет, А4×4" },
-        A4x5: { price: 101.0, code: "1020", label: "Чертеж, цвет, А4×5" },
-        A4x6: { price: 121.0, code: "1022", label: "Чертеж, цвет, А4×6" },
-        A4x7: { price: 141.0, code: "1024", label: "Чертеж, цвет, А4×7" },
-        A4x8: { price: 161.0, code: "1026", label: "Чертеж, цвет, А4×8" },
-        A3x3: { price: 121.0, code: "1028", label: "Чертеж, цвет, А3×3" },
-        A3x4: { price: 161.0, code: "1030", label: "Чертеж, цвет, А3×4" },
-        A3x5: { price: 201.0, code: "1032", label: "Чертеж, цвет, А3×5" },
-        A3x6: { price: 242.0, code: "1034", label: "Чертеж, цвет, А3×6" },
-        A3x7: { price: 282.0, code: "1036", label: "Чертеж, цвет, А3×7" },
-        A3x8: { price: 322.0, code: "1038", label: "Чертеж, цвет, А3×8" },
-        A2x3: { price: 242.0, code: "1042", label: "Чертеж, цвет, А2×3" },
-        A2x4: { price: 322.0, code: "1044", label: "Чертеж, цвет, А2×4" },
-        A2x5: { price: 403.0, code: "1046", label: "Чертеж, цвет, А2×5" },
-        A2x6: { price: 483.0, code: "1048", label: "Чертеж, цвет, А2×6" }
-      },
-      fold: {
-        "A3-A4": { price: 8.0, code: "1110", label: "Фальцевание A3 → A4" },
-        "A2-A4": { price: 18.0, code: "1111", label: "Фальцевание A2 → A4" },
-        "A1-A4": { price: 26.0, code: "1112", label: "Фальцевание A1 → A4" },
-        "A2-A3": { price: 18.0, code: "1113", label: "Фальцевание A2 → A3" },
-        "A1-A3": { price: 26.0, code: "1114", label: "Фальцевание A1 → A3" },
-        "custom": { price: 5.0, code: "1115", label: "Фальцевание нестандарт из расчета A4" }
-      }
-    },
-
-    photos: {
-      doc10x15: { price: 120.0, code: "1124", label: "Фото на документы 10×15" },
-      "10x15": [
-        { max: 10, price: 32.0, code: "1125", label: "Фотографии 10×15 до 10 шт" },
-        { max: 50, price: 28.0, code: "1126", label: "Фотографии 10×15 от 11 до 50 шт" },
-        { max: 100, price: 25.0, code: "1127", label: "Фотографии 10×15 от 51 до 100 шт" },
-        { max: Infinity, price: 23.0, code: "1128", label: "Фотографии 10×15 от 101 шт" }
-      ],
-      "15x21_super": { price: 65.0, code: "1129", label: "Фотографии 15×21 Super Glossy" },
-      "15x21_satin": { price: 65.0, code: "1130", label: "Фотографии 15×21 Satin Warm" },
-      "21x30_super": { price: 120.0, code: "1131", label: "Фотографии 21×30 Super Glossy" },
-      "21x30_satin": { price: 120.0, code: "1132", label: "Фотографии 21×30 Satin Warm" },
-      "30x42_super": { price: 310.0, code: "1133", label: "Фотографии 30×42 Super Glossy" },
-      "30x42_satin": { price: 310.0, code: "1134", label: "Фотографии 30×42 Satin Warm" },
-      "42x60_satin": { price: 650.0, code: "1135", label: "Фотографии 42×60 Satin Warm" },
-      "60x84_satin": { price: 1300.0, code: "1136", label: "Фотографии 60×84 Satin Warm" }
-    },
-
-    stickers: {
-      paper30: { price: 4.0, code: "1161", label: "Наклейки с плоттерной резкой на бумаге Ø30 мм" },
-      film30: { price: 5.5, code: "1162", label: "Наклейки с плоттерной резкой на пленке Ø30 мм" },
-      paper40: { price: 6.5, code: "1163", label: "Наклейки с плоттерной резкой на бумаге Ø40 мм" },
-      film40: { price: 9.0, code: "1164", label: "Наклейки с плоттерной резкой на пленке Ø40 мм" },
-      paper50: { price: 9.0, code: "1165", label: "Наклейки с плоттерной резкой на бумаге Ø50 мм" },
-      film50: { price: 12.5, code: "1166", label: "Наклейки с плоттерной резкой на пленке Ø50 мм" },
-      sra3_gloss_paper: { price: 150.0, code: "1155", label: "Печать на глянцевой самоклеящейся бумаге SRA3" },
-      sra3_matte_paper: { price: 150.0, code: "1156", label: "Печать на матовой самоклеящейся бумаге SRA3" },
-      sra3_clear_matte: { price: 320.0, code: "1157", label: "Печать на прозрачной матовой пленке SRA3" },
-      sra3_clear_gloss: { price: 320.0, code: "1158", label: "Печать на прозрачной глянцевой пленке SRA3" },
-      sra3_white_matte: { price: 320.0, code: "1159", label: "Печать на белой матовой пленке SRA3" },
-      sra3_white_gloss: { price: 320.0, code: "1160", label: "Печать на белой глянцевой пленке SRA3" }
-    }
-  };
-
-  const pdfFileInput = document.getElementById("pdfFile");
-  const fileInfo = document.getElementById("fileInfo");
-  const analyzeBtn = document.getElementById("analyzeBtn");
-  const resetBtn = document.getElementById("resetBtn");
-  const statusBox = document.getElementById("status");
-  const resultBox = document.getElementById("resultBox");
-  const resultTable = document.getElementById("resultTable");
-  const totalPrice = document.getElementById("totalPrice");
-  const summaryTop = document.getElementById("summaryTop");
-  const customSizesBox = document.getElementById("customSizesBox");
-  const customSizesTable = document.getElementById("customSizesTable");
-
-  pdfFileInput.addEventListener("change", () => {
-    const file = pdfFileInput.files[0];
-    fileInfo.textContent = file ? `Файл: ${file.name} (${formatBytes(file.size)})` : "";
-  });
-
-  document.querySelectorAll(".service-tab").forEach(btn => {
-    btn.addEventListener("click", () => {
-      currentService = btn.dataset.service;
-
-      document.querySelectorAll(".service-tab").forEach(tab => {
-        tab.style.background = "#fff";
-        tab.style.color = "#111";
-        tab.style.borderColor = "#ccc";
-        tab.classList.remove("active");
-      });
-
-      btn.style.background = "#111";
-      btn.style.color = "#fff";
-      btn.style.borderColor = "#111";
-      btn.classList.add("active");
-
-      document.querySelectorAll(".service-section").forEach(section => section.style.display = "none");
-      document.getElementById(`section-${currentService}`).style.display = "block";
-
-      clearResults();
-      setStatus("");
-    });
-  });
-
-  analyzeBtn.addEventListener("click", async () => {
-    try {
-      if (currentService === "documents") {
-        await calculateDocuments();
-      } else if (currentService === "drawings") {
-        calculateDrawings();
-      } else if (currentService === "photos") {
-        calculatePhotos();
-      } else if (currentService === "stickers") {
-        calculateStickers();
-      }
-    } catch (error) {
-      console.error(error);
-      setStatus("Ошибка расчёта.", true);
-    }
-  });
-
-  resetBtn.addEventListener("click", () => {
-    document.querySelectorAll("input[type='number']").forEach(el => {
-      if (el.min === "1") el.value = "1";
-      else el.value = "0";
-    });
-    document.querySelectorAll("select").forEach(select => {
-      select.selectedIndex = 0;
-    });
-    pdfFileInput.value = "";
-    fileInfo.textContent = "";
-    clearResults();
-    setStatus("");
-  });
-
-  async function calculateDocuments() {
-    const file = pdfFileInput.files[0];
-    if (!file) return setStatus("Сначала выберите PDF-файл.", true);
-    if (file.type !== "application/pdf") return setStatus("Поддерживается только PDF.", true);
-
-    clearResults();
-    setStatus("Анализирую PDF...");
-
-    const sidesType = document.getElementById("docSidesType").value;
-    const copiesCount = Math.max(1, parseInt(document.getElementById("docCopiesCount").value || "1", 10));
-    const laminationType = document.getElementById("docLaminationType").value;
-    const bindingType = document.getElementById("docBindingType").value;
-    const multiforaFormat = document.getElementById("docMultiforaFormat").value;
-    const multiforaCount = Math.max(0, parseInt(document.getElementById("docMultiforaCount").value || "0", 10));
-    const folderType = document.getElementById("docFolderType").value;
-    const printMode = document.getElementById("docPrintMode").value;
-
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-
-    const pages = [];
-    for (let i = 1; i <= pdf.numPages; i++) {
-      setStatus(`Анализирую PDF... страница ${i} из ${pdf.numPages}`);
-      const page = await pdf.getPage(i);
-      const viewport = page.getViewport({ scale: 1 });
-
-      const widthMm = ptToMm(viewport.width);
-      const heightMm = ptToMm(viewport.height);
-
-      const exactFormat = detectFormat(widthMm, heightMm);
-      const billedFormat = exactFormat === "CUSTOM"
-        ? findNearestPrintableFormat(widthMm, heightMm)
-        : exactFormat;
-
-      let colorMode;
-
-if (printMode === "bw") {
-  colorMode = "bw";
-} else if (printMode === "color") {
-  colorMode = "color";
-} else {
-  colorMode = await detectPageColorMode(page);
-}
-
-      pages.push({
-        pageNumber: i,
-        widthMm: round1(widthMm),
-        heightMm: round1(heightMm),
-        exactFormat,
-        billedFormat,
-        colorMode
-      });
-    }
-
-    const stats = buildDocumentStats(pages, copiesCount);
-    const items = [];
-    let total = 0;
-
-    for (const format of ["A4", "A3"]) {
-      const bwCount = stats.print[format].bw;
-      const colorCount = stats.print[format].color;
-
-      if (bwCount > 0) {
-        const tier = getTierRow(PRICES.digitalBW[format], bwCount);
-        const sum = bwCount * tier.price;
-        total += sum;
-        items.push({
-          name: `Печать документов, ч/б, ${format}`,
-          tariff: `${tier.code} — ${tier.label}`,
-          qty: `${bwCount} стр.`,
-          price: money(tier.price),
-          sum: money(sum)
-        });
-      }
-
-      if (colorCount > 0) {
-        const row = PRICES.digitalColor[format][sidesType];
-        const sum = colorCount * row.price;
-        total += sum;
-        items.push({
-          name: `Печать документов, цвет, ${format}`,
-          tariff: `${row.code} — ${row.label}`,
-          qty: `${colorCount} стр.`,
-          price: money(row.price),
-          sum: money(sum)
-        });
-      }
-    }
-
-    if (laminationType === "auto") {
-      for (const format of ["A6", "A5", "A4", "A3"]) {
-        const qty = stats.lamination[format];
-        if (!qty) continue;
-        const row = PRICES.lamination[format];
-        const sum = qty * row.price;
-        total += sum;
-        items.push({
-          name: `Ламинирование ${format}`,
-          tariff: `${row.code} — ${row.label}`,
-          qty: `${qty} шт.`,
-          price: money(row.price),
-          sum: money(sum)
-        });
-      }
-    }
-
-    if (bindingType !== "none") {
-      const bindingBaseFormat = getBindingBaseFormat(stats);
-      const sheetsPerCopy = getBindingSheetsPerCopy(stats, sidesType, bindingBaseFormat);
-
-      if (bindingType === "staples2") {
-        const row = PRICES.binding.staples2;
-        const sum = row.price * copiesCount;
-        total += sum;
-        items.push({
-          name: `Брошюровка на 2 скобы`,
-          tariff: `${row.code} — ${row.label}`,
-          qty: `${copiesCount} экз.`,
-          price: money(row.price),
-          sum: money(sum)
-        });
-      }
-
-      if (bindingType === "hardcover") {
-        const row = PRICES.binding.hardcoverA4;
-        const sum = row.price * copiesCount;
-        total += sum;
-        items.push({
-          name: `Твердый переплет A4`,
-          tariff: `${row.code} — ${row.label}`,
-          qty: `${copiesCount} экз.`,
-          price: money(row.price),
-          sum: money(sum)
-        });
-      }
-
-      if (bindingType === "plastic" || bindingType === "metal") {
-        const rows = PRICES.binding[bindingType][bindingBaseFormat];
-        const row = findBindingRow(rows, sheetsPerCopy);
-
-        if (row) {
-          const sum = row.price * copiesCount;
-          total += sum;
-          items.push({
-            name: `Брошюровка на ${bindingType === "plastic" ? "пластиковую" : "металлическую"} пружину ${bindingBaseFormat}`,
-            tariff: `${row.code} — ${row.label}`,
-            qty: `${copiesCount} экз. × ${sheetsPerCopy} л.`,
-            price: money(row.price),
-            sum: money(sum)
-          });
-        } else {
-          items.push({
-            name: `Брошюровка ${bindingBaseFormat}`,
-            tariff: "—",
-            qty: `${copiesCount} экз. × ${sheetsPerCopy} л.`,
-            price: "—",
-            sum: "Объём превышает прайс"
-          });
-        }
-      }
-    }
-
-    if (multiforaFormat !== "none" && multiforaCount > 0) {
-      const row = PRICES.multifora[multiforaFormat];
-      const sum = row.price * multiforaCount;
-      total += sum;
-      items.push({
-        name: `Мультифоры ${multiforaFormat}`,
-        tariff: `${row.code} — ${row.label}`,
-        qty: `${multiforaCount} шт.`,
-        price: money(row.price),
-        sum: money(sum)
-      });
-    }
-
-    if (folderType !== "none") {
-      const row = PRICES.folders[folderType];
-      total += row.price;
-      items.push({
-        name: row.name,
-        tariff: `${row.code} — ${row.label}`,
-        qty: `1 шт.`,
-        price: money(row.price),
-        sum: money(row.price)
-      });
-    }
-
-    renderTable(items);
-
-    if (stats.customPages.length > 0) {
-      renderCustomPages(stats.customPages);
-    }
-
-   summaryTop.innerHTML = `
-  <strong>Услуга:</strong> Документы<br>
-  <strong>Тип печати:</strong> ${
-    printMode === "auto"
-      ? "автоопределение по страницам"
-      : printMode === "bw"
-      ? "всё в ч/б"
-      : "всё в цвете"
-  }<br>
-  <strong>Страниц в файле:</strong> ${pdf.numPages}<br>
-  <strong>Экземпляров:</strong> ${copiesCount}<br>
-  <strong>A4 ч/б:</strong> ${stats.print.A4.bw} стр. &nbsp; | &nbsp; <strong>A4 цвет:</strong> ${stats.print.A4.color} стр.<br>
-  <strong>A3 ч/б:</strong> ${stats.print.A3.bw} стр. &nbsp; | &nbsp; <strong>A3 цвет:</strong> ${stats.print.A3.color} стр.<br>
-  <strong>Нестандартных страниц:</strong> ${stats.customPages.length}<br>
-  <strong>Листов для брошюровки на 1 экз.:</strong> ${getBindingSheetsPerCopy(stats, sidesType, getBindingBaseFormat(stats))} л.
-`;
-
-    totalPrice.textContent = `Итого: ${money(total)}`;
-    resultBox.style.display = "block";
-    setStatus("Готово.");
-  }
-
-  function calculateDrawings() {
-    clearResults();
-
-    const format = document.getElementById("drawFormat").value;
-    const colorMode = document.getElementById("drawColorMode").value;
-    const qty = Math.max(1, parseInt(document.getElementById("drawQty").value || "1", 10));
-    const fold = document.getElementById("drawFold").value;
-
-    const base = PRICES.drawings[colorMode][format];
-    const items = [];
-    let total = 0;
-
-    const baseSum = base.price * qty;
-    total += baseSum;
-    items.push({
-      name: `Печать чертежей, ${colorMode === "bw" ? "ч/б" : "цвет"}, ${format}`,
-      tariff: `${base.code} — ${base.label}`,
-      qty: `${qty} шт.`,
-      price: money(base.price),
-      sum: money(baseSum)
-    });
-
-    if (fold !== "none") {
-      const foldRow = PRICES.drawings.fold[fold];
-      const foldSum = foldRow.price * qty;
-      total += foldSum;
-      items.push({
-        name: `Фальцовка`,
-        tariff: `${foldRow.code} — ${foldRow.label}`,
-        qty: `${qty} шт.`,
-        price: money(foldRow.price),
-        sum: money(foldSum)
-      });
-    }
-
-    renderTable(items);
-    summaryTop.innerHTML = `
-      <strong>Услуга:</strong> Чертежи<br>
-      <strong>Формат:</strong> ${format}<br>
-      <strong>Цветность:</strong> ${colorMode === "bw" ? "ч/б" : "цвет"}<br>
-      <strong>Количество:</strong> ${qty}
-    `;
-    totalPrice.textContent = `Итого: ${money(total)}`;
-    resultBox.style.display = "block";
-    setStatus("Готово.");
-  }
-
-  function calculatePhotos() {
-    clearResults();
-
-    const format = document.getElementById("photoFormat").value;
-    const qty = Math.max(1, parseInt(document.getElementById("photoQty").value || "1", 10));
-    const items = [];
-    let total = 0;
-
-    if (format === "10x15") {
-      const row = getTierRow(PRICES.photos["10x15"], qty);
-      const sum = row.price * qty;
-      total += sum;
-      items.push({
-        name: `Печать фотографий 10×15`,
-        tariff: `${row.code} — ${row.label}`,
-        qty: `${qty} шт.`,
-        price: money(row.price),
-        sum: money(sum)
-      });
-    } else {
-      const row = PRICES.photos[format];
-      const sum = row.price * qty;
-      total += sum;
-      items.push({
-        name: row.label,
-        tariff: `${row.code} — ${row.label}`,
-        qty: `${qty} шт.`,
-        price: money(row.price),
-        sum: money(sum)
-      });
-    }
-
-    renderTable(items);
-    summaryTop.innerHTML = `
-      <strong>Услуга:</strong> Фотографии<br>
-      <strong>Позиция:</strong> ${document.getElementById("photoFormat").selectedOptions[0].textContent}<br>
-      <strong>Количество:</strong> ${qty}
-    `;
-    totalPrice.textContent = `Итого: ${money(total)}`;
-    resultBox.style.display = "block";
-    setStatus("Готово.");
-  }
-
-  function calculateStickers() {
-    clearResults();
-
-    const type = document.getElementById("stickerType").value;
-    const qty = Math.max(1, parseInt(document.getElementById("stickerQty").value || "1", 10));
-    const row = PRICES.stickers[type];
-    const sum = row.price * qty;
-
-    renderTable([{
-      name: row.label,
-      tariff: `${row.code} — ${row.label}`,
-      qty: `${qty} шт.`,
-      price: money(row.price),
-      sum: money(sum)
-    }]);
-
-    summaryTop.innerHTML = `
-      <strong>Услуга:</strong> Стикеры<br>
-      <strong>Позиция:</strong> ${document.getElementById("stickerType").selectedOptions[0].textContent}<br>
-      <strong>Количество:</strong> ${qty}
-    `;
-    totalPrice.textContent = `Итого: ${money(sum)}`;
-    resultBox.style.display = "block";
-    setStatus("Готово.");
-  }
-
-  function buildDocumentStats(pages, copiesCount) {
-    const stats = {
-      print: {
-        A4: { bw: 0, color: 0 },
-        A3: { bw: 0, color: 0 }
-      },
-      lamination: { A6: 0, A5: 0, A4: 0, A3: 0 },
-      pagesOneCopyByBilledFormat: { A4: 0, A3: 0, A2: 0, A1: 0, A0: 0, SRA3: 0, A5: 0, A6: 0 },
-      customPages: []
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+    const TOLERANCE_MM = 8;
+    const COLOR_TOLERANCE = 18;
+    const SAMPLE_STEP = 8;
+
+    const FORMATS = {
+      A6:   { w: 105, h: 148 },
+      A5:   { w: 148, h: 210 },
+      A4:   { w: 210, h: 297 },
+      A3:   { w: 297, h: 420 },
+      A2:   { w: 420, h: 594 },
+      A1:   { w: 594, h: 841 },
+      A0:   { w: 841, h: 1189 },
+      SRA3: { w: 320, h: 450 }
     };
 
-    pages.forEach(p => {
-      if (p.billedFormat === "A4" || p.billedFormat === "A3") {
-        stats.print[p.billedFormat][p.colorMode] += copiesCount;
+    const FORMAT_OPTIONS = [
+      "A6","A5","A4","A3","A2","A1","A0","SRA3"
+    ];
+
+    const FORMAT_LABELS = {
+      A6: "A6 (105×148 мм)",
+      A5: "A5 (148×210 мм)",
+      A4: "A4 (210×297 мм)",
+      A3: "A3 (297×420 мм)",
+      A2: "A2 (420×594 мм)",
+      A1: "A1 (594×841 мм)",
+      A0: "A0 (841×1189 мм)",
+      SRA3: "SRA3 (320×450 мм)"
+    };
+
+    const PRICES = {
+      documentsBW: {
+        A4: [
+          { max: 10, price: 10.0, code: "1001", label: "Цифровая печать, ч/б, формат А4 до 10 прог." },
+          { max: 50, price: 7.0, code: "1002", label: "Цифровая печать, ч/б, формат А4 от 11–50 прог." },
+          { max: 100, price: 6.0, code: "1003", label: "Цифровая печать, ч/б, формат А4 от 51–100 прог." },
+          { max: 500, price: 5.5, code: "1004", label: "Цифровая печать, ч/б, формат А4 от 101–500 прог." },
+          { max: Infinity, price: 5.0, code: "1005", label: "Цифровая печать, ч/б, формат А4 от 501 прог." }
+        ],
+        A3: [
+          { max: 10, price: 20.0, code: "1008", label: "Цифровая печать, ч/б, формат А3 до 10 прог." },
+          { max: 50, price: 16.0, code: "1009", label: "Цифровая печать, ч/б, формат А3 от 11–50 прог." },
+          { max: 100, price: 14.0, code: "1010", label: "Цифровая печать, ч/б, формат А3 от 51–100 прог." },
+          { max: 500, price: 12.0, code: "1011", label: "Цифровая печать, ч/б, формат А3 от 101–500 прог." },
+          { max: Infinity, price: 11.0, code: "1012", label: "Цифровая печать, ч/б, формат А3 от 501 прог." }
+        ]
+      },
+      documentsColor: {
+        A4: { min: 15.0, max: 30.0, code: "1006–1007", label: "Цифровая печать, цветн., формат А4" },
+        A3: { min: 30.0, max: 45.0, code: "1013–1014", label: "Цифровая печать, цветн., формат А3" }
+      },
+      copy: {
+        A4: {
+          bw: {
+            feeder: { price: 8.0, code: "1057", label: "Ксерокопирование ч/б, формат А4, 1 прог. автопод." },
+            glass:  { price: 10.0, code: "1058", label: "Ксерокопирование ч/б, формат А4, 1 прог. стекло" }
+          },
+          color: {
+            feeder: { price: 15.0, code: "1059", label: "Ксерокопирование цветн., формат А4, 1 прог. автопод." },
+            glass:  { price: 20.0, code: "1060", label: "Ксерокопирование цветн., формат А4, 1 прог. стекло" }
+          }
+        },
+        A3: {
+          bw: {
+            feeder: { price: 18.0, code: "1061", label: "Ксерокопирование ч/б, формат А3, 1 прог. автопод." },
+            glass:  { price: 20.0, code: "1062", label: "Ксерокопирование ч/б, формат А3, 1 прог. стекло" }
+          },
+          color: {
+            feeder: { price: 30.0, code: "1063", label: "Ксерокопирование цветн., формат А3, 1 прог. автопод." },
+            glass:  { price: 35.0, code: "1064", label: "Ксерокопирование цветн., формат А3, 1 прог. стекло" }
+          }
+        }
+      },
+      scan: {
+        A4: {
+          feeder_lt50: { price: 8.0, code: "1065", label: "Сканирование 400dpi, формат А4, автопод. до 50 прог." },
+          feeder_gte50: { price: 6.0, code: "1066", label: "Сканирование 400dpi, формат А4, автопод. от 51 прог." },
+          glass_lt50: { price: 16.0, code: "1067", label: "Сканирование 400dpi, формат А4, со стекла до 50 прог." },
+          glass_gte50: { price: 12.0, code: "1068", label: "Сканирование 400dpi, формат А4, со стекла от 51 прог." }
+        },
+        A3: {
+          feeder_lt50: { price: 16.0, code: "1069", label: "Сканирование 400dpi, формат А3, автопод. до 50 прог." },
+          feeder_gte50: { price: 12.0, code: "1070", label: "Сканирование 400dpi, формат А3, автопод. от 51 прог." },
+          glass_lt50: { price: 32.0, code: "1071", label: "Сканирование 400dpi, формат А3, со стекла до 50 прог." },
+          glass_gte50: { price: 24.0, code: "1072", label: "Сканирование 400dpi, формат А3, со стекла от 51 прог." }
+        },
+        A2: {
+          wide: { price: 120.0, code: "1073", label: "Сканирование 400dpi, формат А2, 1 стор. широкоформ." }
+        },
+        A1: {
+          wide: { price: 170.0, code: "1074", label: "Сканирование 400dpi, формат А1, 1 стор. широкоформ." }
+        }
+      },
+      lamination: {
+        A6: { price: 25.0, code: "1120", label: "Ламинирование пакетное, 125мкм, формат А6" },
+        A5: { price: 40.0, code: "1121", label: "Ламинирование пакетное, 125мкм, формат А5" },
+        A4: { price: 60.0, code: "1122", label: "Ламинирование пакетное, 125мкм, формат А4" },
+        A3: { price: 110.0, code: "1123", label: "Ламинирование пакетное, 125мкм, формат А3" }
+      },
+      binding: {
+        staples2: { price: 35.0, code: "1109", label: "Брошюровка на 2 скобы" },
+        hardcover: { price: 550.0, code: "1084", label: "Твердый переплет MetalBind, формат А4" },
+        plastic: {
+          A4: [
+            { max: 40, price: 110.0, code: "1085", label: "Пласт. пружина А4 до 40 л." },
+            { max: 80, price: 140.0, code: "1086", label: "Пласт. пружина А4 до 80 л." },
+            { max: 120, price: 170.0, code: "1087", label: "Пласт. пружина А4 до 120 л." },
+            { max: 180, price: 200.0, code: "1088", label: "Пласт. пружина А4 до 180 л." },
+            { max: 240, price: 230.0, code: "1089", label: "Пласт. пружина А4 до 240 л." },
+            { max: 340, price: 260.0, code: "1090", label: "Пласт. пружина А4 до 340 л." },
+            { max: 500, price: 290.0, code: "1091", label: "Пласт. пружина А4 до 500 л." }
+          ],
+          A3: [
+            { max: 40, price: 135.0, code: "1092", label: "Пласт. пружина А3 до 40 л." },
+            { max: 80, price: 165.0, code: "1093", label: "Пласт. пружина А3 до 80 л." },
+            { max: 120, price: 195.0, code: "1094", label: "Пласт. пружина А3 до 120 л." },
+            { max: 180, price: 225.0, code: "1095", label: "Пласт. пружина А3 до 180 л." },
+            { max: 240, price: 255.0, code: "1096", label: "Пласт. пружина А3 до 240 л." },
+            { max: 340, price: 285.0, code: "1097", label: "Пласт. пружина А3 до 340 л." },
+            { max: 500, price: 315.0, code: "1098", label: "Пласт. пружина А3 до 500 л." }
+          ]
+        },
+        metal: {
+          A4: [
+            { max: 35, price: 125.0, code: "1099", label: "Металл. пружина А4 до 35 л." },
+            { max: 50, price: 140.0, code: "1100", label: "Металл. пружина А4 до 50 л." },
+            { max: 80, price: 155.0, code: "1101", label: "Металл. пружина А4 до 80 л." },
+            { max: 100, price: 170.0, code: "1102", label: "Металл. пружина А4 до 100 л." },
+            { max: 120, price: 185.0, code: "1103", label: "Металл. пружина А4 до 120 л." }
+          ],
+          A3: [
+            { max: 35, price: 150.0, code: "1104", label: "Металл. пружина А3 до 35 л." },
+            { max: 50, price: 165.0, code: "1105", label: "Металл. пружина А3 до 50 л." },
+            { max: 80, price: 180.0, code: "1106", label: "Металл. пружина А3 до 80 л." },
+            { max: 100, price: 195.0, code: "1107", label: "Металл. пружина А3 до 100 л." },
+            { max: 120, price: 210.0, code: "1108", label: "Металл. пружина А3 до 120 л." }
+          ]
+        }
+      },
+      photos: {
+        doc10x15: { price: 120.0, code: "1124", label: "Печать фото на документы 10×15" },
+        "10x15": [
+          { max: 10, price: 32.0, code: "1125", label: "Фотографии 10×15 до 10 шт." },
+          { max: 50, price: 28.0, code: "1126", label: "Фотографии 10×15 от 11 до 50 шт." },
+          { max: 100, price: 25.0, code: "1127", label: "Фотографии 10×15 от 51 до 100 шт." },
+          { max: Infinity, price: 23.0, code: "1128", label: "Фотографии 10×15 от 101 шт." }
+        ],
+        "15x21_super": { price: 65.0, code: "1129", label: "Фотографии 15×21 Super Glossy" },
+        "15x21_satin": { price: 65.0, code: "1130", label: "Фотографии 15×21 Satin Warm" },
+        "21x30_super": { price: 120.0, code: "1131", label: "Фотографии 21×30 Super Glossy" },
+        "21x30_satin": { price: 120.0, code: "1132", label: "Фотографии 21×30 Satin Warm" },
+        "30x42_super": { price: 310.0, code: "1133", label: "Фотографии 30×42 Super Glossy" },
+        "30x42_satin": { price: 310.0, code: "1134", label: "Фотографии 30×42 Satin Warm" },
+        "42x60_satin": { price: 650.0, code: "1135", label: "Фотографии 42×60 Satin Warm" },
+        "60x84_satin": { price: 1300.0, code: "1136", label: "Фотографии 60×84 Satin Warm" }
+      },
+      drawings: {
+        bw: {
+          A2:   { price: 65.0, code: "1039", label: "Чертеж, ч/б, формат А2" },
+          A1:   { price: 110.0, code: "1049", label: "Чертеж, ч/б, формат А1" },
+          A0:   { price: 220.0, code: "1051", label: "Чертеж, ч/б, формат А0" }
+        },
+        color: {
+          A2:   { price: 75.0, code: "1040", label: "Чертеж, цвет, формат А2" },
+          A1:   { price: 130.0, code: "1050", label: "Чертеж, цвет, формат А1" },
+          A0:   { price: 260.0, code: "1052", label: "Чертеж, цвет, формат А0" }
+        },
+        fold: {
+          "A3-A4": { price: 8.0, code: "1110", label: "Фальцевание, исходный А3, под А4" },
+          "A2-A4": { price: 18.0, code: "1111", label: "Фальцевание, исходный А2, под А4" },
+          "A1-A4": { price: 26.0, code: "1112", label: "Фальцевание, исходный А1, под А4" },
+          "A2-A3": { price: 18.0, code: "1113", label: "Фальцевание, исходный А2, под А3" },
+          "A1-A3": { price: 26.0, code: "1114", label: "Фальцевание, исходный А1, под А3" },
+          "custom": { price: 5.0, code: "1115", label: "Фальцевание, нестандарт из расчета А4" }
+        }
+      },
+      stickers: {
+        paper30: { price: 4.0, code: "1161", label: "Наклейки на бумаге Ø30 мм" },
+        film30: { price: 5.5, code: "1162", label: "Наклейки на пленке Ø30 мм" },
+        paper40: { price: 6.5, code: "1163", label: "Наклейки на бумаге Ø40 мм" },
+        film40: { price: 9.0, code: "1164", label: "Наклейки на пленке Ø40 мм" },
+        paper50: { price: 9.0, code: "1165", label: "Наклейки на бумаге Ø50 мм" },
+        film50: { price: 12.5, code: "1166", label: "Наклейки на пленке Ø50 мм" },
+        sra3_gloss_paper: { price: 150.0, code: "1155", label: "Глянцевая самоклейка SRA3" },
+        sra3_matte_paper: { price: 150.0, code: "1156", label: "Матовая самоклейка SRA3" },
+        sra3_clear_matte: { price: 320.0, code: "1157", label: "Прозрачная матовая пленка SRA3" },
+        sra3_clear_gloss: { price: 320.0, code: "1158", label: "Прозрачная глянцевая пленка SRA3" },
+        sra3_white_matte: { price: 320.0, code: "1159", label: "Белая матовая пленка SRA3" },
+        sra3_white_gloss: { price: 320.0, code: "1160", label: "Белая глянцевая пленка SRA3" }
+      },
+      multifora: {
+        A5: { price: 5.0, code: "1178", label: "Мультифора А5" },
+        A4: { price: 7.0, code: "1179", label: "Мультифора А4" },
+        A3: { price: 14.0, code: "1180", label: "Мультифора А3" }
+      },
+      folders: {
+        folder20: { price: 200.0, code: "1172", label: "Папка на 20 мультифор" },
+        folder30: { price: 250.0, code: "1173", label: "Папка на 30 мультифор" },
+        folder40: { price: 300.0, code: "1174", label: "Папка на 40 мультифор" },
+        folder60: { price: 350.0, code: "1175", label: "Папка на 60 мультифор" }
       }
-      if (stats.lamination[p.billedFormat] !== undefined) {
-        stats.lamination[p.billedFormat] += copiesCount;
+    };
+
+    let blockCounter = 1;
+    let calculatedRows = [];
+
+    const servicesContainer = document.getElementById("servicesContainer");
+    const addServiceBtn = document.getElementById("addServiceBtn");
+    const calculateBtn = document.getElementById("calculateBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const statusBox = document.getElementById("status");
+    const resultBox = document.getElementById("resultBox");
+    const resultTable = document.getElementById("resultTable");
+    const summaryBox = document.getElementById("summary");
+    const totalBox = document.getElementById("total");
+    const notesBox = document.getElementById("notesBox");
+
+    addServiceBtn.addEventListener("click", () => addServiceBlock());
+    clearBtn.addEventListener("click", clearAll);
+    calculateBtn.addEventListener("click", calculateOrder);
+
+    addServiceBlock("documents");
+
+    function addServiceBlock(type = "documents") {
+      const id = blockCounter++;
+      const block = document.createElement("div");
+      block.className = "service-card";
+      block.dataset.blockId = String(id);
+      block.innerHTML = `
+        <div class="service-header">
+          <div class="service-title">Услуга #${id}</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <select class="service-type-select" data-block-id="${id}">
+              <option value="documents"${type === "documents" ? " selected" : ""}>Документы (PDF)</option>
+              <option value="copy"${type === "copy" ? " selected" : ""}>Ксерокопирование</option>
+              <option value="scan"${type === "scan" ? " selected" : ""}>Сканирование</option>
+              <option value="photos"${type === "photos" ? " selected" : ""}>Фотографии</option>
+              <option value="drawings"${type === "drawings" ? " selected" : ""}>Чертежи</option>
+              <option value="stickers"${type === "stickers" ? " selected" : ""}>Стикеры</option>
+            </select>
+            <button type="button" class="btn-danger remove-service-btn">Удалить</button>
+          </div>
+        </div>
+        <div class="service-body">${renderServiceFields(id, type)}</div>
+      `;
+      servicesContainer.appendChild(block);
+
+      block.querySelector(".service-type-select").addEventListener("change", (e) => {
+        block.querySelector(".service-body").innerHTML = renderServiceFields(id, e.target.value);
+      });
+
+      block.querySelector(".remove-service-btn").addEventListener("click", () => {
+        block.remove();
+        clearResults();
+      });
+    }
+
+    function renderServiceFields(id, type) {
+      if (type === "documents") {
+        return `
+          <div class="grid">
+            <div class="field" style="grid-column:1 / -1;">
+              <label>PDF-файлы</label>
+              <input type="file" id="docs-files-${id}" accept="application/pdf" multiple />
+              <div class="hint">Можно выбрать несколько PDF сразу.</div>
+            </div>
+
+            <div class="field">
+              <label>Тип печати</label>
+              <select id="docs-print-mode-${id}">
+                <option value="auto">Автоопределение по страницам</option>
+                <option value="bw">Печатать всё в ч/б</option>
+                <option value="color">Печатать всё в цвете</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Режим печати</label>
+              <select id="docs-sides-${id}">
+                <option value="single">Односторонняя</option>
+                <option value="double">Двусторонняя</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Количество экземпляров</label>
+              <input type="number" id="docs-copies-${id}" min="1" value="1" />
+            </div>
+
+            <div class="field">
+              <label>Брошюровка</label>
+              <select id="docs-binding-${id}">
+                <option value="none">Без брошюровки</option>
+                <option value="staples2">2 скобы</option>
+                <option value="plastic">Пластиковая пружина</option>
+                <option value="metal">Металлическая пружина</option>
+                <option value="hardcover">Твердый переплет A4</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Ламинирование</label>
+              <select id="docs-lamination-${id}">
+                <option value="none">Без ламинирования</option>
+                <option value="auto">По формату страниц</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Мультифоры</label>
+              <select id="docs-multifora-format-${id}">
+                <option value="none">Не нужны</option>
+                <option value="A5">A5</option>
+                <option value="A4">A4</option>
+                <option value="A3">A3</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Количество мультифор</label>
+              <input type="number" id="docs-multifora-count-${id}" min="0" value="0" />
+            </div>
+
+            <div class="field">
+              <label>Папка</label>
+              <select id="docs-folder-${id}">
+                <option value="none">Без папки</option>
+                <option value="folder20">Папка на 20 мультифор</option>
+                <option value="folder30">Папка на 30 мультифор</option>
+                <option value="folder40">Папка на 40 мультифор</option>
+                <option value="folder60">Папка на 60 мультифор</option>
+              </select>
+            </div>
+          </div>
+        `;
       }
-      if (stats.pagesOneCopyByBilledFormat[p.billedFormat] !== undefined) {
-        stats.pagesOneCopyByBilledFormat[p.billedFormat] += 1;
+
+      if (type === "copy") {
+        return `
+          <div class="grid-3">
+            <div class="field">
+              <label>Формат</label>
+              <select id="copy-format-${id}">
+                <option value="A4">A4 (210×297 мм)</option>
+                <option value="A3">A3 (297×420 мм)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Цветность</label>
+              <select id="copy-color-${id}">
+                <option value="bw">Ч/б</option>
+                <option value="color">Цвет</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Источник</label>
+              <select id="copy-source-${id}">
+                <option value="feeder">Автоподатчик</option>
+                <option value="glass">Со стекла</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество прогонов</label>
+              <input type="number" id="copy-qty-${id}" min="1" value="1" />
+            </div>
+          </div>
+        `;
       }
-      if (p.exactFormat === "CUSTOM") {
-        stats.customPages.push({
-          pageNumber: p.pageNumber,
-          widthMm: p.widthMm,
-          heightMm: p.heightMm,
-          billedFormat: p.billedFormat,
-          colorMode: p.colorMode
-        });
+
+      if (type === "scan") {
+        return `
+          <div class="grid-3">
+            <div class="field">
+              <label>Формат</label>
+              <select id="scan-format-${id}">
+                <option value="A4">A4 (210×297 мм)</option>
+                <option value="A3">A3 (297×420 мм)</option>
+                <option value="A2">A2 (420×594 мм)</option>
+                <option value="A1">A1 (594×841 мм)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Источник</label>
+              <select id="scan-source-${id}">
+                <option value="feeder">Автоподатчик</option>
+                <option value="glass">Со стекла</option>
+                <option value="wide">Широкоформатный</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество сторон / прогонов</label>
+              <input type="number" id="scan-qty-${id}" min="1" value="1" />
+            </div>
+          </div>
+        `;
       }
-    });
 
-    return stats;
-  }
+      if (type === "photos") {
+        return `
+          <div class="grid">
+            <div class="field">
+              <label>Формат</label>
+              <select id="photo-format-${id}">
+                <option value="doc10x15">Фото на документы 10×15</option>
+                <option value="10x15">10×15</option>
+                <option value="15x21_super">15×21 Super Glossy</option>
+                <option value="15x21_satin">15×21 Satin Warm</option>
+                <option value="21x30_super">21×30 Super Glossy</option>
+                <option value="21x30_satin">21×30 Satin Warm</option>
+                <option value="30x42_super">30×42 Super Glossy</option>
+                <option value="30x42_satin">30×42 Satin Warm</option>
+                <option value="42x60_satin">42×60 Satin Warm</option>
+                <option value="60x84_satin">60×84 Satin Warm</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество</label>
+              <input type="number" id="photo-qty-${id}" min="1" value="1" />
+            </div>
+          </div>
+        `;
+      }
 
-  async function detectPageColorMode(page) {
-    const viewport = page.getViewport({ scale: 0.5 });
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (type === "drawings") {
+        return `
+          <div class="grid">
+            <div class="field">
+              <label>Формат</label>
+              <select id="drawing-format-${id}">
+                <option value="A2">A2 (420×594 мм)</option>
+                <option value="A1">A1 (594×841 мм)</option>
+                <option value="A0">A0 (841×1189 мм)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Цветность</label>
+              <select id="drawing-color-${id}">
+                <option value="bw">Ч/б</option>
+                <option value="color">Цвет</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество</label>
+              <input type="number" id="drawing-qty-${id}" min="1" value="1" />
+            </div>
+            <div class="field">
+              <label>Фальцовка</label>
+              <select id="drawing-fold-${id}">
+                <option value="none">Без фальцовки</option>
+                <option value="A2-A4">A2 → A4</option>
+                <option value="A1-A4">A1 → A4</option>
+                <option value="A2-A3">A2 → A3</option>
+                <option value="A1-A3">A1 → A3</option>
+                <option value="custom">Нестандарт</option>
+              </select>
+            </div>
+          </div>
+        `;
+      }
 
-    canvas.width = Math.max(1, Math.floor(viewport.width));
-    canvas.height = Math.max(1, Math.floor(viewport.height));
+      if (type === "stickers") {
+        return `
+          <div class="grid">
+            <div class="field">
+              <label>Тип</label>
+              <select id="sticker-type-${id}">
+                <option value="paper30">Бумага Ø30 мм</option>
+                <option value="film30">Пленка Ø30 мм</option>
+                <option value="paper40">Бумага Ø40 мм</option>
+                <option value="film40">Пленка Ø40 мм</option>
+                <option value="paper50">Бумага Ø50 мм</option>
+                <option value="film50">Пленка Ø50 мм</option>
+                <option value="sra3_gloss_paper">Глянцевая самоклейка SRA3</option>
+                <option value="sra3_matte_paper">Матовая самоклейка SRA3</option>
+                <option value="sra3_clear_matte">Прозрачная матовая пленка SRA3</option>
+                <option value="sra3_clear_gloss">Прозрачная глянцевая пленка SRA3</option>
+                <option value="sra3_white_matte">Белая матовая пленка SRA3</option>
+                <option value="sra3_white_gloss">Белая глянцевая пленка SRA3</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество</label>
+              <input type="number" id="sticker-qty-${id}" min="1" value="1" />
+            </div>
+          </div>
+        `;
+      }
 
-    await page.render({ canvasContext: ctx, viewport }).promise;
-    const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      return "";
+    }
 
-    let coloredPixels = 0;
+    async function calculateOrder() {
+      const blocks = [...document.querySelectorAll(".service-card")];
+      if (!blocks.length) {
+        setStatus("Добавь хотя бы одну услугу.", true);
+        return;
+      }
 
-    for (let y = 0; y < height; y += SAMPLE_STEP) {
-      for (let x = 0; x < width; x += SAMPLE_STEP) {
-        const idx = (y * width + x) * 4;
-        const r = data[idx];
-        const g = data[idx + 1];
-        const b = data[idx + 2];
-        const a = data[idx + 3];
+      clearResults();
+      setStatus("Считаю заказ...");
 
-        if (a < 10) continue;
+      const rows = [];
+      const notes = [];
+      let blockNumber = 0;
 
-        if (
-          Math.abs(r - g) > COLOR_TOLERANCE ||
-          Math.abs(g - b) > COLOR_TOLERANCE ||
-          Math.abs(r - b) > COLOR_TOLERANCE
-        ) {
-          coloredPixels++;
-          if (coloredPixels >= 5) return "color";
+      for (const block of blocks) {
+        blockNumber++;
+        const id = Number(block.dataset.blockId);
+        const type = block.querySelector(".service-type-select").value;
+
+        if (type === "documents") {
+          const docRows = await calculateDocumentsBlock(id, blockNumber, notes);
+          rows.push(...docRows);
+        } else if (type === "copy") {
+          rows.push(...calculateCopyBlock(id, blockNumber));
+        } else if (type === "scan") {
+          rows.push(...calculateScanBlock(id, blockNumber));
+        } else if (type === "photos") {
+          rows.push(...calculatePhotosBlock(id, blockNumber));
+        } else if (type === "drawings") {
+          rows.push(...calculateDrawingsBlock(id, blockNumber));
+        } else if (type === "stickers") {
+          rows.push(...calculateStickersBlock(id, blockNumber));
         }
       }
+
+      calculatedRows = rows;
+      renderResults(notes);
+      setStatus("Готово.");
     }
-    return "bw";
-  }
 
-  function ptToMm(pt) {
-    return pt * 25.4 / 72;
-  }
+    async function calculateDocumentsBlock(id, blockNumber, notes) {
+      const filesInput = document.getElementById(`docs-files-${id}`);
+      const files = [...(filesInput.files || [])];
+      const printMode = document.getElementById(`docs-print-mode-${id}`).value;
+      const sides = document.getElementById(`docs-sides-${id}`).value;
+      const copies = Math.max(1, parseInt(document.getElementById(`docs-copies-${id}`).value || "1", 10));
+      const binding = document.getElementById(`docs-binding-${id}`).value;
+      const lamination = document.getElementById(`docs-lamination-${id}`).value;
+      const multiforaFormat = document.getElementById(`docs-multifora-format-${id}`).value;
+      const multiforaCount = Math.max(0, parseInt(document.getElementById(`docs-multifora-count-${id}`).value || "0", 10));
+      const folder = document.getElementById(`docs-folder-${id}`).value;
 
-  function detectFormat(widthMm, heightMm) {
-    for (const [name, size] of Object.entries(FORMATS)) {
-      const normalMatch =
-        Math.abs(widthMm - size.w) <= TOLERANCE_MM &&
-        Math.abs(heightMm - size.h) <= TOLERANCE_MM;
-      const rotatedMatch =
-        Math.abs(widthMm - size.h) <= TOLERANCE_MM &&
-        Math.abs(heightMm - size.w) <= TOLERANCE_MM;
-      if (normalMatch || rotatedMatch) return name;
+      if (!files.length) {
+        throw new Error(`В услуге #${blockNumber} не выбраны PDF-файлы.`);
+      }
+
+      const rows = [];
+      let totalPagesOneCopy = 0;
+      let dominantFormatCounter = { A4: 0, A3: 0 };
+      let fileIndex = 0;
+
+      for (const file of files) {
+        fileIndex++;
+        if (file.type !== "application/pdf") continue;
+
+        setStatus(`Анализирую PDF-файлы... ${file.name}`);
+        const buffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+
+        const filePageGroups = {};
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+          setStatus(`Анализирую ${file.name}: страница ${i} из ${pdf.numPages}`);
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 1 });
+
+          const widthMm = ptToMm(viewport.width);
+          const heightMm = ptToMm(viewport.height);
+          const exactFormat = detectFormat(widthMm, heightMm);
+          const nearestFormat = exactFormat === "CUSTOM"
+            ? findNearestFormat(widthMm, heightMm)
+            : exactFormat;
+
+          let colorMode = "bw";
+          if (printMode === "bw") {
+            colorMode = "bw";
+          } else if (printMode === "color") {
+            colorMode = "color";
+          } else {
+            colorMode = await detectPageColorMode(page);
+          }
+
+          totalPagesOneCopy += 1;
+          if (nearestFormat === "A4") dominantFormatCounter.A4 += 1;
+          if (nearestFormat === "A3") dominantFormatCounter.A3 += 1;
+
+          const actualLabel = buildActualFormatLabel(widthMm, heightMm, exactFormat);
+          const key = [file.name, actualLabel, colorMode, nearestFormat].join("||");
+
+          if (!filePageGroups[key]) {
+            filePageGroups[key] = {
+              serviceType: "documents",
+              serviceName: `Документы #${blockNumber}`,
+              position: colorMode === "color" ? "Цветная печать" : "Ч/б печать",
+              source: file.name,
+              actualFormatLabel: actualLabel,
+              billedFormat: nearestFormat,
+              colorMode,
+              qty: 0,
+              copies,
+              sides,
+              pageCountOneCopy: 0,
+              pricingMode: colorMode === "color" ? "manual-range" : "auto-tier"
+            };
+          }
+
+          filePageGroups[key].qty += copies;
+          filePageGroups[key].pageCountOneCopy += 1;
+        }
+
+        Object.values(filePageGroups).forEach(group => {
+          const priceInfo = getDocumentPriceInfo(group.billedFormat, group.colorMode, group.qty);
+          rows.push({
+            id: makeRowId(),
+            serviceType: "documents",
+            serviceName: group.serviceName,
+            position: `${group.position}, ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}`,
+            source: group.source,
+            actualFormatLabel: group.actualFormatLabel,
+            billedFormat: group.billedFormat,
+            qty: group.qty,
+            unitPrice: priceInfo.price,
+            tariffCode: priceInfo.code,
+            tariffLabel: priceInfo.label,
+            unitPriceEditable: true,
+            billedFormatEditable: true,
+            editableFormats: [...FORMAT_OPTIONS],
+            colorMode: group.colorMode,
+            pricingMode: group.pricingMode,
+            meta: {
+              copies,
+              sides,
+              pageCountOneCopy: group.pageCountOneCopy
+            }
+          });
+
+          if (group.actualFormatLabel.indexOf("≈") === 0 || group.actualFormatLabel.indexOf("Нестандарт") === 0) {
+            notes.push(`В ${group.source} обнаружен нестандартный размер: ${group.actualFormatLabel}. Для расчёта он был округлён до ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}.`);
+          }
+        });
+      }
+
+      const dominantBindingFormat = dominantFormatCounter.A3 > dominantFormatCounter.A4 ? "A3" : "A4";
+      const sheetsPerCopy = sides === "double" ? Math.ceil(totalPagesOneCopy / 2) : totalPagesOneCopy;
+
+      if (binding !== "none" && totalPagesOneCopy > 0) {
+        if (binding === "staples2") {
+          const row = PRICES.binding.staples2;
+          rows.push(fixedRow({
+            serviceName: `Документы #${blockNumber}`,
+            position: "Брошюровка на 2 скобы",
+            source: "Постобработка",
+            actualFormatLabel: `${dominantBindingFormat} / ${FORMAT_LABELS[dominantBindingFormat]}`,
+            billedFormat: dominantBindingFormat,
+            tariff: row,
+            qty: copies
+          }));
+        } else if (binding === "hardcover") {
+          const row = PRICES.binding.hardcover;
+          rows.push(fixedRow({
+            serviceName: `Документы #${blockNumber}`,
+            position: "Твердый переплет",
+            source: "Постобработка",
+            actualFormatLabel: "A4 (210×297 мм)",
+            billedFormat: "A4",
+            tariff: row,
+            qty: copies
+          }));
+        } else {
+          const rowsMap = PRICES.binding[binding][dominantBindingFormat];
+          const bindRow = rowsMap.find(r => sheetsPerCopy <= r.max);
+          if (bindRow) {
+            rows.push(fixedRow({
+              serviceName: `Документы #${blockNumber}`,
+              position: `Брошюровка (${binding === "plastic" ? "пластик" : "металл"})`,
+              source: `Постобработка, ${sheetsPerCopy} л. на 1 экз.`,
+              actualFormatLabel: FORMAT_LABELS[dominantBindingFormat],
+              billedFormat: dominantBindingFormat,
+              tariff: bindRow,
+              qty: copies
+            }));
+          } else {
+            notes.push(`Для "Документы #${blockNumber}" объём брошюровки ${sheetsPerCopy} л. на 1 экземпляр превышает диапазон прайса.`);
+          }
+        }
+      }
+
+      if (lamination === "auto") {
+        // Ламинирование по всем страницам файлов, по одной операции на каждую страницу каждого экземпляра
+        for (const file of files) {
+          const buffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+          const lamCounter = { A6: 0, A5: 0, A4: 0, A3: 0 };
+
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const viewport = page.getViewport({ scale: 1 });
+            const widthMm = ptToMm(viewport.width);
+            const heightMm = ptToMm(viewport.height);
+            const exactFormat = detectFormat(widthMm, heightMm);
+            const nearest = exactFormat === "CUSTOM" ? findNearestFormat(widthMm, heightMm) : exactFormat;
+            if (lamCounter[nearest] !== undefined) lamCounter[nearest] += copies;
+          }
+
+          Object.entries(lamCounter).forEach(([fmt, qty]) => {
+            if (!qty) return;
+            const row = PRICES.lamination[fmt];
+            rows.push(fixedRow({
+              serviceName: `Документы #${blockNumber}`,
+              position: `Ламинирование ${fmt}`,
+              source: file.name,
+              actualFormatLabel: FORMAT_LABELS[fmt],
+              billedFormat: fmt,
+              tariff: row,
+              qty
+            }));
+          });
+        }
+      }
+
+      if (multiforaFormat !== "none" && multiforaCount > 0) {
+        const row = PRICES.multifora[multiforaFormat];
+        rows.push(fixedRow({
+          serviceName: `Документы #${blockNumber}`,
+          position: `Мультифоры ${multiforaFormat}`,
+          source: "Доп. материалы",
+          actualFormatLabel: FORMAT_LABELS[multiforaFormat],
+          billedFormat: multiforaFormat,
+          tariff: row,
+          qty: multiforaCount
+        }));
+      }
+
+      if (folder !== "none") {
+        const row = PRICES.folders[folder];
+        rows.push(fixedRow({
+          serviceName: `Документы #${blockNumber}`,
+          position: row.label,
+          source: "Доп. материалы",
+          actualFormatLabel: "—",
+          billedFormat: "—",
+          tariff: row,
+          qty: 1
+        }));
+      }
+
+      return rows;
     }
-    return "CUSTOM";
-  }
 
-  function distanceToFormat(widthMm, heightMm, size) {
-    const d1 = Math.abs(widthMm - size.w) + Math.abs(heightMm - size.h);
-    const d2 = Math.abs(widthMm - size.h) + Math.abs(heightMm - size.w);
-    return Math.min(d1, d2);
-  }
+    function calculateCopyBlock(id, blockNumber) {
+      const format = document.getElementById(`copy-format-${id}`).value;
+      const color = document.getElementById(`copy-color-${id}`).value;
+      const source = document.getElementById(`copy-source-${id}`).value;
+      const qty = Math.max(1, parseInt(document.getElementById(`copy-qty-${id}`).value || "1", 10));
+      const row = PRICES.copy[format][color][source];
 
-  function findNearestPrintableFormat(widthMm, heightMm) {
-    const candidates = ["A4", "A3", "A2", "A1", "A0", "SRA3", "A5", "A6"];
-    let best = candidates[0];
-    let bestDistance = Infinity;
-    for (const name of candidates) {
-      const dist = distanceToFormat(widthMm, heightMm, FORMATS[name]);
-      if (dist < bestDistance) {
-        bestDistance = dist;
-        best = name;
+      return [fixedRow({
+        serviceName: `Ксерокопирование #${blockNumber}`,
+        position: `${color === "bw" ? "Ч/б" : "Цвет"}, ${FORMAT_LABELS[format]}`,
+        source: source === "feeder" ? "Автоподатчик" : "Со стекла",
+        actualFormatLabel: FORMAT_LABELS[format],
+        billedFormat: format,
+        tariff: row,
+        qty
+      })];
+    }
+
+    function calculateScanBlock(id, blockNumber) {
+      const format = document.getElementById(`scan-format-${id}`).value;
+      const source = document.getElementById(`scan-source-${id}`).value;
+      const qty = Math.max(1, parseInt(document.getElementById(`scan-qty-${id}`).value || "1", 10));
+
+      let row = null;
+      if (format === "A4") {
+        row = qty <= 50
+          ? (source === "glass" ? PRICES.scan.A4.glass_lt50 : PRICES.scan.A4.feeder_lt50)
+          : (source === "glass" ? PRICES.scan.A4.glass_gte50 : PRICES.scan.A4.feeder_gte50);
+      } else if (format === "A3") {
+        row = qty <= 50
+          ? (source === "glass" ? PRICES.scan.A3.glass_lt50 : PRICES.scan.A3.feeder_lt50)
+          : (source === "glass" ? PRICES.scan.A3.glass_gte50 : PRICES.scan.A3.feeder_gte50);
+      } else {
+        row = PRICES.scan[format].wide;
+      }
+
+      return [fixedRow({
+        serviceName: `Сканирование #${blockNumber}`,
+        position: `Сканирование ${FORMAT_LABELS[format]}`,
+        source: source === "feeder" ? "Автоподатчик" : source === "glass" ? "Со стекла" : "Широкоформатный",
+        actualFormatLabel: FORMAT_LABELS[format],
+        billedFormat: format,
+        tariff: row,
+        qty
+      })];
+    }
+
+    function calculatePhotosBlock(id, blockNumber) {
+      const format = document.getElementById(`photo-format-${id}`).value;
+      const qty = Math.max(1, parseInt(document.getElementById(`photo-qty-${id}`).value || "1", 10));
+
+      if (format === "10x15") {
+        const row = getTierRow(PRICES.photos["10x15"], qty);
+        return [fixedRow({
+          serviceName: `Фотографии #${blockNumber}`,
+          position: "Печать фотографий 10×15",
+          source: "Фотопечать",
+          actualFormatLabel: "10×15 см",
+          billedFormat: "10×15",
+          tariff: row,
+          qty
+        })];
+      }
+
+      const row = PRICES.photos[format];
+      return [fixedRow({
+        serviceName: `Фотографии #${blockNumber}`,
+        position: row.label,
+        source: "Фотопечать",
+        actualFormatLabel: row.label,
+        billedFormat: row.label,
+        tariff: row,
+        qty
+      })];
+    }
+
+    function calculateDrawingsBlock(id, blockNumber) {
+      const format = document.getElementById(`drawing-format-${id}`).value;
+      const color = document.getElementById(`drawing-color-${id}`).value;
+      const qty = Math.max(1, parseInt(document.getElementById(`drawing-qty-${id}`).value || "1", 10));
+      const fold = document.getElementById(`drawing-fold-${id}`).value;
+
+      const baseRow = PRICES.drawings[color][format];
+      const rows = [fixedRow({
+        serviceName: `Чертежи #${blockNumber}`,
+        position: `${color === "bw" ? "Ч/б" : "Цвет"} чертеж`,
+        source: "Широкоформатная печать",
+        actualFormatLabel: FORMAT_LABELS[format],
+        billedFormat: format,
+        tariff: baseRow,
+        qty
+      })];
+
+      if (fold !== "none") {
+        const foldRow = PRICES.drawings.fold[fold];
+        rows.push(fixedRow({
+          serviceName: `Чертежи #${blockNumber}`,
+          position: "Фальцовка",
+          source: "Постобработка",
+          actualFormatLabel: FORMAT_LABELS[format],
+          billedFormat: format,
+          tariff: foldRow,
+          qty
+        }));
+      }
+
+      return rows;
+    }
+
+    function calculateStickersBlock(id, blockNumber) {
+      const type = document.getElementById(`sticker-type-${id}`).value;
+      const qty = Math.max(1, parseInt(document.getElementById(`sticker-qty-${id}`).value || "1", 10));
+      const row = PRICES.stickers[type];
+
+      return [fixedRow({
+        serviceName: `Стикеры #${blockNumber}`,
+        position: row.label,
+        source: "Оперативная полиграфия",
+        actualFormatLabel: row.label.indexOf("SRA3") >= 0 ? "SRA3 (320×450 мм)" : row.label,
+        billedFormat: row.label.indexOf("SRA3") >= 0 ? "SRA3" : "—",
+        tariff: row,
+        qty
+      })];
+    }
+
+    function fixedRow({ serviceName, position, source, actualFormatLabel, billedFormat, tariff, qty }) {
+      return {
+        id: makeRowId(),
+        serviceType: "fixed",
+        serviceName,
+        position,
+        source,
+        actualFormatLabel,
+        billedFormat,
+        qty,
+        unitPrice: tariff.price,
+        tariffCode: tariff.code,
+        tariffLabel: tariff.label,
+        unitPriceEditable: true,
+        billedFormatEditable: false,
+        editableFormats: [],
+        meta: {}
+      };
+    }
+
+    function renderResults(notes = []) {
+      resultTable.innerHTML = "";
+
+      calculatedRows.forEach((row, index) => {
+        const tr = document.createElement("tr");
+
+        const billedFormatCell = row.billedFormatEditable
+          ? formatSelectHtml(row, index)
+          : escapeHtml(row.billedFormat || "—");
+
+        const unitPriceCell = row.unitPriceEditable
+          ? `<input type="number" step="0.01" min="0" class="row-input row-price-input" data-row-id="${row.id}" value="${Number(row.unitPrice).toFixed(2)}">`
+          : money(row.unitPrice);
+
+        tr.innerHTML = `
+          <td>${escapeHtml(row.serviceName)}</td>
+          <td>
+            <div>${escapeHtml(row.position)}</div>
+            ${row.colorMode ? `<div class="small">${row.colorMode === "color" ? "Цвет" : "Ч/б"}</div>` : ""}
+          </td>
+          <td>${escapeHtml(row.source || "—")}</td>
+          <td>${escapeHtml(row.actualFormatLabel || "—")}</td>
+          <td>${billedFormatCell}</td>
+          <td>
+            <div>${escapeHtml(row.tariffCode || "—")}</div>
+            <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
+          </td>
+          <td>${escapeHtml(String(row.qty))}</td>
+          <td>${unitPriceCell}</td>
+          <td class="money">${money(row.qty * row.unitPrice)}</td>
+        `;
+        resultTable.appendChild(tr);
+      });
+
+      resultBox.style.display = "block";
+      bindResultEditors();
+
+      const servicesCount = [...new Set(calculatedRows.map(r => r.serviceName))].length;
+      const filesCount = calculatedRows
+        .filter(r => r.serviceType === "documents")
+        .reduce((acc, r) => acc + (r.source && r.source.endsWith(".pdf") ? 1 : 0), 0);
+
+      summaryBox.innerHTML = `
+        <strong>Услуг в заказе:</strong> ${servicesCount}<br>
+        <strong>Строк в расчёте:</strong> ${calculatedRows.length}<br>
+        <strong>PDF-источников в документах:</strong> ${filesCount}
+      `;
+
+      if (notes.length) {
+        notesBox.style.display = "block";
+        notesBox.innerHTML = notes.map(n => `• ${escapeHtml(n)}`).join("<br>");
+      } else {
+        notesBox.style.display = "none";
+        notesBox.innerHTML = "";
+      }
+
+      refreshTotal();
+    }
+
+    function bindResultEditors() {
+      document.querySelectorAll(".row-price-input").forEach(input => {
+        input.addEventListener("input", (e) => {
+          const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
+          if (!row) return;
+          row.unitPrice = Math.max(0, parseFloat(e.target.value || "0"));
+          refreshResultsOnly();
+        });
+      });
+
+      document.querySelectorAll(".row-format-select").forEach(select => {
+        select.addEventListener("change", (e) => {
+          const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
+          if (!row) return;
+
+          row.billedFormat = e.target.value;
+          const newInfo = getDocumentPriceInfo(row.billedFormat, row.colorMode, row.qty);
+          row.tariffCode = newInfo.code;
+          row.tariffLabel = newInfo.label;
+          row.unitPrice = newInfo.price;
+
+          row.position = `${row.colorMode === "color" ? "Цветная печать" : "Ч/б печать"}, ${FORMAT_LABELS[row.billedFormat] || row.billedFormat}`;
+          refreshResultsOnly();
+        });
+      });
+    }
+
+    function refreshResultsOnly() {
+      const existingNotesHtml = notesBox.innerHTML;
+      const notesVisible = notesBox.style.display !== "none";
+      renderResults([]);
+      if (notesVisible && existingNotesHtml) {
+        notesBox.style.display = "block";
+        notesBox.innerHTML = existingNotesHtml;
       }
     }
-    return best;
-  }
 
-  function getTierRow(tiers, qty) {
-    for (const tier of tiers) {
-      if (qty <= tier.max) return tier;
+    function refreshTotal() {
+      const total = calculatedRows.reduce((sum, row) => sum + row.qty * row.unitPrice, 0);
+      totalBox.textContent = `Итого: ${money(total)}`;
     }
-    return tiers[tiers.length - 1];
-  }
 
-  function getBindingBaseFormat(stats) {
-    const a3Pages = stats.pagesOneCopyByBilledFormat.A3;
-    const a4Pages = stats.pagesOneCopyByBilledFormat.A4;
-    if (a3Pages > 0 && a4Pages === 0) return "A3";
-    return "A4";
-  }
+    function formatSelectHtml(row) {
+      const options = row.editableFormats.map(fmt => {
+        const selected = fmt === row.billedFormat ? " selected" : "";
+        return `<option value="${fmt}"${selected}>${escapeHtml(FORMAT_LABELS[fmt] || fmt)}</option>`;
+      }).join("");
 
-  function getBindingSheetsPerCopy(stats, sidesType, bindingBaseFormat) {
-    const pagesPerCopy = stats.pagesOneCopyByBilledFormat[bindingBaseFormat] || 0;
-    if (pagesPerCopy === 0) return 0;
-    return sidesType === "double" ? Math.ceil(pagesPerCopy / 2) : pagesPerCopy;
-  }
-
-  function findBindingRow(rows, sheetCount) {
-    return rows.find(r => sheetCount <= r.max) || null;
-  }
-
-  function renderTable(items) {
-    resultTable.innerHTML = "";
-    items.forEach(item => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td style="padding:10px;border-bottom:1px solid #eee;">${item.name}</td>
-        <td style="padding:10px;border-bottom:1px solid #eee;">${item.tariff}</td>
-        <td style="padding:10px;border-bottom:1px solid #eee;">${item.qty}</td>
-        <td style="padding:10px;border-bottom:1px solid #eee;">${item.price}</td>
-        <td style="padding:10px;border-bottom:1px solid #eee;">${item.sum}</td>
+      return `
+        <select class="row-select row-format-select" data-row-id="${row.id}">
+          ${options}
+        </select>
       `;
-      resultTable.appendChild(tr);
-    });
-  }
+    }
 
-  function renderCustomPages(customPages) {
-    customSizesTable.innerHTML = "";
-    customPages.forEach(p => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td style="padding:10px;border-bottom:1px solid #eee;">${p.pageNumber}</td>
-        <td style="padding:10px;border-bottom:1px solid #eee;">${p.widthMm} × ${p.heightMm} мм</td>
-        <td style="padding:10px;border-bottom:1px solid #eee;">${p.billedFormat}</td>
-        <td style="padding:10px;border-bottom:1px solid #eee;">${p.colorMode === "color" ? "цвет" : "ч/б"}</td>
-      `;
-      customSizesTable.appendChild(tr);
-    });
-    customSizesBox.style.display = "block";
-  }
+    function getDocumentPriceInfo(format, colorMode, qty) {
+      if (colorMode === "bw") {
+        if (!PRICES.documentsBW[format]) {
+          return {
+            price: 0,
+            code: "—",
+            label: `Для ${format} нет автоматической цены ч/б`
+          };
+        }
+        const tier = getTierRow(PRICES.documentsBW[format], qty);
+        return {
+          price: tier.price,
+          code: tier.code,
+          label: tier.label
+        };
+      }
 
-  function clearResults() {
-    resultBox.style.display = "none";
-    resultTable.innerHTML = "";
-    totalPrice.textContent = "";
-    summaryTop.innerHTML = "";
-    customSizesTable.innerHTML = "";
-    customSizesBox.style.display = "none";
-  }
+      if (!PRICES.documentsColor[format]) {
+        return {
+          price: 0,
+          code: "—",
+          label: `Для ${format} нет автоматической цветной цены`
+        };
+      }
 
-  function setStatus(text, isError = false) {
-    statusBox.textContent = text || "";
-    statusBox.style.color = isError ? "#c62828" : "#444";
-  }
+      const info = PRICES.documentsColor[format];
+      return {
+        price: info.min,
+        code: info.code,
+        label: `${info.label} (${money(info.min)} – ${money(info.max)})`
+      };
+    }
 
-  function money(value) {
-    return `${Number(value).toFixed(2)} ₽`;
-  }
+    function getTierRow(tiers, qty) {
+      for (const tier of tiers) {
+        if (qty <= tier.max) return tier;
+      }
+      return tiers[tiers.length - 1];
+    }
 
-  function round1(num) {
-    return Math.round(num * 10) / 10;
-  }
+    function makeRowId() {
+      return "row_" + Math.random().toString(36).slice(2, 11);
+    }
 
-  function formatBytes(bytes) {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-  }
-</script>
+    function clearAll() {
+      servicesContainer.innerHTML = "";
+      blockCounter = 1;
+      calculatedRows = [];
+      addServiceBlock("documents");
+      clearResults();
+      setStatus("");
+    }
+
+    function clearResults() {
+      resultBox.style.display = "none";
+      resultTable.innerHTML = "";
+      summaryBox.innerHTML = "";
+      totalBox.textContent = "";
+      notesBox.innerHTML = "";
+      notesBox.style.display = "none";
+      calculatedRows = [];
+    }
+
+    function setStatus(text, isError = false) {
+      statusBox.textContent = text || "";
+      statusBox.style.color = isError ? "#b00020" : "#444";
+    }
+
+    function money(value) {
+      return `${Number(value).toFixed(2)} ₽`;
+    }
+
+    function ptToMm(pt) {
+      return pt * 25.4 / 72;
+    }
+
+    function round1(num) {
+      return Math.round(num * 10) / 10;
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function detectFormat(widthMm, heightMm) {
+      for (const [name, size] of Object.entries(FORMATS)) {
+        const normalMatch =
+          Math.abs(widthMm - size.w) <= TOLERANCE_MM &&
+          Math.abs(heightMm - size.h) <= TOLERANCE_MM;
+
+        const rotatedMatch =
+          Math.abs(widthMm - size.h) <= TOLERANCE_MM &&
+          Math.abs(heightMm - size.w) <= TOLERANCE_MM;
+
+        if (normalMatch || rotatedMatch) return name;
+      }
+      return "CUSTOM";
+    }
+
+    function distanceToFormat(widthMm, heightMm, size) {
+      const d1 = Math.abs(widthMm - size.w) + Math.abs(heightMm - size.h);
+      const d2 = Math.abs(widthMm - size.h) + Math.abs(heightMm - size.w);
+      return Math.min(d1, d2);
+    }
+
+    function findNearestFormat(widthMm, heightMm) {
+      let best = "A4";
+      let bestDistance = Infinity;
+
+      Object.entries(FORMATS).forEach(([name, size]) => {
+        const dist = distanceToFormat(widthMm, heightMm, size);
+        if (dist < bestDistance) {
+          bestDistance = dist;
+          best = name;
+        }
+      });
+
+      return best;
+    }
+
+    function buildActualFormatLabel(widthMm, heightMm, exactFormat) {
+      const w = round1(widthMm);
+      const h = round1(heightMm);
+
+      if (exactFormat !== "CUSTOM") {
+        return `${exactFormat} (${FORMATS[exactFormat].w}×${FORMATS[exactFormat].h} мм)`;
+      }
+
+      const nearest = findNearestFormat(widthMm, heightMm);
+      return `≈ ${nearest} (${FORMATS[nearest].w}×${FORMATS[nearest].h} мм), файл: ${w}×${h} мм`;
+    }
+
+    async function detectPageColorMode(page) {
+      const viewport = page.getViewport({ scale: 0.5 });
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+      canvas.width = Math.max(1, Math.floor(viewport.width));
+      canvas.height = Math.max(1, Math.floor(viewport.height));
+
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      let coloredPixels = 0;
+
+      for (let y = 0; y < height; y += SAMPLE_STEP) {
+        for (let x = 0; x < width; x += SAMPLE_STEP) {
+          const idx = (y * width + x) * 4;
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+          const a = data[idx + 3];
+
+          if (a < 10) continue;
+
+          if (
+            Math.abs(r - g) > COLOR_TOLERANCE ||
+            Math.abs(g - b) > COLOR_TOLERANCE ||
+            Math.abs(r - b) > COLOR_TOLERANCE
+          ) {
+            coloredPixels++;
+            if (coloredPixels >= 5) return "color";
+          }
+        }
+      }
+
+      return "bw";
+    }
+  </script>
+</body>
+</html>
