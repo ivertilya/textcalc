@@ -151,6 +151,12 @@
       font-size: 14px;
       color: #444;
     }
+    .calc-actions-under {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 8px 0 22px;
+    }
     .result-box {
       margin-top: 24px;
       background: #fff;
@@ -163,11 +169,6 @@
       font-weight: 700;
       margin-bottom: 12px;
     }
-    .summary {
-      margin-bottom: 16px;
-      line-height: 1.6;
-      color: #222;
-    }
     .table-wrap {
       overflow-x: auto;
       margin-top: 12px;
@@ -175,7 +176,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1080px;
+      min-width: 920px;
       background: #fff;
     }
     th, td {
@@ -217,9 +218,10 @@
       background: #fff;
     }
     .total {
-      margin-top: 18px;
-      font-size: 28px;
-      font-weight: 700;
+      margin-top: 22px;
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.1;
     }
     .note-box {
       margin-top: 14px;
@@ -242,13 +244,38 @@
     .extras-title {
       font-size: 18px;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin: 0;
+    }
+    .extras-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 0;
+      margin-bottom: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: #111;
+      text-align: left;
+    }
+    .extras-content {
+      margin-top: 16px;
+    }
+    .extras-content.collapsed {
+      display: none;
     }
     .extras-actions {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       margin-top: 12px;
+    }
+    .chevron {
+      font-size: 18px;
+      line-height: 1;
     }
 
     @media (max-width: 900px) {
@@ -258,12 +285,15 @@
       .service-header {
         flex-direction: column;
       }
+      .total {
+        font-size: 34px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Калькулятор заказа</h1>
+    <h1>Калькулятор печати</h1>
     <p class="lead">
       Добавляй в один заказ несколько услуг: документы, фото, чертежи, сканирование, копирование, стикеры.
       Для документов — один PDF на одну услугу.
@@ -271,20 +301,22 @@
 
     <div class="top-actions">
       <button class="btn-primary" id="addServiceBtn">+ Добавить услугу</button>
-      <button class="btn-secondary" id="calculateBtn">Рассчитать заказ</button>
       <button class="btn-secondary" id="clearBtn">Сбросить всё</button>
     </div>
 
     <div id="status" class="status"></div>
     <div id="servicesContainer"></div>
 
+    <div class="calc-actions-under">
+      <button class="btn-primary" id="calculateBtn">Рассчитать заказ</button>
+    </div>
+
     <div id="resultBox" class="result-box" style="display:none;">
       <div class="result-title">Результат расчёта</div>
-      <div id="summary" class="summary"></div>
 
       <div class="bulk-box">
-        <div class="extras-title">Изменить цену за единицу сразу для всех строк</div>
-        <div class="grid-4">
+        <div class="extras-title" style="margin-bottom:12px;">Изменить цену за единицу сразу для всех строк</div>
+        <div class="grid-3">
           <div class="field">
             <label>Новая цена за единицу</label>
             <input type="number" id="bulkPriceValue" min="0" step="0.01" value="0" />
@@ -301,7 +333,6 @@
             <label>&nbsp;</label>
             <button class="btn-secondary" id="applyBulkPriceBtn">Применить цену</button>
           </div>
-          <div></div>
         </div>
       </div>
 
@@ -309,11 +340,9 @@
         <table>
           <thead>
             <tr>
-              <th>Услуга</th>
-              <th>Позиция</th>
               <th>Фактический размер</th>
-              <th>Формат для расчёта</th>
               <th>Пункт прайса</th>
+              <th>Формат для расчёта</th>
               <th>Кол-во</th>
               <th>Цена за ед.</th>
               <th>Сумма</th>
@@ -326,65 +355,71 @@
       <div id="notesBox" class="note-box" style="display:none;"></div>
 
       <div class="extras-box">
-        <div class="extras-title">Дополнительные услуги к заказу</div>
-        <div class="grid-4">
-          <div class="field">
-            <label>Ламинирование</label>
-            <select id="extraLaminationFormat">
-              <option value="none">Не добавлять</option>
-              <option value="A6">A6 (105×148 мм)</option>
-              <option value="A5">A5 (148×210 мм)</option>
-              <option value="A4">A4 (210×297 мм)</option>
-              <option value="A3">A3 (297×420 мм)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Количество ламинирования</label>
-            <input type="number" id="extraLaminationQty" min="0" value="0" />
-          </div>
-          <div class="field">
-            <label>Брошюровка</label>
-            <select id="extraBindingType">
-              <option value="none">Не добавлять</option>
-              <option value="staples2">2 скобы</option>
-              <option value="plastic">Пластиковая пружина</option>
-              <option value="metal">Металлическая пружина</option>
-              <option value="hardcover">Твердый переплет A4</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Количество брошюровки</label>
-            <input type="number" id="extraBindingQty" min="0" value="0" />
+        <button type="button" class="extras-toggle" id="toggleExtrasBtn">
+          <span class="extras-title">Дополнительные услуги к заказу</span>
+          <span class="chevron" id="extrasChevron">▾</span>
+        </button>
+
+        <div class="extras-content collapsed" id="extrasContent">
+          <div class="grid-3">
+            <div class="field">
+              <label>Ламинирование</label>
+              <select id="extraLaminationFormat">
+                <option value="none">Не добавлять</option>
+                <option value="A6">A6 (105×148 мм)</option>
+                <option value="A5">A5 (148×210 мм)</option>
+                <option value="A4">A4 (210×297 мм)</option>
+                <option value="A3">A3 (297×420 мм)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество ламинирования</label>
+              <input type="number" id="extraLaminationQty" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label>Брошюровка</label>
+              <select id="extraBindingType">
+                <option value="none">Не добавлять</option>
+                <option value="staples2">2 скобы</option>
+                <option value="plastic">Пластиковая пружина</option>
+                <option value="metal">Металлическая пружина</option>
+                <option value="hardcover">Твердый переплет A4</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Количество брошюровки</label>
+              <input type="number" id="extraBindingQty" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label>Мультифоры</label>
+              <select id="extraMultiforaFormat">
+                <option value="none">Не добавлять</option>
+                <option value="A5">A5 (148×210 мм)</option>
+                <option value="A4">A4 (210×297 мм)</option>
+                <option value="A3">A3 (297×420 мм)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество мультифор</label>
+              <input type="number" id="extraMultiforaQty" min="0" value="0" />
+            </div>
+
+            <div class="field">
+              <label>Папка</label>
+              <select id="extraFolderType">
+                <option value="none">Не добавлять</option>
+                <option value="folder20">Папка на 20 мультифор</option>
+                <option value="folder30">Папка на 30 мультифор</option>
+                <option value="folder40">Папка на 40 мультифор</option>
+                <option value="folder60">Папка на 60 мультифор</option>
+              </select>
+            </div>
           </div>
 
-          <div class="field">
-            <label>Мультифоры</label>
-            <select id="extraMultiforaFormat">
-              <option value="none">Не добавлять</option>
-              <option value="A5">A5 (148×210 мм)</option>
-              <option value="A4">A4 (210×297 мм)</option>
-              <option value="A3">A3 (297×420 мм)</option>
-            </select>
+          <div class="extras-actions">
+            <button class="btn-secondary" id="applyExtrasBtn">Добавить доп. услуги в результат</button>
           </div>
-          <div class="field">
-            <label>Количество мультифор</label>
-            <input type="number" id="extraMultiforaQty" min="0" value="0" />
-          </div>
-          <div class="field">
-            <label>Папка</label>
-            <select id="extraFolderType">
-              <option value="none">Не добавлять</option>
-              <option value="folder20">Папка на 20 мультифор</option>
-              <option value="folder30">Папка на 30 мультифор</option>
-              <option value="folder40">Папка на 40 мультифор</option>
-              <option value="folder60">Папка на 60 мультифор</option>
-            </select>
-          </div>
-          <div></div>
-        </div>
-
-        <div class="extras-actions">
-          <button class="btn-secondary" id="applyExtrasBtn">Добавить доп. услуги в результат</button>
         </div>
       </div>
 
@@ -582,17 +617,23 @@
     const statusBox = document.getElementById("status");
     const resultBox = document.getElementById("resultBox");
     const resultTable = document.getElementById("resultTable");
-    const summaryBox = document.getElementById("summary");
     const totalBox = document.getElementById("total");
     const notesBox = document.getElementById("notesBox");
     const applyExtrasBtn = document.getElementById("applyExtrasBtn");
     const applyBulkPriceBtn = document.getElementById("applyBulkPriceBtn");
+    const toggleExtrasBtn = document.getElementById("toggleExtrasBtn");
+    const extrasContent = document.getElementById("extrasContent");
+    const extrasChevron = document.getElementById("extrasChevron");
 
     addServiceBtn.addEventListener("click", () => addServiceBlock());
     clearBtn.addEventListener("click", clearAll);
     calculateBtn.addEventListener("click", calculateOrder);
     applyExtrasBtn.addEventListener("click", applyExtras);
     applyBulkPriceBtn.addEventListener("click", applyBulkPrice);
+    toggleExtrasBtn.addEventListener("click", () => {
+      extrasContent.classList.toggle("collapsed");
+      extrasChevron.textContent = extrasContent.classList.contains("collapsed") ? "▾" : "▴";
+    });
 
     addServiceBlock("documents");
 
@@ -851,10 +892,8 @@
 
       const rows = [];
       const notes = [];
-      let blockNumber = 0;
 
       for (const block of blocks) {
-        blockNumber++;
         const id = Number(block.dataset.blockId);
         const type = block.dataset.serviceType;
         const customName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName(type, id);
@@ -891,7 +930,6 @@
       }
 
       const rows = [];
-
       setStatus(`Анализирую ${file.name}...`);
       const buffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
@@ -922,8 +960,6 @@
 
         if (!filePageGroups[key]) {
           filePageGroups[key] = {
-            serviceName: customName,
-            position: colorMode === "color" ? "Цветная печать" : "Ч/б печать",
             actualFormatLabel: actualLabel,
             billedFormat: nearestFormat,
             colorMode,
@@ -939,8 +975,7 @@
         rows.push({
           id: makeRowId(),
           serviceType: "documents",
-          serviceName: group.serviceName,
-          position: `${group.position}, ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}`,
+          serviceName: customName,
           actualFormatLabel: group.actualFormatLabel,
           billedFormat: group.billedFormat,
           qty: group.qty,
@@ -951,8 +986,7 @@
           qtyEditable: true,
           billedFormatEditable: true,
           editableFormats: [...FORMAT_OPTIONS],
-          colorMode: group.colorMode,
-          meta: {}
+          colorMode: group.colorMode
         });
 
         if (group.actualFormatLabel.startsWith("≈")) {
@@ -972,7 +1006,6 @@
 
       return [fixedRow({
         serviceName: customName,
-        position: `${color === "bw" ? "Ч/б" : "Цвет"}, ${FORMAT_LABELS[format]}`,
         actualFormatLabel: FORMAT_LABELS[format],
         billedFormat: format,
         tariff: row,
@@ -1000,7 +1033,6 @@
 
       return [fixedRow({
         serviceName: customName,
-        position: `Сканирование ${FORMAT_LABELS[format]}`,
         actualFormatLabel: FORMAT_LABELS[format],
         billedFormat: format,
         tariff: row,
@@ -1016,7 +1048,6 @@
         const row = getTierRow(PRICES.photos["10x15"], qty);
         return [fixedRow({
           serviceName: customName,
-          position: "Печать фотографий 10×15",
           actualFormatLabel: "10×15 см",
           billedFormat: "10×15",
           tariff: row,
@@ -1027,7 +1058,6 @@
       const row = PRICES.photos[format];
       return [fixedRow({
         serviceName: customName,
-        position: row.label,
         actualFormatLabel: row.label,
         billedFormat: row.label,
         tariff: row,
@@ -1044,7 +1074,6 @@
       const baseRow = PRICES.drawings[color][format];
       const rows = [fixedRow({
         serviceName: customName,
-        position: `${color === "bw" ? "Ч/б" : "Цвет"} чертеж`,
         actualFormatLabel: FORMAT_LABELS[format],
         billedFormat: format,
         tariff: baseRow,
@@ -1055,7 +1084,6 @@
         const foldRow = PRICES.drawings.fold[fold];
         rows.push(fixedRow({
           serviceName: customName,
-          position: "Фальцовка",
           actualFormatLabel: FORMAT_LABELS[format],
           billedFormat: format,
           tariff: foldRow,
@@ -1073,7 +1101,6 @@
 
       return [fixedRow({
         serviceName: customName,
-        position: row.label,
         actualFormatLabel: row.label.indexOf("SRA3") >= 0 ? "SRA3 (320×450 мм)" : row.label,
         billedFormat: row.label.indexOf("SRA3") >= 0 ? "SRA3" : "—",
         tariff: row,
@@ -1081,12 +1108,11 @@
       })];
     }
 
-    function fixedRow({ serviceName, position, actualFormatLabel, billedFormat, tariff, qty }) {
+    function fixedRow({ serviceName, actualFormatLabel, billedFormat, tariff, qty }) {
       return {
         id: makeRowId(),
         serviceType: "fixed",
         serviceName,
-        position,
         actualFormatLabel,
         billedFormat,
         qty,
@@ -1097,7 +1123,7 @@
         qtyEditable: true,
         billedFormatEditable: false,
         editableFormats: [],
-        meta: {}
+        colorMode: null
       };
     }
 
@@ -1122,7 +1148,6 @@
         calculatedRows.push({
           ...fixedRow({
             serviceName: "Доп. услуги",
-            position: `Ламинирование ${laminationFormat}`,
             actualFormatLabel: FORMAT_LABELS[laminationFormat],
             billedFormat: laminationFormat,
             tariff: row,
@@ -1137,7 +1162,6 @@
         calculatedRows.push({
           ...fixedRow({
             serviceName: "Доп. услуги",
-            position: row.label,
             actualFormatLabel: bindingType === "hardcover" ? "A4 (210×297 мм)" : "—",
             billedFormat: bindingType === "hardcover" ? "A4" : "—",
             tariff: row,
@@ -1152,7 +1176,6 @@
         calculatedRows.push({
           ...fixedRow({
             serviceName: "Доп. услуги",
-            position: `Мультифоры ${multiforaFormat}`,
             actualFormatLabel: FORMAT_LABELS[multiforaFormat],
             billedFormat: multiforaFormat,
             tariff: row,
@@ -1167,7 +1190,6 @@
         calculatedRows.push({
           ...fixedRow({
             serviceName: "Доп. услуги",
-            position: row.label,
             actualFormatLabel: "—",
             billedFormat: "—",
             tariff: row,
@@ -1223,17 +1245,12 @@
           : escapeHtml(String(row.qty));
 
         tr.innerHTML = `
-          <td>${escapeHtml(row.serviceName)}</td>
-          <td>
-            <div>${escapeHtml(row.position)}</div>
-            ${row.colorMode ? `<div class="small">${row.colorMode === "color" ? "Цвет" : "Ч/б"}</div>` : ""}
-          </td>
           <td>${escapeHtml(row.actualFormatLabel || "—")}</td>
-          <td>${billedFormatCell}</td>
           <td>
             <div>${escapeHtml(row.tariffCode || "—")}</div>
             <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
           </td>
+          <td>${billedFormatCell}</td>
           <td>${qtyCell}</td>
           <td>${unitPriceCell}</td>
           <td class="money">${money(row.qty * row.unitPrice)}</td>
@@ -1243,12 +1260,6 @@
 
       resultBox.style.display = "block";
       bindResultEditors();
-
-      const servicesCount = [...new Set(calculatedRows.map(r => r.serviceName))].length;
-      summaryBox.innerHTML = `
-        <strong>Услуг в заказе:</strong> ${servicesCount}<br>
-        <strong>Строк в расчёте:</strong> ${calculatedRows.length}
-      `;
 
       if (notes.length) {
         notesBox.style.display = "block";
@@ -1294,7 +1305,6 @@
           row.tariffCode = newInfo.code;
           row.tariffLabel = newInfo.label;
           row.unitPrice = newInfo.price;
-          row.position = `${row.colorMode === "color" ? "Цветная печать" : "Ч/б печать"}, ${FORMAT_LABELS[row.billedFormat] || row.billedFormat}`;
           refreshResultsOnly();
         });
       });
@@ -1390,7 +1400,6 @@
     function clearResults() {
       resultBox.style.display = "none";
       resultTable.innerHTML = "";
-      summaryBox.innerHTML = "";
       totalBox.textContent = "";
       notesBox.innerHTML = "";
       notesBox.style.display = "none";
