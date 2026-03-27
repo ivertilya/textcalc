@@ -7,11 +7,23 @@
   <style>
     * { box-sizing: border-box; }
 
+    :root {
+      --bg: #f6f6f7;
+      --card: #ffffff;
+      --line: #dddddd;
+      --line-soft: #eeeeee;
+      --text: #111111;
+      --muted: #666666;
+      --black: #111111;
+      --white: #ffffff;
+      --danger: #b00020;
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f6f6f7;
-      color: #111;
+      background: var(--bg);
+      color: var(--text);
     }
 
     .wrap {
@@ -20,17 +32,17 @@
       padding: 18px 24px 24px;
     }
 
+    h1 {
+      margin: 0 0 10px;
+      font-size: 32px;
+    }
+
     .top-bar {
       display: flex;
       gap: 12px;
       align-items: center;
       flex-wrap: wrap;
       margin-bottom: 10px;
-    }
-
-    h1 {
-      margin: 0 0 12px;
-      font-size: 32px;
     }
 
     .top-actions {
@@ -58,27 +70,25 @@
     }
 
     .btn-primary {
-      background: #111;
-      color: #fff;
+      background: var(--black);
+      color: var(--white);
     }
 
     .btn-secondary {
-      background: #fff;
-      color: #111;
+      background: var(--white);
+      color: var(--black);
       border: 1px solid #ccc;
     }
 
     .btn-danger {
-      background: #fff;
-      color: #b00020;
+      background: var(--white);
+      color: var(--danger);
       border: 1px solid #e0b4b4;
-      margin-top: 0;
-      align-self: flex-start;
     }
 
     .service-card {
-      background: #fff;
-      border: 1px solid #ddd;
+      background: var(--card);
+      border: 1px solid var(--line);
       border-radius: 18px;
       padding: 18px;
       margin-bottom: 14px;
@@ -117,30 +127,30 @@
     }
 
     .service-type-buttons {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  width: 100%;
-  gap: 8px;
-  margin-bottom: 14px;
-}
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      width: 100%;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
 
-.service-type-btn {
-  width: 100%;
-  padding: 12px 8px;
-  border-radius: 12px;
-  border: 1px solid #ccc;
-  background: #fff;
-  color: #111;
-  font-weight: 700;
-  cursor: pointer;
-  text-align: center;
-}
+    .service-type-btn {
+      width: 100%;
+      padding: 12px 8px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #111;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+    }
 
-.service-type-btn.active {
-  background: #111;
-  border-color: #111;
-  color: #fff;
-}
+    .service-type-btn.active {
+      background: #111;
+      border-color: #111;
+      color: #fff;
+    }
 
     .grid {
       display: grid;
@@ -172,9 +182,9 @@
     }
 
     input[type="text"],
-    input[type="number"],
     input[type="file"],
-    select {
+    select,
+    textarea {
       width: 100%;
       padding: 12px;
       border: 1px solid #ccc;
@@ -183,19 +193,43 @@
       background: #fff;
     }
 
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 34px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      font-size: 14px;
+      background: #fff;
+      text-align: center;
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
     input[type="file"] {
       padding: 10px;
     }
 
     .hint {
       font-size: 12px;
-      color: #666;
+      color: var(--muted);
       line-height: 1.4;
+    }
+
+    .service-actions {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 14px;
     }
 
     .extras-box {
       margin-top: 18px;
-      border: 1px solid #eee;
+      border: 1px solid var(--line-soft);
       border-radius: 14px;
       background: #fafafa;
       overflow: hidden;
@@ -244,13 +278,40 @@
     .service-result {
       margin-top: 20px;
       padding-top: 18px;
-      border-top: 1px solid #eee;
+      border-top: 1px solid var(--line-soft);
+    }
+
+    .result-toggle {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #111;
+      text-align: left;
+      margin-bottom: 12px;
     }
 
     .service-result-title {
       font-size: 18px;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin: 0;
+    }
+
+    .result-chevron {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .result-content {
+      display: block;
+    }
+
+    .result-content.collapsed {
+      display: none;
     }
 
     .table-wrap {
@@ -261,7 +322,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 900px;
+      min-width: 1020px;
       background: #fff;
       table-layout: fixed;
     }
@@ -281,12 +342,17 @@
       font-weight: 700;
     }
 
-    .col-tariff { width: 24%; }
-    .col-actual { width: 22%; }
-    .col-format { width: 18%; }
-    .col-qty { width: 10%; }
-    .col-price { width: 12%; }
-    .col-sum { width: 14%; }
+    .text-left {
+      text-align: left !important;
+    }
+
+    .col-tariff { width: 22%; }
+    .col-actual { width: 21%; }
+    .col-custom-pages { width: 13%; }
+    .col-format { width: 16%; }
+    .col-qty { width: 9%; }
+    .col-price { width: 9%; }
+    .col-sum { width: 10%; }
 
     .money {
       white-space: nowrap;
@@ -310,20 +376,15 @@
     }
 
     .row-input {
-      width: 84px;
-      min-width: 84px;
-      max-width: 84px;
-      padding: 10px 10px;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      background: #fff;
+      width: 86px;
+      min-width: 86px;
+      max-width: 86px;
       text-align: center;
     }
 
     .row-select {
       width: 100%;
-      min-width: 160px;
+      min-width: 150px;
       padding: 10px 12px;
       border-radius: 12px;
       border: 1px solid #ccc;
@@ -343,17 +404,94 @@
       color: #444;
     }
 
+    .add-extra-row {
+      margin-top: 10px;
+      border: 1px dashed #ccc;
+      border-radius: 12px;
+      background: #fcfcfc;
+      color: #111;
+      width: 100%;
+      text-align: center;
+      padding: 12px;
+      font-weight: 700;
+    }
+
+    .extra-editor {
+      margin-top: 12px;
+      padding: 14px;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      background: #fafafa;
+      display: none;
+    }
+
+    .extra-editor.open {
+      display: block;
+    }
+
+    .bottom-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      margin-top: 8px;
+    }
+
     .after-cards-actions {
       display: flex;
       justify-content: flex-start;
-      margin: 8px 0 18px;
+      margin: 0;
     }
 
     .overall-total {
-      margin-top: 8px;
+      margin-top: 0;
       font-size: 40px;
       font-weight: 800;
       line-height: 1.1;
+      text-align: right;
+      margin-left: auto;
+    }
+
+    .number-control {
+      position: relative;
+      width: 100%;
+      display: flex;
+      align-items: center;
+    }
+
+    .number-control input {
+      width: 100%;
+    }
+
+    .step-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: #fff;
+      color: #111;
+      font-size: 16px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .step-btn.minus {
+      left: 6px;
+    }
+
+    .step-btn.plus {
+      right: 6px;
+    }
+
+    .step-btn:hover {
+      background: #f3f3f3;
     }
 
     @media (max-width: 1100px) {
@@ -375,12 +513,17 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .service-type-btn {
-        border-radius: 12px;
+      .overall-total {
+        font-size: 32px;
+      }
+
+      .bottom-bar {
+        flex-direction: column;
+        align-items: stretch;
       }
 
       .overall-total {
-        font-size: 32px;
+        text-align: left;
       }
     }
   </style>
@@ -388,10 +531,10 @@
 <body>
   <div class="wrap">
     <h1>Калькулятор печати</h1>
-    
+
     <div class="top-bar">
       <div class="top-actions">
-        <button class="btn-primary" id="calculateBtn">Рассчитать заказ</button>
+        <button class="btn-primary" id="calculateAllBtn">Рассчитать все услуги</button>
         <button class="btn-secondary" id="clearBtn">Сбросить всё</button>
       </div>
       <div id="status" class="status-inline"></div>
@@ -399,11 +542,12 @@
 
     <div id="servicesContainer"></div>
 
-    <div class="after-cards-actions">
-      <button class="btn-primary" id="addServiceBtn">+ Добавить услугу</button>
+    <div class="bottom-bar">
+      <div class="after-cards-actions">
+        <button class="btn-primary" id="addServiceBtn">+ Добавить услугу</button>
+      </div>
+      <div id="overallTotal" class="overall-total" style="display:none;"></div>
     </div>
-
-    <div id="overallTotal" class="overall-total" style="display:none;"></div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -586,24 +730,43 @@
       }
     };
 
+    const EXTRA_TYPES = [
+      { key: "binding", label: "+ Брошюровка" },
+      { key: "hole_punch", label: "+ Дыроколка" },
+      { key: "multifora", label: "+ Мультифоры" },
+      { key: "lamination", label: "+ Ламинирование" },
+      { key: "folder", label: "+ Папка" }
+    ];
+
     let blockCounter = 1;
     let calculatedRows = [];
+    const serviceStates = {};
 
     const servicesContainer = document.getElementById("servicesContainer");
     const addServiceBtn = document.getElementById("addServiceBtn");
-    const calculateBtn = document.getElementById("calculateBtn");
+    const calculateAllBtn = document.getElementById("calculateAllBtn");
     const clearBtn = document.getElementById("clearBtn");
     const statusBox = document.getElementById("status");
     const overallTotalBox = document.getElementById("overallTotal");
 
     addServiceBtn.addEventListener("click", () => addServiceBlock());
     clearBtn.addEventListener("click", clearAll);
-    calculateBtn.addEventListener("click", calculateOrder);
+    calculateAllBtn.addEventListener("click", calculateAllServices);
 
     addServiceBlock("documents");
 
     function addServiceBlock(type = "documents") {
       const id = blockCounter++;
+      serviceStates[id] = {
+        baseRows: [],
+        extraRows: [],
+        notes: [],
+        resultCollapsed: false,
+        extraEditorOpen: false,
+        selectedExtraType: "",
+        lastCalculatedType: type
+      };
+
       const block = document.createElement("div");
       block.className = "service-card";
       block.dataset.blockId = String(id);
@@ -632,18 +795,23 @@
 
         <div class="extras-box">
           <button type="button" class="extras-toggle" data-target="extras-content-${id}">
-            <span class="extras-title">Дополнительные услуги</span>
+            <span class="extras-title">Дополнительные настройки услуги</span>
             <span class="extras-chevron">▾</span>
           </button>
           <div class="extras-content" id="extras-content-${id}">
-            ${renderExtrasFields(id)}
+            ${renderExtrasSettingsFields(id)}
           </div>
+        </div>
+
+        <div class="service-actions">
+          <button type="button" class="btn-secondary calc-service-btn">Рассчитать эту услугу</button>
         </div>
 
         <div class="service-result" id="service-result-${id}" style="display:none;"></div>
       `;
 
       servicesContainer.appendChild(block);
+      enhanceNumberControls(block);
 
       block.querySelectorAll(".service-type-btn").forEach(btn => {
         btn.addEventListener("click", () => {
@@ -657,14 +825,21 @@
           nameInput.value = getDefaultServiceName(newType, id);
 
           block.querySelector(".service-body").innerHTML = renderServiceFields(id, newType);
-          block.querySelector(".service-result").style.display = "none";
-          block.querySelector(".service-result").innerHTML = "";
+          enhanceNumberControls(block.querySelector(".service-body"));
+
+          // Результат не удаляем намеренно, чтобы случайный клик не сбрасывал анализ.
         });
       });
 
       block.querySelector(".remove-service-btn").addEventListener("click", () => {
+        delete serviceStates[id];
         block.remove();
+        rebuildCalculatedRows();
         recalcOverallTotal();
+      });
+
+      block.querySelector(".calc-service-btn").addEventListener("click", async () => {
+        await calculateSingleService(block);
       });
 
       const toggleBtn = block.querySelector(".extras-toggle");
@@ -678,7 +853,7 @@
       });
     }
 
-    function renderExtrasFields(id) {
+    function renderExtrasSettingsFields(id) {
       return `
         <div class="grid-3">
           <div class="field">
@@ -693,7 +868,7 @@
           </div>
           <div class="field">
             <label>Количество ламинирования</label>
-            <input type="number" id="extra-lamination-qty-${id}" min="0" value="0" />
+            <input type="number" id="extra-lamination-qty-${id}" min="0" step="1" value="0" />
           </div>
           <div class="field">
             <label>Брошюровка</label>
@@ -717,7 +892,7 @@
           </div>
           <div class="field">
             <label>Количество мультифор</label>
-            <input type="number" id="extra-multifora-qty-${id}" min="0" value="0" />
+            <input type="number" id="extra-multifora-qty-${id}" min="0" step="1" value="0" />
           </div>
           <div class="field">
             <label>Папка</label>
@@ -763,7 +938,7 @@
             </div>
             <div class="field">
               <label>Количество экземпляров</label>
-              <input type="number" id="docs-copies-${id}" min="1" value="1" />
+              <input type="number" id="docs-copies-${id}" min="1" step="1" value="1" />
             </div>
           </div>
         `;
@@ -793,7 +968,7 @@
             </div>
             <div class="field">
               <label>Количество</label>
-              <input type="number" id="drawing-qty-${id}" min="1" value="1" />
+              <input type="number" id="drawing-qty-${id}" min="1" step="1" value="1" />
             </div>
             <div class="field">
               <label>Фальцовка</label>
@@ -836,7 +1011,7 @@
             </div>
             <div class="field">
               <label>Количество прогонов</label>
-              <input type="number" id="copy-qty-${id}" min="1" value="1" />
+              <input type="number" id="copy-qty-${id}" min="1" step="1" value="1" />
             </div>
           </div>
         `;
@@ -864,7 +1039,7 @@
             </div>
             <div class="field">
               <label>Количество сторон / прогонов</label>
-              <input type="number" id="scan-qty-${id}" min="1" value="1" />
+              <input type="number" id="scan-qty-${id}" min="1" step="1" value="1" />
             </div>
           </div>
         `;
@@ -890,7 +1065,7 @@
             </div>
             <div class="field">
               <label>Количество</label>
-              <input type="number" id="photo-qty-${id}" min="1" value="1" />
+              <input type="number" id="photo-qty-${id}" min="1" step="1" value="1" />
             </div>
           </div>
         `;
@@ -918,7 +1093,7 @@
             </div>
             <div class="field">
               <label>Количество</label>
-              <input type="number" id="sticker-qty-${id}" min="1" value="1" />
+              <input type="number" id="sticker-qty-${id}" min="1" step="1" value="1" />
             </div>
           </div>
         `;
@@ -927,54 +1102,59 @@
       return "";
     }
 
-    async function calculateOrder() {
+    async function calculateAllServices() {
       const blocks = [...document.querySelectorAll(".service-card")];
       if (!blocks.length) {
         setStatus("Добавь хотя бы одну услугу.", true);
         return;
       }
 
-      calculatedRows = [];
       setStatus("Идёт анализ...");
-
-      for (const block of blocks) {
-        const resultBox = block.querySelector(".service-result");
-        resultBox.style.display = "none";
-        resultBox.innerHTML = "";
-      }
-
       try {
         for (const block of blocks) {
-          const id = Number(block.dataset.blockId);
-          const type = block.dataset.serviceType;
-          const customName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName(type, id);
-          const notes = [];
-          let rows = [];
-
-          if (type === "documents") {
-            rows = await calculateDocumentsBlock(id, customName, notes);
-          } else if (type === "drawings") {
-            rows = await calculateDrawingsBlock(id, customName, notes);
-          } else if (type === "copy") {
-            rows = calculateCopyBlock(id, customName);
-          } else if (type === "scan") {
-            rows = calculateScanBlock(id, customName);
-          } else if (type === "photos") {
-            rows = calculatePhotosBlock(id, customName);
-          } else if (type === "stickers") {
-            rows = calculateStickersBlock(id, customName);
-          }
-
-          rows.push(...calculateExtrasRows(id, customName));
-          calculatedRows.push(...rows);
-          renderServiceResult(block, rows, notes);
+          await calculateSingleService(block, false);
         }
-
-        recalcOverallTotal();
         setStatus("Готово.");
       } catch (error) {
         console.error(error);
         setStatus(error.message || "Ошибка расчёта.", true);
+      }
+    }
+
+    async function calculateSingleService(block, setReadyText = true) {
+      const id = Number(block.dataset.blockId);
+      const type = block.dataset.serviceType;
+      const customName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName(type, id);
+
+      const notes = [];
+      let rows = [];
+
+      setStatus("Идёт анализ...");
+
+      if (type === "documents") {
+        rows = await calculateDocumentsBlock(id, customName, notes);
+      } else if (type === "drawings") {
+        rows = await calculateDrawingsBlock(id, customName, notes);
+      } else if (type === "copy") {
+        rows = calculateCopyBlock(id, customName);
+      } else if (type === "scan") {
+        rows = calculateScanBlock(id, customName);
+      } else if (type === "photos") {
+        rows = calculatePhotosBlock(id, customName);
+      } else if (type === "stickers") {
+        rows = calculateStickersBlock(id, customName);
+      }
+
+      serviceStates[id].baseRows = rows;
+      serviceStates[id].notes = notes;
+      serviceStates[id].lastCalculatedType = type;
+
+      rebuildCalculatedRows();
+      renderServiceResult(block);
+      recalcOverallTotal();
+
+      if (setReadyText) {
+        setStatus("Готово.");
       }
     }
 
@@ -1008,6 +1188,7 @@
         else colorMode = await detectPageColorMode(page);
 
         const actualLabel = buildActualFormatLabel(widthMm, heightMm, exactFormat);
+        const customPages = exactFormat === "CUSTOM" ? [i] : [];
         const key = [actualLabel, colorMode, nearestFormat].join("||");
 
         if (!groups[key]) {
@@ -1017,11 +1198,15 @@
             actualFormatLabel: actualLabel,
             billedFormat: nearestFormat,
             colorMode,
-            qty: 0
+            qty: 0,
+            customPageNumbers: []
           };
         }
 
         groups[key].qty += copies;
+        if (customPages.length) {
+          groups[key].customPageNumbers.push(...customPages);
+        }
       }
 
       Object.values(groups).forEach(group => {
@@ -1032,6 +1217,7 @@
           serviceType: "documents",
           serviceName: customName,
           actualFormatLabel: group.actualFormatLabel,
+          customPageNumbers: group.customPageNumbers,
           billedFormat: group.billedFormat,
           qty: group.qty,
           unitPrice: priceInfo.price,
@@ -1044,8 +1230,8 @@
           colorMode: group.colorMode
         });
 
-        if (group.actualFormatLabel.startsWith("≈")) {
-          notes.push(`Нестандартный размер: ${group.actualFormatLabel}. Для расчёта округлено до ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}.`);
+        if (group.customPageNumbers.length) {
+          notes.push(`Нестандартные страницы: ${group.customPageNumbers.join(", ")}. Они округлены до ${FORMAT_LABELS[group.billedFormat] || group.billedFormat}.`);
         }
       });
 
@@ -1083,8 +1269,11 @@
               serviceName: customName,
               actualFormatLabel: actualLabel,
               billedFormat: nearestFormat,
-              qty: 0
+              qty: 0,
+              customPageNumbers: exactFormat === "CUSTOM" ? [i] : []
             };
+          } else if (exactFormat === "CUSTOM") {
+            groups[key].customPageNumbers.push(i);
           }
 
           groups[key].qty += 1;
@@ -1097,6 +1286,7 @@
               serviceCardId: id,
               serviceName: customName,
               actualFormatLabel: group.actualFormatLabel,
+              customPageNumbers: group.customPageNumbers || [],
               billedFormat: group.billedFormat,
               tariff,
               qty: group.qty
@@ -1112,6 +1302,7 @@
           serviceCardId: id,
           serviceName: customName,
           actualFormatLabel: FORMAT_LABELS[format],
+          customPageNumbers: [],
           billedFormat: format,
           tariff,
           qty: qtyManual
@@ -1124,6 +1315,7 @@
           serviceCardId: id,
           serviceName: customName,
           actualFormatLabel: "Постобработка",
+          customPageNumbers: [],
           billedFormat: "—",
           tariff: foldTariff,
           qty: rows.filter(r => r.tariffCode !== foldTariff.code).reduce((sum, r) => sum + r.qty, 0)
@@ -1144,6 +1336,7 @@
         serviceCardId: id,
         serviceName: customName,
         actualFormatLabel: FORMAT_LABELS[format],
+        customPageNumbers: [],
         billedFormat: format,
         tariff,
         qty
@@ -1172,6 +1365,7 @@
         serviceCardId: id,
         serviceName: customName,
         actualFormatLabel: FORMAT_LABELS[format],
+        customPageNumbers: [],
         billedFormat: format,
         tariff,
         qty
@@ -1188,6 +1382,7 @@
           serviceCardId: id,
           serviceName: customName,
           actualFormatLabel: "10×15 см",
+          customPageNumbers: [],
           billedFormat: "10×15",
           tariff,
           qty
@@ -1199,6 +1394,7 @@
         serviceCardId: id,
         serviceName: customName,
         actualFormatLabel: tariff.label,
+        customPageNumbers: [],
         billedFormat: tariff.label,
         tariff,
         qty
@@ -1214,80 +1410,21 @@
         serviceCardId: id,
         serviceName: customName,
         actualFormatLabel: tariff.label.includes("SRA3") ? "SRA3 (320×450 мм)" : tariff.label,
+        customPageNumbers: [],
         billedFormat: tariff.label.includes("SRA3") ? "SRA3" : "—",
         tariff,
         qty
       })];
     }
 
-    function calculateExtrasRows(id, customName) {
-      const rows = [];
-
-      const laminationFormat = document.getElementById(`extra-lamination-format-${id}`).value;
-      const laminationQty = Math.max(0, parseInt(document.getElementById(`extra-lamination-qty-${id}`).value || "0", 10));
-      const bindingType = document.getElementById(`extra-binding-type-${id}`).value;
-      const multiforaFormat = document.getElementById(`extra-multifora-format-${id}`).value;
-      const multiforaQty = Math.max(0, parseInt(document.getElementById(`extra-multifora-qty-${id}`).value || "0", 10));
-      const folderType = document.getElementById(`extra-folder-type-${id}`).value;
-
-      if (laminationFormat !== "none" && laminationQty > 0) {
-        const tariff = PRICES.lamination[laminationFormat];
-        rows.push(fixedRow({
-          serviceCardId: id,
-          serviceName: customName,
-          actualFormatLabel: FORMAT_LABELS[laminationFormat],
-          billedFormat: laminationFormat,
-          tariff,
-          qty: laminationQty
-        }));
-      }
-
-      if (bindingType !== "none") {
-        const tariff = PRICES.binding[bindingType];
-        rows.push(fixedRow({
-          serviceCardId: id,
-          serviceName: customName,
-          actualFormatLabel: bindingType === "hardcover" ? "A4 (210×297 мм)" : "Постобработка",
-          billedFormat: bindingType === "hardcover" ? "A4" : "—",
-          tariff,
-          qty: 1
-        }));
-      }
-
-      if (multiforaFormat !== "none" && multiforaQty > 0) {
-        const tariff = PRICES.multifora[multiforaFormat];
-        rows.push(fixedRow({
-          serviceCardId: id,
-          serviceName: customName,
-          actualFormatLabel: FORMAT_LABELS[multiforaFormat],
-          billedFormat: multiforaFormat,
-          tariff,
-          qty: multiforaQty
-        }));
-      }
-
-      if (folderType !== "none") {
-        const tariff = PRICES.folders[folderType];
-        rows.push(fixedRow({
-          serviceCardId: id,
-          serviceName: customName,
-          actualFormatLabel: "—",
-          billedFormat: "—",
-          tariff,
-          qty: 1
-        }));
-      }
-
-      return rows;
-    }
-
-    function fixedRow({ serviceCardId, serviceName, actualFormatLabel, billedFormat, tariff, qty }) {
+    function fixedRow({ serviceCardId, serviceName, actualFormatLabel, customPageNumbers, billedFormat, tariff, qty }) {
       return {
         id: makeRowId(),
         serviceCardId,
         serviceType: "fixed",
         serviceName,
         actualFormatLabel,
+        customPageNumbers: customPageNumbers || [],
         billedFormat,
         qty,
         unitPrice: tariff.price,
@@ -1301,33 +1438,58 @@
       };
     }
 
-    function renderServiceResult(card, rows, notes) {
+    function renderServiceResult(card) {
+      const id = Number(card.dataset.blockId);
+      const state = serviceStates[id];
+      const rows = [...state.baseRows, ...state.extraRows];
       const resultBox = card.querySelector(".service-result");
+
+      if (!rows.length) {
+        resultBox.style.display = "none";
+        resultBox.innerHTML = "";
+        return;
+      }
+
       resultBox.style.display = "block";
 
       resultBox.innerHTML = `
-        <div class="service-result-title">Результат расчёта</div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th class="col-tariff">Пункт прайса</th>
-                <th class="col-actual">Фактический размер</th>
-                <th class="col-format">Формат для расчёта</th>
-                <th class="col-qty">Кол-во</th>
-                <th class="col-price">Цена за ед.</th>
-                <th class="col-sum">Сумма</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows.map(row => renderRowHtml(row)).join("")}
-            </tbody>
-          </table>
+        <button type="button" class="result-toggle">
+          <span class="service-result-title">Результат расчёта</span>
+          <span class="result-chevron">${state.resultCollapsed ? "▾" : "▴"}</span>
+        </button>
+
+        <div class="result-content ${state.resultCollapsed ? "collapsed" : ""}">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="col-tariff text-left">Пункт прайса</th>
+                  <th class="col-actual text-left">Фактический размер</th>
+                  <th class="col-custom-pages">Нестандартные стр.</th>
+                  <th class="col-format">Формат для расчёта</th>
+                  <th class="col-qty">Кол-во</th>
+                  <th class="col-price">Цена за ед.</th>
+                  <th class="col-sum">Сумма</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(row => renderRowHtml(row)).join("")}
+              </tbody>
+            </table>
+          </div>
+
+          <button type="button" class="add-extra-row">+ Добавить доп. услугу</button>
+
+          <div class="extra-editor ${state.extraEditorOpen ? "open" : ""}">
+            ${renderExtraEditor(id, state.selectedExtraType)}
+          </div>
+
+          ${state.notes.length ? `<div class="note-box">${state.notes.map(n => `• ${escapeHtml(n)}`).join("<br>")}</div>` : ""}
         </div>
-        ${notes.length ? `<div class="note-box">${notes.map(n => `• ${escapeHtml(n)}`).join("<br>")}</div>` : ""}
       `;
 
-      bindEditorsInCard(card);
+      bindResultArea(card);
+      enhanceNumberControls(resultBox);
     }
 
     function renderRowHtml(row) {
@@ -1343,19 +1505,275 @@
         ? `<input type="number" min="0" step="0.01" class="row-input money-input row-price-input" data-row-id="${row.id}" value="${formatInputNumber(row.unitPrice)}">`
         : money(row.unitPrice);
 
+      const customPagesText = row.customPageNumbers && row.customPageNumbers.length
+        ? row.customPageNumbers.join(", ")
+        : "—";
+
       return `
         <tr data-row-id="${row.id}">
-          <td>
+          <td class="text-left">
             <div>${escapeHtml(row.tariffCode || "—")}</div>
             <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
           </td>
-          <td>${escapeHtml(row.actualFormatLabel || "—")}</td>
+          <td class="text-left">${escapeHtml(row.actualFormatLabel || "—")}</td>
+          <td>${escapeHtml(customPagesText)}</td>
           <td>${billedFormatCell}</td>
           <td>${qtyCell}</td>
           <td>${unitPriceCell}</td>
           <td class="money row-sum-cell">${money(row.qty * row.unitPrice)}</td>
         </tr>
       `;
+    }
+
+    function renderExtraEditor(id, selectedType) {
+      return `
+        <div class="grid-3">
+          <div class="field">
+            <label>Тип доп. услуги</label>
+            <select id="extra-editor-type-${id}">
+              <option value="">Выбери пункт</option>
+              ${EXTRA_TYPES.map(item => `
+                <option value="${item.key}"${item.key === selectedType ? " selected" : ""}>${item.label}</option>
+              `).join("")}
+            </select>
+          </div>
+          ${renderExtraEditorOptions(id, selectedType)}
+        </div>
+        <div style="margin-top:12px;">
+          <button type="button" class="btn-secondary add-extra-confirm-btn">Добавить в расчёт</button>
+        </div>
+      `;
+    }
+
+    function renderExtraEditorOptions(id, type) {
+      if (type === "binding") {
+        return `
+          <div class="field">
+            <label>Вид брошюровки</label>
+            <select id="extra-editor-binding-type-${id}">
+              <option value="staples2">2 скобы</option>
+              <option value="plastic">Пластиковая пружина</option>
+              <option value="metal">Металлическая пружина</option>
+              <option value="hardcover">Твердый переплет A4</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Количество</label>
+            <input type="number" id="extra-editor-binding-qty-${id}" min="1" step="1" value="1" />
+          </div>
+        `;
+      }
+
+      if (type === "hole_punch") {
+        return `
+          <div class="field">
+            <label>Количество</label>
+            <input type="number" id="extra-editor-hole-qty-${id}" min="1" step="1" value="1" />
+          </div>
+          <div class="field">
+            <label>Цена за ед.</label>
+            <input type="number" id="extra-editor-hole-price-${id}" min="0" step="0.01" value="0.00" />
+          </div>
+        `;
+      }
+
+      if (type === "multifora") {
+        return `
+          <div class="field">
+            <label>Формат мультифор</label>
+            <select id="extra-editor-multifora-format-${id}">
+              <option value="A5">A5</option>
+              <option value="A4">A4</option>
+              <option value="A3">A3</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Количество</label>
+            <input type="number" id="extra-editor-multifora-qty-${id}" min="1" step="1" value="1" />
+          </div>
+        `;
+      }
+
+      if (type === "lamination") {
+        return `
+          <div class="field">
+            <label>Формат ламинирования</label>
+            <select id="extra-editor-lamination-format-${id}">
+              <option value="A6">A6</option>
+              <option value="A5">A5</option>
+              <option value="A4">A4</option>
+              <option value="A3">A3</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Количество</label>
+            <input type="number" id="extra-editor-lamination-qty-${id}" min="1" step="1" value="1" />
+          </div>
+        `;
+      }
+
+      if (type === "folder") {
+        return `
+          <div class="field">
+            <label>Вид папки</label>
+            <select id="extra-editor-folder-type-${id}">
+              <option value="folder20">Папка на 20 мультифор</option>
+              <option value="folder30">Папка на 30 мультифор</option>
+              <option value="folder40">Папка на 40 мультифор</option>
+              <option value="folder60">Папка на 60 мультифор</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Количество</label>
+            <input type="number" id="extra-editor-folder-qty-${id}" min="1" step="1" value="1" />
+          </div>
+        `;
+      }
+
+      return `
+        <div></div>
+        <div></div>
+      `;
+    }
+
+    function bindResultArea(card) {
+      const id = Number(card.dataset.blockId);
+      const state = serviceStates[id];
+      const resultBox = card.querySelector(".service-result");
+
+      const toggleBtn = resultBox.querySelector(".result-toggle");
+      const addExtraBtn = resultBox.querySelector(".add-extra-row");
+      const extraEditor = resultBox.querySelector(".extra-editor");
+
+      toggleBtn.addEventListener("click", () => {
+        state.resultCollapsed = !state.resultCollapsed;
+        renderServiceResult(card);
+      });
+
+      addExtraBtn.addEventListener("click", () => {
+        state.extraEditorOpen = !state.extraEditorOpen;
+        if (!state.extraEditorOpen) {
+          state.selectedExtraType = "";
+        }
+        renderServiceResult(card);
+      });
+
+      const extraTypeSelect = resultBox.querySelector(`#extra-editor-type-${id}`);
+      if (extraTypeSelect) {
+        extraTypeSelect.addEventListener("change", (e) => {
+          state.selectedExtraType = e.target.value;
+          state.extraEditorOpen = true;
+          renderServiceResult(card);
+        });
+      }
+
+      const addExtraConfirmBtn = resultBox.querySelector(".add-extra-confirm-btn");
+      if (addExtraConfirmBtn) {
+        addExtraConfirmBtn.addEventListener("click", () => {
+          const extraRow = buildExtraRowFromEditor(id);
+          if (!extraRow) return;
+          state.extraRows.push(extraRow);
+          state.extraEditorOpen = false;
+          state.selectedExtraType = "";
+          rebuildCalculatedRows();
+          renderServiceResult(card);
+          recalcOverallTotal();
+        });
+      }
+
+      bindEditorsInCard(card);
+    }
+
+    function buildExtraRowFromEditor(id) {
+      const type = document.getElementById(`extra-editor-type-${id}`)?.value;
+      const serviceName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName("documents", id);
+
+      if (!type) return null;
+
+      if (type === "binding") {
+        const bindingType = document.getElementById(`extra-editor-binding-type-${id}`).value;
+        const qty = Math.max(1, parseInt(document.getElementById(`extra-editor-binding-qty-${id}`).value || "1", 10));
+        const tariff = PRICES.binding[bindingType];
+        return fixedRow({
+          serviceCardId: id,
+          serviceName,
+          actualFormatLabel: bindingType === "hardcover" ? "A4 (210×297 мм)" : "Постобработка",
+          customPageNumbers: [],
+          billedFormat: bindingType === "hardcover" ? "A4" : "—",
+          tariff,
+          qty
+        });
+      }
+
+      if (type === "hole_punch") {
+        const qty = Math.max(1, parseInt(document.getElementById(`extra-editor-hole-qty-${id}`).value || "1", 10));
+        const price = Math.max(0, parseFlexibleNumber(document.getElementById(`extra-editor-hole-price-${id}`).value || "0"));
+        return {
+          id: makeRowId(),
+          serviceCardId: id,
+          serviceType: "fixed",
+          serviceName,
+          actualFormatLabel: "Постобработка",
+          customPageNumbers: [],
+          billedFormat: "—",
+          qty,
+          unitPrice: price,
+          tariffCode: "—",
+          tariffLabel: "Дыроколка (цена введена вручную)",
+          unitPriceEditable: true,
+          qtyEditable: true,
+          billedFormatEditable: false,
+          editableFormats: [],
+          colorMode: null
+        };
+      }
+
+      if (type === "multifora") {
+        const format = document.getElementById(`extra-editor-multifora-format-${id}`).value;
+        const qty = Math.max(1, parseInt(document.getElementById(`extra-editor-multifora-qty-${id}`).value || "1", 10));
+        const tariff = PRICES.multifora[format];
+        return fixedRow({
+          serviceCardId: id,
+          serviceName,
+          actualFormatLabel: FORMAT_LABELS[format],
+          customPageNumbers: [],
+          billedFormat: format,
+          tariff,
+          qty
+        });
+      }
+
+      if (type === "lamination") {
+        const format = document.getElementById(`extra-editor-lamination-format-${id}`).value;
+        const qty = Math.max(1, parseInt(document.getElementById(`extra-editor-lamination-qty-${id}`).value || "1", 10));
+        const tariff = PRICES.lamination[format];
+        return fixedRow({
+          serviceCardId: id,
+          serviceName,
+          actualFormatLabel: FORMAT_LABELS[format],
+          customPageNumbers: [],
+          billedFormat: format,
+          tariff,
+          qty
+        });
+      }
+
+      if (type === "folder") {
+        const folderType = document.getElementById(`extra-editor-folder-type-${id}`).value;
+        const qty = Math.max(1, parseInt(document.getElementById(`extra-editor-folder-qty-${id}`).value || "1", 10));
+        const tariff = PRICES.folders[folderType];
+        return fixedRow({
+          serviceCardId: id,
+          serviceName,
+          actualFormatLabel: "—",
+          customPageNumbers: [],
+          billedFormat: "—",
+          tariff,
+          qty
+        });
+      }
+
+      return null;
     }
 
     function bindEditorsInCard(card) {
@@ -1367,12 +1785,17 @@
           row.unitPrice = Math.max(0, parseFlexibleNumber(e.target.value));
 
           calculatedRows
-            .filter(r => r.tariffCode === row.tariffCode)
+            .filter(r => r.tariffCode === row.tariffCode && row.tariffCode !== "—")
             .forEach(r => {
               r.unitPrice = row.unitPrice;
               updateRowDom(r.id, { updatePriceInput: r.id !== row.id });
             });
 
+          if (row.tariffCode === "—") {
+            updateRowDom(row.id, { updatePriceInput: false });
+          }
+
+          syncStateRowsFromCalculated();
           recalcOverallTotal();
         });
       });
@@ -1388,6 +1811,7 @@
           }
 
           updateRowDom(row.id, { updateQtyInput: false, updatePriceInput: true });
+          syncStateRowsFromCalculated();
           recalcOverallTotal();
         });
       });
@@ -1403,6 +1827,7 @@
           row.tariffLabel = newInfo.label;
           row.unitPrice = newInfo.price;
           updateRowDom(row.id, { updatePriceInput: true });
+          syncStateRowsFromCalculated();
           recalcOverallTotal();
         });
       });
@@ -1419,6 +1844,8 @@
         <div>${escapeHtml(row.tariffCode || "—")}</div>
         <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
       `;
+      cells[1].textContent = row.actualFormatLabel || "—";
+      cells[2].textContent = row.customPageNumbers && row.customPageNumbers.length ? row.customPageNumbers.join(", ") : "—";
 
       if (row.billedFormatEditable) {
         const select = tr.querySelector(".row-format-select");
@@ -1453,6 +1880,21 @@
       } else if (!isFiniteNumber(row.unitPrice) || row.unitPrice <= 0) {
         row.unitPrice = newInfo.price;
       }
+    }
+
+    function rebuildCalculatedRows() {
+      calculatedRows = [];
+      Object.values(serviceStates).forEach(state => {
+        calculatedRows.push(...state.baseRows, ...state.extraRows);
+      });
+    }
+
+    function syncStateRowsFromCalculated() {
+      Object.entries(serviceStates).forEach(([id, state]) => {
+        const serviceId = Number(id);
+        state.baseRows = calculatedRows.filter(r => r.serviceCardId === serviceId).filter(r => state.baseRows.some(b => b.id === r.id));
+        state.extraRows = calculatedRows.filter(r => r.serviceCardId === serviceId).filter(r => state.extraRows.some(b => b.id === r.id));
+      });
     }
 
     function recalcOverallTotal() {
@@ -1514,6 +1956,7 @@
       servicesContainer.innerHTML = "";
       blockCounter = 1;
       calculatedRows = [];
+      Object.keys(serviceStates).forEach(key => delete serviceStates[key]);
       overallTotalBox.style.display = "none";
       overallTotalBox.textContent = "";
       addServiceBlock("documents");
@@ -1665,6 +2108,59 @@
       }
 
       return "bw";
+    }
+
+    function enhanceNumberControls(root = document) {
+      const inputs = root.querySelectorAll('input[type="number"]:not([data-stepped="1"])');
+
+      inputs.forEach(input => {
+        input.setAttribute("data-stepped", "1");
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "number-control";
+
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+
+        const minusBtn = document.createElement("button");
+        minusBtn.type = "button";
+        minusBtn.className = "step-btn minus";
+        minusBtn.textContent = "−";
+
+        const plusBtn = document.createElement("button");
+        plusBtn.type = "button";
+        plusBtn.className = "step-btn plus";
+        plusBtn.textContent = "+";
+
+        wrapper.appendChild(minusBtn);
+        wrapper.appendChild(plusBtn);
+
+        const step = () => {
+          const rawStep = parseFloat(input.step || "1");
+          return Number.isFinite(rawStep) && rawStep > 0 ? rawStep : 1;
+        };
+
+        const min = () => {
+          const rawMin = parseFloat(input.min);
+          return Number.isFinite(rawMin) ? rawMin : -Infinity;
+        };
+
+        minusBtn.addEventListener("click", () => {
+          let value = parseFlexibleNumber(input.value || "0");
+          value = Math.max(min(), value - step());
+          input.value = input.step === "1" ? String(Math.round(value)) : value.toFixed(2);
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+
+        plusBtn.addEventListener("click", () => {
+          let value = parseFlexibleNumber(input.value || "0");
+          value = value + step();
+          input.value = input.step === "1" ? String(Math.round(value)) : value.toFixed(2);
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+      });
     }
   </script>
 </body>
