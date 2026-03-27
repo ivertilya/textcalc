@@ -117,32 +117,30 @@
     }
 
     .service-type-buttons {
-      display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      width: 100%;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  width: 100%;
+  gap: 8px;
+  margin-bottom: 14px;
+}
 
-    .service-type-btn {
-      width: 100%;
-      padding: 12px 8px;
-      border-radius: 12px 12px 0 0;
-      border: 1px solid #d8d8d8;
-      border-bottom: none;
-      background: #ececec;
-      color: #111;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: center;
-    }
+.service-type-btn {
+  width: 100%;
+  padding: 12px 8px;
+  border-radius: 12px;
+  border: none;
+  background: #111;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+}
 
-    .service-type-btn.active {
-      background: #fff;
-      color: #111;
-      position: relative;
-      top: 1px;
-    }
+.service-type-btn.active {
+  background: #111;
+  color: #fff;
+  box-shadow: 0 0 0 2px #111 inset;
+}
 
     .grid {
       display: grid;
@@ -378,7 +376,7 @@
       }
 
       .service-type-btn {
-        border-radius: 12px 12px 0 0;
+        border-radius: 12px;
       }
 
       .overall-total {
@@ -389,6 +387,8 @@
 </head>
 <body>
   <div class="wrap">
+    <h1>Калькулятор печати</h1>
+    
     <div class="top-bar">
       <div class="top-actions">
         <button class="btn-primary" id="calculateBtn">Рассчитать заказ</button>
@@ -396,8 +396,6 @@
       </div>
       <div id="status" class="status-inline"></div>
     </div>
-
-    <h1>Калькулятор печати</h1>
 
     <div id="servicesContainer"></div>
 
