@@ -27,7 +27,7 @@
     }
 
     .wrap {
-      max-width: 1280px;
+      max-width: 1320px;
       margin: 0 auto;
       padding: 18px 24px 24px;
     }
@@ -265,7 +265,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1160px;
+      min-width: 1260px;
       background: #fff;
       table-layout: fixed;
     }
@@ -283,19 +283,20 @@
     th {
       background: #fafafa;
       font-weight: 700;
+      white-space: nowrap;
     }
 
     .text-left {
       text-align: left !important;
     }
 
-    .col-tariff { width: 23%; }
-    .col-actual { width: 22%; }
-    .col-custom-pages { width: 10%; }
-    .col-format { width: 13%; }
+    .col-tariff { width: 24%; }
+    .col-actual { width: 23%; }
+    .col-custom-pages { width: 11%; }
+    .col-format { width: 12%; }
     .col-qty { width: 10%; }
     .col-price { width: 10%; }
-    .col-sum { width: 12%; }
+    .col-sum { width: 10%; }
 
     .money {
       white-space: nowrap;
@@ -320,9 +321,9 @@
     }
 
     .row-price-input {
-      width: 116px;
-      min-width: 116px;
-      max-width: 116px;
+      width: 112px;
+      min-width: 112px;
+      max-width: 112px;
       text-align: center;
       font-size: 14px;
       height: 44px;
@@ -355,6 +356,10 @@
       background: #fcfcfc;
     }
 
+    .add-extra-trigger-row td {
+      padding: 12px 10px;
+    }
+
     .extra-inline-row td {
       background: #fafafa;
       padding: 14px;
@@ -367,12 +372,24 @@
       background: #fff;
     }
 
+    .extra-inline-toolbar {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .inline-extra-title {
+      font-size: 14px;
+      font-weight: 700;
+      padding-top: 10px;
+      text-align: left;
+    }
+
     .extra-type-buttons {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      margin-top: 8px;
-      margin-bottom: 14px;
     }
 
     .extra-type-btn {
@@ -389,12 +406,6 @@
       background: #111;
       color: #fff;
       border-color: #111;
-    }
-
-    .inline-extra-title {
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 8px;
     }
 
     .bottom-bar {
@@ -423,6 +434,10 @@
     @media (max-width: 1100px) {
       .service-type-buttons {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .extra-inline-toolbar {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -509,6 +524,8 @@
       SRA3: "SRA3 (320×450 мм)"
     };
 
+    const LARGE_DOC_FORMATS = ["A2", "A1", "A0"];
+
     const SERVICE_TYPES = [
       { key: "documents", label: "Документы" },
       { key: "drawings", label: "Чертежи" },
@@ -519,11 +536,10 @@
     ];
 
     const EXTRA_TYPES = [
-      { key: "binding", label: "Брошюровка" },
-      { key: "hole_punch", label: "Дыроколка" },
-      { key: "multifora", label: "Мультифоры" },
-      { key: "lamination", label: "Ламинирование" },
-      { key: "folder", label: "Папка" }
+      { key: "binding", label: "+ Брошюровка" },
+      { key: "multifora", label: "+ Мультифоры" },
+      { key: "lamination", label: "+ Ламинирование" },
+      { key: "folder", label: "+ Папка" }
     ];
 
     const PRICES = {
@@ -596,9 +612,6 @@
         hardcover: { price: 550.0, code: "1084", label: "Твердый переплет MetalBind, формат А4" },
         plastic: { price: 290.0, code: "1091", label: "Брошюровка на пласт. пружину" },
         metal: { price: 185.0, code: "1103", label: "Брошюровка на металл. пружину" }
-      },
-      hole_punch: {
-        simple: { price: 10.0, code: "MANUAL", label: "Дыроколка" }
       },
       photos: {
         doc10x15: { price: 120.0, code: "1124", label: "Печать фото на документы 10×15" },
@@ -686,7 +699,6 @@
         resultsByType: {},
         notesByType: {},
         resultCollapsedByType: {},
-        extraEditorOpenByType: {},
         selectedExtraTypeByType: {}
       };
 
@@ -762,7 +774,6 @@
       if (!state.resultsByType[type]) state.resultsByType[type] = [];
       if (!state.notesByType[type]) state.notesByType[type] = [];
       if (typeof state.resultCollapsedByType[type] !== "boolean") state.resultCollapsedByType[type] = false;
-      if (typeof state.extraEditorOpenByType[type] !== "boolean") state.extraEditorOpenByType[type] = true;
       if (typeof state.selectedExtraTypeByType[type] !== "string") state.selectedExtraTypeByType[type] = "";
     }
 
@@ -1351,7 +1362,7 @@
                   <th class="col-actual text-left">Фактический размер</th>
                   <th class="col-custom-pages">Нестандартные стр.</th>
                   <th class="col-format">Формат для расчёта</th>
-                  <th class="col-qty">Кол-во</th>
+                  <th class="col-qty">Количество</th>
                   <th class="col-price">Цена за ед.</th>
                   <th class="col-sum">Сумма</th>
                 </tr>
@@ -1360,22 +1371,34 @@
                 ${rows.map(row => renderRowHtml(row)).join("")}
 
                 <tr class="add-extra-trigger-row">
-                  <td class="text-left"><strong>Добавить доп. услугу</strong></td>
-                  <td>—</td>
-                  <td>—</td>
-                  <td>—</td>
-                  <td>—</td>
-                  <td>—</td>
-                  <td>—</td>
-                </tr>
-
-                <tr class="extra-inline-row">
                   <td colspan="7">
-                    <div class="extra-inline-box">
-                      ${renderInlineExtraEditor(id, type, selectedExtraType)}
+                    <div class="extra-inline-toolbar">
+                      <div class="inline-extra-title">Добавить опцию</div>
+                      <div class="extra-type-buttons">
+                        ${EXTRA_TYPES.map(item => `
+                          <button type="button"
+                                  class="extra-type-btn ${item.key === selectedExtraType ? "active" : ""}"
+                                  data-extra-type="${item.key}">
+                            ${item.label}
+                          </button>
+                        `).join("")}
+                      </div>
                     </div>
                   </td>
                 </tr>
+
+                ${selectedExtraType ? `
+                  <tr class="extra-inline-row">
+                    <td colspan="7">
+                      <div class="extra-inline-box">
+                        ${renderInlineExtraOptions(id, type, selectedExtraType)}
+                        <div style="margin-top:12px;">
+                          <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ` : ""}
               </tbody>
             </table>
           </div>
@@ -1420,32 +1443,6 @@
       `;
     }
 
-    function renderInlineExtraEditor(id, type, selectedExtraType) {
-      return `
-        <div class="inline-extra-title">Добавить доп. услугу</div>
-
-        <div class="extra-type-buttons">
-          ${EXTRA_TYPES.map(item => `
-            <button type="button"
-                    class="extra-type-btn ${item.key === selectedExtraType ? "active" : ""}"
-                    data-extra-type="${item.key}">
-              ${item.label}
-            </button>
-          `).join("")}
-        </div>
-
-        <div>
-          ${renderInlineExtraOptions(id, type, selectedExtraType)}
-        </div>
-
-        ${selectedExtraType ? `
-          <div style="margin-top:12px;">
-            <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
-          </div>
-        ` : ""}
-      `;
-    }
-
     function renderInlineExtraOptions(id, type, selectedExtraType) {
       if (selectedExtraType === "binding") {
         return `
@@ -1462,22 +1459,6 @@
             <div class="field">
               <label>Количество</label>
               <input type="number" id="inline-binding-qty-${id}-${type}" min="1" step="1" value="1" />
-            </div>
-            <div></div>
-          </div>
-        `;
-      }
-
-      if (selectedExtraType === "hole_punch") {
-        return `
-          <div class="grid-3">
-            <div class="field">
-              <label>Количество</label>
-              <input type="number" id="inline-hole-qty-${id}-${type}" min="1" step="1" value="1" />
-            </div>
-            <div class="field">
-              <label>Цена за ед.</label>
-              <input type="number" id="inline-hole-price-${id}-${type}" min="0" step="0.01" value="10.00" />
             </div>
             <div></div>
           </div>
@@ -1546,7 +1527,7 @@
         `;
       }
 
-      return `<div style="color:#666;">Выбери кнопку нужной дополнительной услуги.</div>`;
+      return "";
     }
 
     function bindResultArea(block) {
@@ -1558,7 +1539,6 @@
       const resultBox = block.querySelector(".service-result");
 
       const toggleBtn = resultBox.querySelector(".result-toggle");
-      const addExtraTriggerRow = resultBox.querySelector(".add-extra-trigger-row");
       const inlineAddBtn = resultBox.querySelector(".inline-add-extra-btn");
 
       toggleBtn.addEventListener("click", () => {
@@ -1566,13 +1546,10 @@
         renderServiceResult(block);
       });
 
-      addExtraTriggerRow.addEventListener("click", () => {
-        renderServiceResult(block);
-      });
-
       resultBox.querySelectorAll(".extra-type-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-          state.selectedExtraTypeByType[type] = btn.dataset.extraType;
+          state.selectedExtraTypeByType[type] =
+            state.selectedExtraTypeByType[type] === btn.dataset.extraType ? "" : btn.dataset.extraType;
           renderServiceResult(block);
         });
       });
@@ -1617,32 +1594,6 @@
             tariff,
             qty
           }),
-          isExtraRow: true
-        };
-      }
-
-      if (extraType === "hole_punch") {
-        const qty = Math.max(1, parseInt(document.getElementById(`inline-hole-qty-${id}-${type}`).value || "1", 10));
-        const price = Math.max(0, parseFlexibleNumber(document.getElementById(`inline-hole-price-${id}-${type}`).value || "10"));
-        const tariff = PRICES.hole_punch.simple;
-
-        return {
-          id: makeRowId(),
-          serviceCardId: id,
-          serviceType: "fixed",
-          serviceName,
-          actualFormatLabel: "Постобработка",
-          customPageNumbers: [],
-          billedFormat: "—",
-          qty,
-          unitPrice: price,
-          tariffCode: tariff.code,
-          tariffLabel: tariff.label,
-          unitPriceEditable: true,
-          qtyEditable: true,
-          billedFormatEditable: false,
-          editableFormats: [],
-          colorMode: null,
           isExtraRow: true
         };
       }
@@ -1853,6 +1804,18 @@
     }
 
     function getDocumentPriceInfo(format, colorMode, qty) {
+      if (LARGE_DOC_FORMATS.includes(format)) {
+        const tariff = PRICES.drawings[colorMode === "color" ? "color" : "bw"][format];
+        if (!tariff) {
+          return { price: 0, code: "—", label: `Для ${format} нет автоматической цены` };
+        }
+        return {
+          price: tariff.price,
+          code: tariff.code,
+          label: tariff.label
+        };
+      }
+
       if (colorMode === "bw") {
         if (!PRICES.documentsBW[format]) {
           return { price: 0, code: "—", label: `Для ${format} нет автоматической цены ч/б` };
