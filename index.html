@@ -17,15 +17,7 @@
       --black: #111111;
       --white: #ffffff;
       --danger: #b00020;
-
-      /* Меняй только эти ширины столбцов */
-      --col-tariff: 21%;
-      --col-actual: 18%;
-      --col-custom-pages: 10%;
-      --col-format: 14%;
-      --col-qty: 10%;
-      --col-price: 15%;
-      --col-sum: 12%;
+      --danger-soft: #fbe9ec;
     }
 
     body {
@@ -93,31 +85,6 @@
       background: var(--white);
       color: var(--danger);
       border: 1px solid #e0b4b4;
-    }
-
-    .btn-link-danger {
-      background: #fff;
-      color: var(--danger);
-      border: 1px solid #e8c6c6;
-      padding: 8px 12px;
-      font-size: 13px;
-      border-radius: 10px;
-    }
-
-    .btn-mini {
-      background: #fff;
-      color: #111;
-      border: 1px solid #ccc;
-      padding: 8px 10px;
-      font-size: 12px;
-      border-radius: 10px;
-      white-space: nowrap;
-    }
-
-    .btn-mini.active {
-      background: #111;
-      color: #fff;
-      border-color: #111;
     }
 
     .service-card {
@@ -294,7 +261,9 @@
     .table-wrap {
       width: 100%;
       overflow-x: hidden;
-      margin-top: 12px;
+      border: 1px solid #eee;
+      border-radius: 14px;
+      background: #fff;
     }
 
     table {
@@ -304,29 +273,50 @@
       table-layout: fixed;
     }
 
-    col.col-tariff { width: var(--col-tariff); }
-    col.col-actual { width: var(--col-actual); }
-    col.col-custom-pages { width: var(--col-custom-pages); }
-    col.col-format { width: var(--col-format); }
-    col.col-qty { width: var(--col-qty); }
-    col.col-price { width: var(--col-price); }
-    col.col-sum { width: var(--col-sum); }
+    col.resizable-col {
+      width: auto;
+    }
 
     th, td {
       text-align: center;
       vertical-align: middle;
-      padding: 10px 8px;
+      padding: 10px;
       border-bottom: 1px solid #eee;
       font-size: 14px;
-      word-break: break-word;
       overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     th {
       background: #fafafa;
       font-weight: 700;
-      white-space: normal;
-      line-height: 1.2;
+      white-space: nowrap;
+      position: relative;
+      user-select: none;
+    }
+
+    .th-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+      width: 100%;
+      position: relative;
+      padding-right: 10px;
+    }
+
+    .th-inner.text-left {
+      justify-content: flex-start;
+    }
+
+    .col-resizer {
+      position: absolute;
+      top: 0;
+      right: -4px;
+      width: 8px;
+      height: 100%;
+      cursor: col-resize;
+      z-index: 3;
     }
 
     .text-left {
@@ -341,10 +331,6 @@
       vertical-align: middle;
     }
 
-    .sum-head {
-      text-align: right !important;
-    }
-
     .small {
       font-size: 12px;
       color: #666;
@@ -353,18 +339,17 @@
 
     .row-qty-input {
       width: 100%;
-      max-width: 90px;
       min-width: 0;
+      max-width: 100%;
       text-align: center;
-      height: 40px;
-      margin: 0 auto;
+      height: 44px;
     }
 
-    .row-price-wrap {
+    .row-price-box {
       display: flex;
-      flex-direction: column;
+      align-items: center;
       gap: 8px;
-      align-items: stretch;
+      width: 100%;
     }
 
     .row-price-input {
@@ -372,7 +357,7 @@
       min-width: 0;
       text-align: center;
       font-size: 14px;
-      height: 40px;
+      height: 44px;
     }
 
     .row-select {
@@ -384,13 +369,47 @@
       font-size: 14px;
       background: #fff;
       text-align: center;
-      height: 40px;
+      height: 44px;
     }
 
-    .row-extra-actions {
-      display: flex;
+    .price-lock-btn,
+    .row-remove-extra-btn {
+      width: 44px;
+      min-width: 44px;
+      max-width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      background: #fff;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
-      margin-top: 8px;
+    }
+
+    .price-lock-btn.locked {
+      background: #111;
+      color: #fff;
+      border-color: #111;
+    }
+
+    .row-remove-extra-btn {
+      color: var(--danger);
+      border-color: #e7b8c0;
+      background: #fff;
+    }
+
+    .row-remove-extra-btn:hover {
+      background: var(--danger-soft);
+    }
+
+    .sum-cell-wrap {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      width: 100%;
     }
 
     .note-box {
@@ -491,16 +510,6 @@
       .extra-inline-toolbar {
         grid-template-columns: 1fr;
       }
-
-      :root {
-        --col-tariff: 22%;
-        --col-actual: 18%;
-        --col-custom-pages: 10%;
-        --col-format: 14%;
-        --col-qty: 10%;
-        --col-price: 14%;
-        --col-sum: 12%;
-      }
     }
 
     @media (max-width: 900px) {
@@ -529,13 +538,8 @@
         text-align: left;
       }
 
-      th, td {
-        font-size: 13px;
-        padding: 8px 6px;
-      }
-
-      .money {
-        font-size: 16px;
+      .th-inner {
+        white-space: normal;
       }
     }
   </style>
@@ -612,6 +616,8 @@
       { key: "lamination", label: "+ Ламинирование" },
       { key: "folder", label: "+ Папка" }
     ];
+
+    const DEFAULT_TABLE_COLS = [18, 16, 12, 14, 10, 18, 12];
 
     const PRICES = {
       documentsBW: {
@@ -770,7 +776,8 @@
         resultsByType: {},
         notesByType: {},
         resultCollapsedByType: {},
-        selectedExtraTypeByType: {}
+        selectedExtraTypeByType: {},
+        tableColsByType: {}
       };
 
       const block = document.createElement("div");
@@ -846,6 +853,7 @@
       if (!state.notesByType[type]) state.notesByType[type] = [];
       if (typeof state.resultCollapsedByType[type] !== "boolean") state.resultCollapsedByType[type] = false;
       if (typeof state.selectedExtraTypeByType[type] !== "string") state.selectedExtraTypeByType[type] = "";
+      if (!Array.isArray(state.tableColsByType[type])) state.tableColsByType[type] = [...DEFAULT_TABLE_COLS];
     }
 
     function getDefaultServiceName(type, id) {
@@ -1095,8 +1103,8 @@
 
       rebuildCalculatedRows();
       renderServiceResult(block);
-      recalcOverallTotal();
 
+      recalcOverallTotal();
       if (setReadyText) {
         setStatus("Готово.");
       }
@@ -1388,7 +1396,7 @@
         editableFormats: [],
         colorMode: null,
         isExtraRow: false,
-        priceLinked: false
+        priceLinked: true
       };
     }
 
@@ -1409,6 +1417,7 @@
       const notes = state.notesByType[type] || [];
       const resultCollapsed = state.resultCollapsedByType[type];
       const selectedExtraType = state.selectedExtraTypeByType[type] || "";
+      const colWidths = normalizeColWidths(state.tableColsByType[type]);
 
       const resultBox = block.querySelector(".service-result");
 
@@ -1428,25 +1437,19 @@
 
         <div class="result-content ${resultCollapsed ? "collapsed" : ""}">
           <div class="table-wrap">
-            <table>
+            <table data-table-owner="${id}" data-table-type="${escapeHtml(type)}">
               <colgroup>
-                <col class="col-tariff">
-                <col class="col-actual">
-                <col class="col-custom-pages">
-                <col class="col-format">
-                <col class="col-qty">
-                <col class="col-price">
-                <col class="col-sum">
+                ${colWidths.map((w, index) => `<col class="resizable-col" data-col-index="${index}" style="width:${w}%;">`).join("")}
               </colgroup>
               <thead>
                 <tr>
-                  <th class="text-left">Пункт прайса</th>
-                  <th class="text-left">Фактический размер</th>
-                  <th>Нестандартные стр.</th>
-                  <th>Формат для расчёта</th>
-                  <th>Количество</th>
-                  <th>Цена за ед.</th>
-                  <th class="sum-head">Сумма</th>
+                  ${renderHeaderCell("Пункт прайса", 0, true)}
+                  ${renderHeaderCell("Фактический размер", 1, true)}
+                  ${renderHeaderCell("Нестандартные стр.", 2)}
+                  ${renderHeaderCell("Формат для расчёта", 3)}
+                  ${renderHeaderCell("Количество", 4)}
+                  ${renderHeaderCell("Цена за ед.", 5)}
+                  ${renderHeaderCell("Сумма", 6)}
                 </tr>
               </thead>
               <tbody>
@@ -1492,6 +1495,17 @@
       bindResultArea(block);
     }
 
+    function renderHeaderCell(text, index, isLeft = false) {
+      return `
+        <th data-col-index="${index}" class="${isLeft ? "text-left" : ""}">
+          <div class="th-inner ${isLeft ? "text-left" : ""}">
+            <span>${escapeHtml(text)}</span>
+            <span class="col-resizer" data-col-index="${index}"></span>
+          </div>
+        </th>
+      `;
+    }
+
     function renderRowHtml(row) {
       const billedFormatCell = row.billedFormatEditable
         ? formatSelectHtml(row)
@@ -1501,48 +1515,46 @@
         ? `<input type="number" min="1" step="1" class="row-qty-input row-qty-editor" data-row-id="${row.id}" value="${String(row.qty)}">`
         : escapeHtml(String(row.qty));
 
-      const customPagesText = row.customPageNumbers && row.customPageNumbers.length
-        ? compressPageRanges(row.customPageNumbers)
-        : "—";
-
-      const priceControl = row.unitPriceEditable
+      const unitPriceCell = row.unitPriceEditable
         ? `
-          <div class="row-price-wrap">
+          <div class="row-price-box">
             <input type="number" min="0" step="0.01" class="row-price-input row-price-editor" data-row-id="${row.id}" value="${formatInputNumber(row.unitPrice)}">
-            ${row.serviceType === "documents" ? `
+            <button type="button"
+                    class="price-lock-btn ${row.priceLinked ? "locked" : ""}"
+                    data-row-id="${row.id}"
+                    title="${row.priceLinked ? "Цена связана с одинаковыми пунктами прайса" : "Цена изменяется только у этой строки"}">
+              ${row.priceLinked ? "🔒" : "🔓"}
+            </button>
+            ${row.isExtraRow ? `
               <button type="button"
-                      class="btn-mini row-price-link-toggle ${row.priceLinked ? "active" : ""}"
-                      data-row-id="${row.id}">
-                ${row.priceLinked ? "Цена связана" : "Цена отдельно"}
+                      class="row-remove-extra-btn"
+                      data-row-id="${row.id}"
+                      title="Удалить дополнительную строку">
+                ×
               </button>
             ` : ""}
           </div>
         `
         : money(row.unitPrice);
 
-      const extraAction = row.isExtraRow
-        ? `
-          <div class="row-extra-actions">
-            <button type="button" class="btn-link-danger row-delete-extra-btn" data-row-id="${row.id}">
-              Удалить опцию
-            </button>
-          </div>
-        `
-        : "";
+      const customPagesText = row.customPageNumbers && row.customPageNumbers.length
+        ? compressPageRanges(row.customPageNumbers)
+        : "—";
 
       return `
         <tr data-row-id="${row.id}">
           <td class="text-left">
             <div>${escapeHtml(row.tariffCode || "—")}</div>
             <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
-            ${extraAction}
           </td>
           <td class="text-left">${escapeHtml(row.actualFormatLabel || "—")}</td>
           <td>${escapeHtml(customPagesText)}</td>
           <td>${billedFormatCell}</td>
           <td>${qtyCell}</td>
-          <td>${priceControl}</td>
-          <td class="money row-sum-cell">${money(row.qty * row.unitPrice)}</td>
+          <td>${unitPriceCell}</td>
+          <td class="money row-sum-cell">
+            <div class="sum-cell-wrap">${money(row.qty * row.unitPrice)}</div>
+          </td>
         </tr>
       `;
     }
@@ -1674,27 +1686,8 @@
         });
       }
 
-      resultBox.querySelectorAll(".row-delete-extra-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const rowId = btn.dataset.rowId;
-          state.resultsByType[type] = (state.resultsByType[type] || []).filter(r => r.id !== rowId);
-          rebuildCalculatedRows();
-          renderServiceResult(block);
-          recalcOverallTotal();
-        });
-      });
-
-      resultBox.querySelectorAll(".row-price-link-toggle").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const row = calculatedRows.find(r => r.id === btn.dataset.rowId);
-          if (!row) return;
-          row.priceLinked = !row.priceLinked;
-          syncStatesFromCalculatedRows();
-          renderServiceResult(block);
-        });
-      });
-
       bindRowEditors(block);
+      bindTableResizers(block);
     }
 
     function buildInlineExtraRow(id, type) {
@@ -1718,7 +1711,8 @@
             tariff,
             qty
           }),
-          isExtraRow: true
+          isExtraRow: true,
+          priceLinked: false
         };
       }
 
@@ -1737,7 +1731,8 @@
             tariff,
             qty
           }),
-          isExtraRow: true
+          isExtraRow: true,
+          priceLinked: false
         };
       }
 
@@ -1756,7 +1751,8 @@
             tariff,
             qty
           }),
-          isExtraRow: true
+          isExtraRow: true,
+          priceLinked: false
         };
       }
 
@@ -1775,7 +1771,8 @@
             tariff,
             qty
           }),
-          isExtraRow: true
+          isExtraRow: true,
+          priceLinked: false
         };
       }
 
@@ -1792,7 +1789,7 @@
 
           if (row.priceLinked && row.tariffCode && row.tariffCode !== "—" && row.tariffCode !== "MANUAL") {
             calculatedRows
-              .filter(r => r.id !== row.id && r.priceLinked && r.tariffCode === row.tariffCode)
+              .filter(r => r.id !== row.id && r.tariffCode === row.tariffCode && r.priceLinked)
               .forEach(r => {
                 r.unitPrice = row.unitPrice;
                 updateRowDom(r.id, { updatePriceInput: true });
@@ -1802,6 +1799,24 @@
           updateRowDom(row.id, { updatePriceInput: false });
           syncStatesFromCalculatedRows();
           recalcOverallTotal();
+        });
+      });
+
+      block.querySelectorAll(".price-lock-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const row = calculatedRows.find(r => r.id === btn.dataset.rowId);
+          if (!row) return;
+
+          row.priceLinked = !row.priceLinked;
+          updateRowDom(row.id, { updatePriceInput: false });
+          syncStatesFromCalculatedRows();
+        });
+      });
+
+      block.querySelectorAll(".row-remove-extra-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const rowId = btn.dataset.rowId;
+          removeExtraRowById(rowId);
         });
       });
 
@@ -1840,31 +1855,103 @@
       });
     }
 
+    function bindTableResizers(block) {
+      const table = block.querySelector("table[data-table-owner]");
+      if (!table) return;
+
+      const ownerId = Number(table.dataset.tableOwner);
+      const type = table.dataset.tableType;
+      const state = serviceStates[ownerId];
+      if (!state) return;
+
+      table.querySelectorAll(".col-resizer").forEach(handle => {
+        handle.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+
+          const colIndex = Number(handle.dataset.colIndex);
+          const startX = event.clientX;
+          const startWidths = normalizeColWidths(state.tableColsByType[type]);
+          const tableRect = table.getBoundingClientRect();
+          const minPercent = 7;
+
+          function onMove(moveEvent) {
+            const deltaPx = moveEvent.clientX - startX;
+            const deltaPercent = (deltaPx / tableRect.width) * 100;
+
+            let left = startWidths[colIndex] + deltaPercent;
+            let right = startWidths[colIndex + 1] - deltaPercent;
+
+            if (colIndex >= startWidths.length - 1) return;
+            if (left < minPercent) {
+              right -= (minPercent - left);
+              left = minPercent;
+            }
+            if (right < minPercent) {
+              left -= (minPercent - right);
+              right = minPercent;
+            }
+            if (left < minPercent || right < minPercent) return;
+
+            const next = [...startWidths];
+            next[colIndex] = left;
+            next[colIndex + 1] = right;
+            state.tableColsByType[type] = normalizeColWidths(next);
+            applyColWidths(table, state.tableColsByType[type]);
+          }
+
+          function onUp() {
+            window.removeEventListener("mousemove", onMove);
+            window.removeEventListener("mouseup", onUp);
+          }
+
+          window.addEventListener("mousemove", onMove);
+          window.addEventListener("mouseup", onUp);
+        });
+      });
+    }
+
+    function removeExtraRowById(rowId) {
+      const row = calculatedRows.find(r => r.id === rowId);
+      if (!row || !row.isExtraRow) return;
+
+      const state = serviceStates[row.serviceCardId];
+      if (!state) return;
+
+      Object.keys(state.resultsByType).forEach(type => {
+        state.resultsByType[type] = (state.resultsByType[type] || []).filter(r => r.id !== rowId);
+      });
+
+      rebuildCalculatedRows();
+
+      const block = document.querySelector(`.service-card[data-block-id="${row.serviceCardId}"]`);
+      if (block) renderServiceResult(block);
+
+      recalcOverallTotal();
+    }
+
+    function applyColWidths(table, widths) {
+      const cols = table.querySelectorAll("col[data-col-index]");
+      cols.forEach((col, index) => {
+        col.style.width = `${widths[index]}%`;
+      });
+    }
+
+    function normalizeColWidths(widths) {
+      const arr = Array.isArray(widths) && widths.length === 7 ? [...widths] : [...DEFAULT_TABLE_COLS];
+      const sum = arr.reduce((a, b) => a + b, 0) || 1;
+      return arr.map(v => (v / sum) * 100);
+    }
+
     function updateRowDom(rowId, options = {}) {
       const row = calculatedRows.find(r => r.id === rowId);
       const tr = document.querySelector(`tr[data-row-id="${rowId}"]`);
       if (!row || !tr) return;
-
-      const block = tr.closest(".service-card");
-      if (!block) return;
-
-      if (options.fullRerender) {
-        renderServiceResult(block);
-        return;
-      }
 
       const cells = tr.children;
 
       cells[0].innerHTML = `
         <div>${escapeHtml(row.tariffCode || "—")}</div>
         <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
-        ${row.isExtraRow ? `
-          <div class="row-extra-actions">
-            <button type="button" class="btn-link-danger row-delete-extra-btn" data-row-id="${row.id}">
-              Удалить опцию
-            </button>
-          </div>
-        ` : ""}
       `;
       cells[1].textContent = row.actualFormatLabel || "—";
       cells[2].textContent = row.customPageNumbers && row.customPageNumbers.length ? compressPageRanges(row.customPageNumbers) : "—";
@@ -1886,15 +1973,18 @@
         priceInput.value = formatInputNumber(row.unitPrice);
       }
 
-      const linkBtn = tr.querySelector(".row-price-link-toggle");
-      if (linkBtn) {
-        linkBtn.textContent = row.priceLinked ? "Цена связана" : "Цена отдельно";
-        linkBtn.classList.toggle("active", !!row.priceLinked);
+      const lockBtn = tr.querySelector(".price-lock-btn");
+      if (lockBtn) {
+        lockBtn.classList.toggle("locked", !!row.priceLinked);
+        lockBtn.textContent = row.priceLinked ? "🔒" : "🔓";
+        lockBtn.title = row.priceLinked
+          ? "Цена связана с одинаковыми пунктами прайса"
+          : "Цена изменяется только у этой строки";
       }
 
       const sumCell = tr.querySelector(".row-sum-cell");
       if (sumCell) {
-        sumCell.textContent = money(row.qty * row.unitPrice);
+        sumCell.innerHTML = `<div class="sum-cell-wrap">${money(row.qty * row.unitPrice)}</div>`;
       }
     }
 
