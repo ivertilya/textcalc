@@ -17,6 +17,15 @@
       --black: #111111;
       --white: #ffffff;
       --danger: #b00020;
+
+      /* Меняй только эти ширины столбцов */
+      --col-tariff: 21%;
+      --col-actual: 18%;
+      --col-custom-pages: 10%;
+      --col-format: 14%;
+      --col-qty: 10%;
+      --col-price: 15%;
+      --col-sum: 12%;
     }
 
     body {
@@ -84,6 +93,31 @@
       background: var(--white);
       color: var(--danger);
       border: 1px solid #e0b4b4;
+    }
+
+    .btn-link-danger {
+      background: #fff;
+      color: var(--danger);
+      border: 1px solid #e8c6c6;
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 10px;
+    }
+
+    .btn-mini {
+      background: #fff;
+      color: #111;
+      border: 1px solid #ccc;
+      padding: 8px 10px;
+      font-size: 12px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    .btn-mini.active {
+      background: #111;
+      color: #fff;
+      border-color: #111;
     }
 
     .service-card {
@@ -258,52 +292,57 @@
     }
 
     .table-wrap {
-      overflow-x: auto;
+      width: 100%;
+      overflow-x: hidden;
       margin-top: 12px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1260px;
       background: #fff;
       table-layout: fixed;
     }
 
+    col.col-tariff { width: var(--col-tariff); }
+    col.col-actual { width: var(--col-actual); }
+    col.col-custom-pages { width: var(--col-custom-pages); }
+    col.col-format { width: var(--col-format); }
+    col.col-qty { width: var(--col-qty); }
+    col.col-price { width: var(--col-price); }
+    col.col-sum { width: var(--col-sum); }
+
     th, td {
       text-align: center;
       vertical-align: middle;
-      padding: 10px;
+      padding: 10px 8px;
       border-bottom: 1px solid #eee;
       font-size: 14px;
-      overflow-wrap: break-word;
       word-break: break-word;
+      overflow-wrap: anywhere;
     }
 
     th {
       background: #fafafa;
       font-weight: 700;
-      white-space: nowrap;
+      white-space: normal;
+      line-height: 1.2;
     }
 
     .text-left {
       text-align: left !important;
     }
 
-    .col-tariff { width: 24%; }
-    .col-actual { width: 23%; }
-    .col-custom-pages { width: 11%; }
-    .col-format { width: 12%; }
-    .col-qty { width: 10%; }
-    .col-price { width: 10%; }
-    .col-sum { width: 10%; }
-
     .money {
       white-space: nowrap;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 400;
-      text-align: center;
+      text-align: right;
       vertical-align: middle;
+    }
+
+    .sum-head {
+      text-align: right !important;
     }
 
     .small {
@@ -313,32 +352,45 @@
     }
 
     .row-qty-input {
-      width: 118px;
-      min-width: 118px;
-      max-width: 118px;
+      width: 100%;
+      max-width: 90px;
+      min-width: 0;
       text-align: center;
-      height: 44px;
+      height: 40px;
+      margin: 0 auto;
+    }
+
+    .row-price-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: stretch;
     }
 
     .row-price-input {
-      width: 112px;
-      min-width: 112px;
-      max-width: 112px;
+      width: 100%;
+      min-width: 0;
       text-align: center;
       font-size: 14px;
-      height: 44px;
+      height: 40px;
     }
 
     .row-select {
       width: 100%;
-      min-width: 140px;
+      min-width: 0;
       padding: 10px 12px;
       border-radius: 12px;
       border: 1px solid #ccc;
       font-size: 14px;
       background: #fff;
       text-align: center;
-      height: 44px;
+      height: 40px;
+    }
+
+    .row-extra-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
     }
 
     .note-box {
@@ -439,6 +491,16 @@
       .extra-inline-toolbar {
         grid-template-columns: 1fr;
       }
+
+      :root {
+        --col-tariff: 22%;
+        --col-actual: 18%;
+        --col-custom-pages: 10%;
+        --col-format: 14%;
+        --col-qty: 10%;
+        --col-price: 14%;
+        --col-sum: 12%;
+      }
     }
 
     @media (max-width: 900px) {
@@ -465,6 +527,15 @@
 
       .overall-total {
         text-align: left;
+      }
+
+      th, td {
+        font-size: 13px;
+        padding: 8px 6px;
+      }
+
+      .money {
+        font-size: 16px;
       }
     }
   </style>
@@ -1024,8 +1095,8 @@
 
       rebuildCalculatedRows();
       renderServiceResult(block);
-
       recalcOverallTotal();
+
       if (setReadyText) {
         setStatus("Готово.");
       }
@@ -1100,7 +1171,8 @@
           billedFormatEditable: true,
           editableFormats: [...FORMAT_OPTIONS],
           colorMode: group.colorMode,
-          isExtraRow: false
+          isExtraRow: false,
+          priceLinked: true
         });
       });
 
@@ -1315,7 +1387,8 @@
         billedFormatEditable: false,
         editableFormats: [],
         colorMode: null,
-        isExtraRow: false
+        isExtraRow: false,
+        priceLinked: false
       };
     }
 
@@ -1356,15 +1429,24 @@
         <div class="result-content ${resultCollapsed ? "collapsed" : ""}">
           <div class="table-wrap">
             <table>
+              <colgroup>
+                <col class="col-tariff">
+                <col class="col-actual">
+                <col class="col-custom-pages">
+                <col class="col-format">
+                <col class="col-qty">
+                <col class="col-price">
+                <col class="col-sum">
+              </colgroup>
               <thead>
                 <tr>
-                  <th class="col-tariff text-left">Пункт прайса</th>
-                  <th class="col-actual text-left">Фактический размер</th>
-                  <th class="col-custom-pages">Нестандартные стр.</th>
-                  <th class="col-format">Формат для расчёта</th>
-                  <th class="col-qty">Количество</th>
-                  <th class="col-price">Цена за ед.</th>
-                  <th class="col-sum">Сумма</th>
+                  <th class="text-left">Пункт прайса</th>
+                  <th class="text-left">Фактический размер</th>
+                  <th>Нестандартные стр.</th>
+                  <th>Формат для расчёта</th>
+                  <th>Количество</th>
+                  <th>Цена за ед.</th>
+                  <th class="sum-head">Сумма</th>
                 </tr>
               </thead>
               <tbody>
@@ -1419,25 +1501,47 @@
         ? `<input type="number" min="1" step="1" class="row-qty-input row-qty-editor" data-row-id="${row.id}" value="${String(row.qty)}">`
         : escapeHtml(String(row.qty));
 
-      const unitPriceCell = row.unitPriceEditable
-        ? `<input type="number" min="0" step="0.01" class="row-price-input row-price-editor" data-row-id="${row.id}" value="${formatInputNumber(row.unitPrice)}">`
-        : money(row.unitPrice);
-
       const customPagesText = row.customPageNumbers && row.customPageNumbers.length
         ? compressPageRanges(row.customPageNumbers)
         : "—";
+
+      const priceControl = row.unitPriceEditable
+        ? `
+          <div class="row-price-wrap">
+            <input type="number" min="0" step="0.01" class="row-price-input row-price-editor" data-row-id="${row.id}" value="${formatInputNumber(row.unitPrice)}">
+            ${row.serviceType === "documents" ? `
+              <button type="button"
+                      class="btn-mini row-price-link-toggle ${row.priceLinked ? "active" : ""}"
+                      data-row-id="${row.id}">
+                ${row.priceLinked ? "Цена связана" : "Цена отдельно"}
+              </button>
+            ` : ""}
+          </div>
+        `
+        : money(row.unitPrice);
+
+      const extraAction = row.isExtraRow
+        ? `
+          <div class="row-extra-actions">
+            <button type="button" class="btn-link-danger row-delete-extra-btn" data-row-id="${row.id}">
+              Удалить опцию
+            </button>
+          </div>
+        `
+        : "";
 
       return `
         <tr data-row-id="${row.id}">
           <td class="text-left">
             <div>${escapeHtml(row.tariffCode || "—")}</div>
             <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
+            ${extraAction}
           </td>
           <td class="text-left">${escapeHtml(row.actualFormatLabel || "—")}</td>
           <td>${escapeHtml(customPagesText)}</td>
           <td>${billedFormatCell}</td>
           <td>${qtyCell}</td>
-          <td>${unitPriceCell}</td>
+          <td>${priceControl}</td>
           <td class="money row-sum-cell">${money(row.qty * row.unitPrice)}</td>
         </tr>
       `;
@@ -1570,6 +1674,26 @@
         });
       }
 
+      resultBox.querySelectorAll(".row-delete-extra-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const rowId = btn.dataset.rowId;
+          state.resultsByType[type] = (state.resultsByType[type] || []).filter(r => r.id !== rowId);
+          rebuildCalculatedRows();
+          renderServiceResult(block);
+          recalcOverallTotal();
+        });
+      });
+
+      resultBox.querySelectorAll(".row-price-link-toggle").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const row = calculatedRows.find(r => r.id === btn.dataset.rowId);
+          if (!row) return;
+          row.priceLinked = !row.priceLinked;
+          syncStatesFromCalculatedRows();
+          renderServiceResult(block);
+        });
+      });
+
       bindRowEditors(block);
     }
 
@@ -1666,17 +1790,16 @@
 
           row.unitPrice = Math.max(0, parseFlexibleNumber(e.target.value));
 
-          if (row.tariffCode && row.tariffCode !== "—" && row.tariffCode !== "MANUAL") {
+          if (row.priceLinked && row.tariffCode && row.tariffCode !== "—" && row.tariffCode !== "MANUAL") {
             calculatedRows
-              .filter(r => r.tariffCode === row.tariffCode)
+              .filter(r => r.id !== row.id && r.priceLinked && r.tariffCode === row.tariffCode)
               .forEach(r => {
                 r.unitPrice = row.unitPrice;
-                updateRowDom(r.id, { updatePriceInput: r.id !== row.id });
+                updateRowDom(r.id, { updatePriceInput: true });
               });
-          } else {
-            updateRowDom(row.id, { updatePriceInput: false });
           }
 
+          updateRowDom(row.id, { updatePriceInput: false });
           syncStatesFromCalculatedRows();
           recalcOverallTotal();
         });
@@ -1722,11 +1845,26 @@
       const tr = document.querySelector(`tr[data-row-id="${rowId}"]`);
       if (!row || !tr) return;
 
+      const block = tr.closest(".service-card");
+      if (!block) return;
+
+      if (options.fullRerender) {
+        renderServiceResult(block);
+        return;
+      }
+
       const cells = tr.children;
 
       cells[0].innerHTML = `
         <div>${escapeHtml(row.tariffCode || "—")}</div>
         <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
+        ${row.isExtraRow ? `
+          <div class="row-extra-actions">
+            <button type="button" class="btn-link-danger row-delete-extra-btn" data-row-id="${row.id}">
+              Удалить опцию
+            </button>
+          </div>
+        ` : ""}
       `;
       cells[1].textContent = row.actualFormatLabel || "—";
       cells[2].textContent = row.customPageNumbers && row.customPageNumbers.length ? compressPageRanges(row.customPageNumbers) : "—";
@@ -1746,6 +1884,12 @@
       const priceInput = tr.querySelector(".row-price-editor");
       if (priceInput && options.updatePriceInput !== false) {
         priceInput.value = formatInputNumber(row.unitPrice);
+      }
+
+      const linkBtn = tr.querySelector(".row-price-link-toggle");
+      if (linkBtn) {
+        linkBtn.textContent = row.priceLinked ? "Цена связана" : "Цена отдельно";
+        linkBtn.classList.toggle("active", !!row.priceLinked);
       }
 
       const sumCell = tr.querySelector(".row-sum-cell");
