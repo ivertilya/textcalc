@@ -1247,33 +1247,60 @@
     }
 
     function getBestBillingFormat(widthMm, heightMm, colorMode, preferDrawingForWide = false) {
-      const exact = detectFormat(widthMm, heightMm);
+  const exact = detectFormat(widthMm, heightMm);
 
-      if (exact !== "CUSTOM") {
-        return {
-          formatKey: exact,
-          isCustomLike: false
-        };
-      }
+  if (exact !== "CUSTOM") {
+    return {
+      formatKey: exact,
+      isCustomLike: false
+    };
+  }
 
-      const wide = detectExtendedWideFormat(widthMm, heightMm);
-      if (wide) {
-        return {
-          formatKey: wide.formatKey,
-          isCustomLike: true
-        };
-      }
+  const fittingFormat = findSmallestFittingFormat(widthMm, heightMm);
+  if (fittingFormat) {
+    return {
+      formatKey: fittingFormat,
+      isCustomLike: true
+    };
+  }
 
-      const nearestStd = findNearestFormat(widthMm, heightMm);
-      if (preferDrawingForWide && ["A4", "A3"].includes(nearestStd)) {
-        return { formatKey: "A2", isCustomLike: true };
-      }
+  const wide = detectExtendedWideFormat(widthMm, heightMm);
+  if (wide) {
+    return {
+      formatKey: wide.formatKey,
+      isCustomLike: true
+    };
+  }
 
-      return {
-        formatKey: nearestStd,
-        isCustomLike: true
-      };
+  const nearestStd = findNearestFormat(widthMm, heightMm);
+  if (preferDrawingForWide && ["A4", "A3"].includes(nearestStd)) {
+    return { formatKey: "A2", isCustomLike: true };
+  }
+
+  return {
+    formatKey: nearestStd,
+    isCustomLike: true
+  };
+}
+
+    function findSmallestFittingFormat(widthMm, heightMm) {
+  const shortSide = Math.min(widthMm, heightMm);
+  const longSide = Math.max(widthMm, heightMm);
+
+  const orderedFormats = ["A6", "A5", "A4", "A3", "A2", "A1", "A0"];
+
+  for (const name of orderedFormats) {
+    const size = FORMATS[name];
+    const formatShort = Math.min(size.w, size.h);
+    const formatLong = Math.max(size.w, size.h);
+
+    if (shortSide <= formatShort + TOLERANCE_MM && longSide <= formatLong + TOLERANCE_MM) {
+      return name;
     }
+  }
+
+  return null;
+}
 
     function detectExtendedWideFormat(widthMm, heightMm) {
       const shortSide = Math.min(widthMm, heightMm);
