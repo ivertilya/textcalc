@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Калькулятор печати</title>
+
   <style>
     * { box-sizing: border-box; }
 
@@ -17,7 +18,15 @@
       --black: #111111;
       --white: #ffffff;
       --danger: #b00020;
-      --danger-soft: #fbe9ec;
+
+      /* Меняй только эти переменные, если хочешь управлять шириной столбцов */
+      --col-tariff: 20%;
+      --col-actual: 18%;
+      --col-custom: 12%;
+      --col-format: 18%;
+      --col-qty: 10%;
+      --col-price: 12%;
+      --col-sum: 10%;
     }
 
     body {
@@ -28,7 +37,7 @@
     }
 
     .wrap {
-      max-width: 1320px;
+      max-width: 1360px;
       margin: 0 auto;
       padding: 18px 24px 24px;
     }
@@ -87,6 +96,38 @@
       border: 1px solid #e0b4b4;
     }
 
+    .btn-mini {
+      padding: 8px 10px;
+      font-size: 12px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    .icon-btn {
+      width: 40px;
+      min-width: 40px;
+      height: 40px;
+      padding: 0;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      background: #fff;
+      font-size: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn.locked {
+      background: #111;
+      color: #fff;
+      border-color: #111;
+    }
+
+    .icon-btn.remove-extra {
+      color: var(--danger);
+      border-color: #e0b4b4;
+    }
+
     .service-card {
       background: var(--card);
       border: 1px solid var(--line);
@@ -130,7 +171,7 @@
 
     .service-type-buttons {
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       width: 100%;
       gap: 8px;
       margin-bottom: 14px;
@@ -163,12 +204,6 @@
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .grid-4 {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 14px;
     }
 
@@ -260,10 +295,7 @@
 
     .table-wrap {
       width: 100%;
-      overflow-x: hidden;
-      border: 1px solid #eee;
-      border-radius: 14px;
-      background: #fff;
+      overflow: hidden;
     }
 
     table {
@@ -273,62 +305,41 @@
       table-layout: fixed;
     }
 
-    col.resizable-col {
-      width: auto;
-    }
+    col.col-tariff { width: var(--col-tariff); }
+    col.col-actual { width: var(--col-actual); }
+    col.col-custom { width: var(--col-custom); }
+    col.col-format { width: var(--col-format); }
+    col.col-qty { width: var(--col-qty); }
+    col.col-price { width: var(--col-price); }
+    col.col-sum { width: var(--col-sum); }
 
     th, td {
-      text-align: center;
       vertical-align: middle;
       padding: 10px;
       border-bottom: 1px solid #eee;
       font-size: 14px;
-      overflow-wrap: anywhere;
       word-break: break-word;
+      overflow-wrap: anywhere;
     }
 
     th {
       background: #fafafa;
       font-weight: 700;
       white-space: nowrap;
-      position: relative;
-      user-select: none;
+      text-align: center;
     }
 
-    .th-inner {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 24px;
-      width: 100%;
-      position: relative;
-      padding-right: 10px;
-    }
-
-    .th-inner.text-left {
-      justify-content: flex-start;
-    }
-
-    .col-resizer {
-      position: absolute;
-      top: 0;
-      right: -4px;
-      width: 8px;
-      height: 100%;
-      cursor: col-resize;
-      z-index: 3;
-    }
+    td { text-align: center; }
 
     .text-left {
       text-align: left !important;
     }
 
-    .money {
+    .sum-cell {
+      text-align: right !important;
       white-space: nowrap;
       font-size: 18px;
-      font-weight: 400;
-      text-align: right;
-      vertical-align: middle;
+      font-weight: 700;
     }
 
     .small {
@@ -339,25 +350,10 @@
 
     .row-qty-input {
       width: 100%;
-      min-width: 0;
-      max-width: 100%;
+      max-width: 110px;
       text-align: center;
-      height: 44px;
-    }
-
-    .row-price-box {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-    }
-
-    .row-price-input {
-      width: 100%;
-      min-width: 0;
-      text-align: center;
-      font-size: 14px;
-      height: 44px;
+      height: 40px;
+      margin: 0 auto;
     }
 
     .row-select {
@@ -369,47 +365,24 @@
       font-size: 14px;
       background: #fff;
       text-align: center;
-      height: 44px;
+      height: 40px;
     }
 
-    .price-lock-btn,
-    .row-remove-extra-btn {
-      width: 44px;
-      min-width: 44px;
-      max-width: 44px;
-      height: 44px;
-      padding: 0;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      background: #fff;
-      font-size: 18px;
-      line-height: 1;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .price-lock-btn.locked {
-      background: #111;
-      color: #fff;
-      border-color: #111;
-    }
-
-    .row-remove-extra-btn {
-      color: var(--danger);
-      border-color: #e7b8c0;
-      background: #fff;
-    }
-
-    .row-remove-extra-btn:hover {
-      background: var(--danger-soft);
-    }
-
-    .sum-cell-wrap {
+    .price-edit-box {
       display: flex;
-      justify-content: flex-end;
       align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      flex-wrap: nowrap;
+    }
+
+    .row-price-input {
       width: 100%;
+      max-width: 110px;
+      min-width: 0;
+      text-align: center;
+      font-size: 14px;
+      height: 40px;
     }
 
     .note-box {
@@ -425,10 +398,6 @@
 
     .add-extra-trigger-row {
       background: #fcfcfc;
-    }
-
-    .add-extra-trigger-row td {
-      padding: 12px 10px;
     }
 
     .extra-inline-row td {
@@ -479,6 +448,21 @@
       border-color: #111;
     }
 
+    .download-btn {
+      margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #111;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
     .bottom-bar {
       display: flex;
       justify-content: space-between;
@@ -503,17 +487,13 @@
     }
 
     @media (max-width: 1100px) {
-      .service-type-buttons {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
       .extra-inline-toolbar {
         grid-template-columns: 1fr;
       }
     }
 
     @media (max-width: 900px) {
-      .grid, .grid-3, .grid-4 {
+      .grid, .grid-3 {
         grid-template-columns: 1fr;
       }
 
@@ -522,7 +502,7 @@
       }
 
       .service-type-buttons {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 1fr;
       }
 
       .overall-total {
@@ -538,8 +518,30 @@
         text-align: left;
       }
 
-      .th-inner {
-        white-space: normal;
+      table, thead, tbody, tr, th, td, colgroup, col {
+        display: block;
+        width: 100% !important;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        border-bottom: 1px solid #eee;
+      }
+
+      td {
+        text-align: left !important;
+        padding: 8px 10px;
+      }
+
+      .sum-cell {
+        text-align: left !important;
+      }
+
+      .price-edit-box {
+        justify-content: flex-start;
       }
     }
   </style>
@@ -567,13 +569,18 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
+    const { PDFDocument } = PDFLib;
+
     const TOLERANCE_MM = 8;
     const COLOR_TOLERANCE = 18;
     const SAMPLE_STEP = 8;
+    const MAX_WIDE_OPTION_MULTIPLIER = 14;
 
     const FORMATS = {
       A6:   { w: 105, h: 148 },
@@ -582,32 +589,17 @@
       A3:   { w: 297, h: 420 },
       A2:   { w: 420, h: 594 },
       A1:   { w: 594, h: 841 },
-      A0:   { w: 841, h: 1189 },
-      SRA3: { w: 320, h: 450 }
+      A0:   { w: 841, h: 1189 }
     };
 
-    const FORMAT_OPTIONS = ["A6","A5","A4","A3","A2","A1","A0","SRA3"];
-
-    const FORMAT_LABELS = {
-      A6: "A6 (105×148 мм)",
-      A5: "A5 (148×210 мм)",
-      A4: "A4 (210×297 мм)",
-      A3: "A3 (297×420 мм)",
-      A2: "A2 (420×594 мм)",
-      A1: "A1 (594×841 мм)",
-      A0: "A0 (841×1189 мм)",
-      SRA3: "SRA3 (320×450 мм)"
-    };
-
-    const LARGE_DOC_FORMATS = ["A2", "A1", "A0"];
+    const DOC_STANDARD_OPTIONS = ["A6", "A5", "A4", "A3", "A2", "A1", "A0"];
+    const DOC_WIDE_OPTIONS = buildWideFormatOptions(MAX_WIDE_OPTION_MULTIPLIER);
+    const ALL_DOC_OPTIONS = [...DOC_STANDARD_OPTIONS, ...DOC_WIDE_OPTIONS];
 
     const SERVICE_TYPES = [
       { key: "documents", label: "Документы" },
       { key: "drawings", label: "Чертежи" },
-      { key: "copy", label: "Ксерокопирование" },
-      { key: "scan", label: "Сканирование" },
-      { key: "photos", label: "Фотографии" },
-      { key: "stickers", label: "Стикеры" }
+      { key: "separator", label: "Разделитель" }
     ];
 
     const EXTRA_TYPES = [
@@ -616,8 +608,6 @@
       { key: "lamination", label: "+ Ламинирование" },
       { key: "folder", label: "+ Папка" }
     ];
-
-    const DEFAULT_TABLE_COLS = [18, 16, 12, 14, 10, 18, 12];
 
     const PRICES = {
       documentsBW: {
@@ -636,115 +626,104 @@
           { max: Infinity, price: 11.0, code: "1012", label: "Цифровая печать, ч/б, формат А3 от 501 прог." }
         ]
       },
+
       documentsColor: {
         A4: { min: 15.0, max: 30.0, code: "1006–1007", label: "Цифровая печать, цветн., формат А4" },
         A3: { min: 30.0, max: 45.0, code: "1013–1014", label: "Цифровая печать, цветн., формат А3" }
       },
-      copy: {
-        A4: {
-          bw: {
-            feeder: { price: 8.0, code: "1057", label: "Ксерокопирование ч/б, формат А4, автопод." },
-            glass:  { price: 10.0, code: "1058", label: "Ксерокопирование ч/б, формат А4, стекло" }
-          },
-          color: {
-            feeder: { price: 15.0, code: "1059", label: "Ксерокопирование цветн., формат А4, автопод." },
-            glass:  { price: 20.0, code: "1060", label: "Ксерокопирование цветн., формат А4, стекло" }
-          }
-        },
-        A3: {
-          bw: {
-            feeder: { price: 18.0, code: "1061", label: "Ксерокопирование ч/б, формат А3, автопод." },
-            glass:  { price: 20.0, code: "1062", label: "Ксерокопирование ч/б, формат А3, стекло" }
-          },
-          color: {
-            feeder: { price: 30.0, code: "1063", label: "Ксерокопирование цветн., формат А3, автопод." },
-            glass:  { price: 35.0, code: "1064", label: "Ксерокопирование цветн., формат А3, стекло" }
-          }
-        }
-      },
-      scan: {
-        A4: {
-          feeder_lt50: { price: 8.0, code: "1065", label: "Сканирование 400dpi, формат А4, автопод. до 50 прог." },
-          feeder_gte50: { price: 6.0, code: "1066", label: "Сканирование 400dpi, формат А4, автопод. от 51 прог." },
-          glass_lt50: { price: 16.0, code: "1067", label: "Сканирование 400dpi, формат А4, стекло до 50 прог." },
-          glass_gte50: { price: 12.0, code: "1068", label: "Сканирование 400dpi, формат А4, стекло от 51 прог." }
-        },
-        A3: {
-          feeder_lt50: { price: 16.0, code: "1069", label: "Сканирование 400dpi, формат А3, автопод. до 50 прог." },
-          feeder_gte50: { price: 12.0, code: "1070", label: "Сканирование 400dpi, формат А3, автопод. от 51 прог." },
-          glass_lt50: { price: 32.0, code: "1071", label: "Сканирование 400dpi, формат А3, стекло до 50 прог." },
-          glass_gte50: { price: 24.0, code: "1072", label: "Сканирование 400dpi, формат А3, стекло от 51 прог." }
-        },
-        A2: { wide: { price: 120.0, code: "1073", label: "Сканирование 400dpi, формат А2, широкоформ." } },
-        A1: { wide: { price: 170.0, code: "1074", label: "Сканирование 400dpi, формат А1, широкоформ." } }
-      },
-      lamination: {
-        A6: { price: 25.0, code: "1120", label: "Ламинирование, А6" },
-        A5: { price: 40.0, code: "1121", label: "Ламинирование, А5" },
-        A4: { price: 60.0, code: "1122", label: "Ламинирование, А4" },
-        A3: { price: 110.0, code: "1123", label: "Ламинирование, А3" }
-      },
-      binding: {
-        staples2: { price: 35.0, code: "1109", label: "Брошюровка на 2 скобы" },
-        hardcover: { price: 550.0, code: "1084", label: "Твердый переплет MetalBind, формат А4" },
-        plastic: { price: 290.0, code: "1091", label: "Брошюровка на пласт. пружину" },
-        metal: { price: 185.0, code: "1103", label: "Брошюровка на металл. пружину" }
-      },
-      photos: {
-        doc10x15: { price: 120.0, code: "1124", label: "Печать фото на документы 10×15" },
-        "10x15": [
-          { max: 10, price: 32.0, code: "1125", label: "Фотографии 10×15 до 10 шт." },
-          { max: 50, price: 28.0, code: "1126", label: "Фотографии 10×15 от 11 до 50 шт." },
-          { max: 100, price: 25.0, code: "1127", label: "Фотографии 10×15 от 51 до 100 шт." },
-          { max: Infinity, price: 23.0, code: "1128", label: "Фотографии 10×15 от 101 шт." }
-        ],
-        "15x21_super": { price: 65.0, code: "1129", label: "Фотографии 15×21 Super Glossy" },
-        "15x21_satin": { price: 65.0, code: "1130", label: "Фотографии 15×21 Satin Warm" },
-        "21x30_super": { price: 120.0, code: "1131", label: "Фотографии 21×30 Super Glossy" },
-        "21x30_satin": { price: 120.0, code: "1132", label: "Фотографии 21×30 Satin Warm" },
-        "30x42_super": { price: 310.0, code: "1133", label: "Фотографии 30×42 Super Glossy" },
-        "30x42_satin": { price: 310.0, code: "1134", label: "Фотографии 30×42 Satin Warm" },
-        "42x60_satin": { price: 650.0, code: "1135", label: "Фотографии 42×60 Satin Warm" },
-        "60x84_satin": { price: 1300.0, code: "1136", label: "Фотографии 60×84 Satin Warm" }
-      },
-      drawings: {
+
+      drawingsExact: {
         bw: {
-          A2: { price: 65.0, code: "1039", label: "Чертеж, ч/б, формат А2" },
-          A1: { price: 110.0, code: "1049", label: "Чертеж, ч/б, формат А1" },
-          A0: { price: 220.0, code: "1051", label: "Чертеж, ч/б, формат А0" }
+          A2: { price: 65.0, code: "1039", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А2" },
+          A1: { price: 110.0, code: "1049", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А1" },
+          A0: { price: 220.0, code: "1051", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А0" }
         },
         color: {
-          A2: { price: 75.0, code: "1040", label: "Чертеж, цвет, формат А2" },
-          A1: { price: 130.0, code: "1050", label: "Чертеж, цвет, формат А1" },
-          A0: { price: 260.0, code: "1052", label: "Чертеж, цвет, формат А0" }
-        },
-        fold: {
-          "A2-A4": { price: 18.0, code: "1111", label: "Фальцевание, исходный А2, под А4" },
-          "A1-A4": { price: 26.0, code: "1112", label: "Фальцевание, исходный А1, под А4" },
-          "A2-A3": { price: 18.0, code: "1113", label: "Фальцевание, исходный А2, под А3" },
-          "A1-A3": { price: 26.0, code: "1114", label: "Фальцевание, исходный А1, под А3" },
-          "custom": { price: 5.0, code: "1115", label: "Фальцевание, нестандарт из расчета А4" }
+          A2: { price: 75.0, code: "1040", label: "Широкоформатная струйная печать, чертеж, цветн, формат А2" },
+          A1: { price: 130.0, code: "1050", label: "Широкоформатная струйная печать, чертеж, цветн, формат А1" },
+          A0: { price: 260.0, code: "1052", label: "Широкоформатная струйная печать, чертеж, цветн, формат А0" }
         }
       },
-      stickers: {
-        paper30: { price: 4.0, code: "1161", label: "Наклейки на бумаге Ø30 мм" },
-        film30: { price: 5.5, code: "1162", label: "Наклейки на пленке Ø30 мм" },
-        paper40: { price: 6.5, code: "1163", label: "Наклейки на бумаге Ø40 мм" },
-        film40: { price: 9.0, code: "1164", label: "Наклейки на пленке Ø40 мм" },
-        paper50: { price: 9.0, code: "1165", label: "Наклейки на бумаге Ø50 мм" },
-        film50: { price: 12.5, code: "1166", label: "Наклейки на пленке Ø50 мм" },
-        sra3_gloss_paper: { price: 150.0, code: "1155", label: "Глянцевая самоклейка SRA3" },
-        sra3_matte_paper: { price: 150.0, code: "1156", label: "Матовая самоклейка SRA3" },
-        sra3_clear_matte: { price: 320.0, code: "1157", label: "Прозрачная матовая пленка SRA3" },
-        sra3_clear_gloss: { price: 320.0, code: "1158", label: "Прозрачная глянцевая пленка SRA3" },
-        sra3_white_matte: { price: 320.0, code: "1159", label: "Белая матовая пленка SRA3" },
-        sra3_white_gloss: { price: 320.0, code: "1160", label: "Белая глянцевая пленка SRA3" }
+
+      drawingsWide: {
+        bw: {
+          A4: {
+            3: { price: 52.0, code: "1015", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А4х3" },
+            4: { price: 69.0, code: "1017", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А4х4" },
+            5: { price: 86.0, code: "1019", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А4х5" },
+            6: { price: 104.0, code: "1021", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А4х6" },
+            7: { price: 121.0, code: "1023", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А4х7" },
+            8: { price: 138.0, code: "1025", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А4х8" }
+          },
+          A3: {
+            3: { price: 104.0, code: "1027", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А3х3" },
+            4: { price: 138.0, code: "1029", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А3х4" },
+            5: { price: 173.0, code: "1031", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А3х5" },
+            6: { price: 207.0, code: "1033", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А3х6" },
+            7: { price: 242.0, code: "1035", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А3х7" },
+            8: { price: 276.0, code: "1037", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А3х8" }
+          },
+          A2: {
+            3: { price: 207.0, code: "1041", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А2х3" },
+            4: { price: 276.0, code: "1043", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А2х4" },
+            5: { price: 345.0, code: "1045", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А2х5" },
+            6: { price: 414.0, code: "1047", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А2х6" }
+          }
+        },
+        color: {
+          A4: {
+            3: { price: 60.0, code: "1016", label: "Широкоформатная струйная печать, чертеж, цветн, формат А4х3" },
+            4: { price: 81.0, code: "1018", label: "Широкоформатная струйная печать, чертеж, цветн, формат А4х4" },
+            5: { price: 101.0, code: "1020", label: "Широкоформатная струйная печать, чертеж, цветн, формат А4х5" },
+            6: { price: 121.0, code: "1022", label: "Широкоформатная струйная печать, чертеж, цветн, формат А4х6" },
+            7: { price: 141.0, code: "1024", label: "Широкоформатная струйная печать, чертеж, цветн, формат А4х7" },
+            8: { price: 161.0, code: "1026", label: "Широкоформатная струйная печать, чертеж, цветн, формат А4х8" }
+          },
+          A3: {
+            3: { price: 121.0, code: "1028", label: "Широкоформатная струйная печать, чертеж, цветн, формат А3х3" },
+            4: { price: 161.0, code: "1030", label: "Широкоформатная струйная печать, чертеж, цветн, формат А3х4" },
+            5: { price: 201.0, code: "1032", label: "Широкоформатная струйная печать, чертеж, цветн, формат А3х5" },
+            6: { price: 242.0, code: "1034", label: "Широкоформатная струйная печать, чертеж, цветн, формат А3х6" },
+            7: { price: 282.0, code: "1036", label: "Широкоформатная струйная печать, чертеж, цветн, формат А3х7" },
+            8: { price: 322.0, code: "1038", label: "Широкоформатная струйная печать, чертеж, цветн, формат А3х8" }
+          },
+          A2: {
+            3: { price: 242.0, code: "1042", label: "Широкоформатная струйная печать, чертеж, цветн, формат А2х3" },
+            4: { price: 322.0, code: "1044", label: "Широкоформатная струйная печать, чертеж, цветн, формат А2х4" },
+            5: { price: 403.0, code: "1046", label: "Широкоформатная струйная печать, чертеж, цветн, формат А2х5" },
+            6: { price: 483.0, code: "1048", label: "Широкоформатная струйная печать, чертеж, цветн, формат А2х6" }
+          }
+        }
       },
+
+      drawingsFold: {
+        "A2-A4": { price: 18.0, code: "1111", label: "Фальцевание, исходный А2, под А4" },
+        "A1-A4": { price: 26.0, code: "1112", label: "Фальцевание, исходный А1, под А4" },
+        "A2-A3": { price: 18.0, code: "1113", label: "Фальцевание, исходный А2, под А3" },
+        "A1-A3": { price: 26.0, code: "1114", label: "Фальцевание, исходный А1, под А3" },
+        custom: { price: 5.0, code: "1115", label: "Фальцевание, нестандарт из расчёта А4" }
+      },
+
+      lamination: {
+        A6: { price: 25.0, code: "1120", label: "Ламинирование пакетное, формат А6" },
+        A5: { price: 40.0, code: "1121", label: "Ламинирование пакетное, формат А5" },
+        A4: { price: 60.0, code: "1122", label: "Ламинирование пакетное, формат А4" },
+        A3: { price: 110.0, code: "1123", label: "Ламинирование пакетное, формат А3" }
+      },
+
+      binding: {
+        staples2: { price: 35.0, code: "1109", label: "Брошюровка на 2 скобы" },
+        hardcover: { price: 550.0, code: "1084", label: "Твёрдый переплёт MetalBind, формат А4" },
+        plastic: { price: 290.0, code: "1091", label: "Брошюровка на пласт. пружину, до 500л" },
+        metal: { price: 185.0, code: "1103", label: "Брошюровка на металл. пружину, до 120л" }
+      },
+
       multifora: {
-        A5: { price: 5.0, code: "1178", label: "Мультифора А5" },
-        A4: { price: 7.0, code: "1179", label: "Мультифора А4" },
-        A3: { price: 14.0, code: "1180", label: "Мультифора А3" }
+        A5: { price: 5.0, code: "1178", label: "Папка-вкладыш с перфорацией А5 (мультифора)" },
+        A4: { price: 7.0, code: "1179", label: "Папка-вкладыш с перфорацией А4 (мультифора)" },
+        A3: { price: 14.0, code: "1180", label: "Папка-вкладыш с перфорацией А3 (мультифора)" }
       },
+
       folders: {
         folder20: { price: 200.0, code: "1172", label: "Папка на 20 мультифор" },
         folder30: { price: 250.0, code: "1173", label: "Папка на 30 мультифор" },
@@ -764,20 +743,30 @@
     const statusBox = document.getElementById("status");
     const overallTotalBox = document.getElementById("overallTotal");
 
-    addServiceBtn.addEventListener("click", () => addServiceBlock());
+    addServiceBtn.addEventListener("click", () => addServiceBlock("documents"));
     clearBtn.addEventListener("click", clearAll);
     calculateAllBtn.addEventListener("click", calculateAllServices);
 
     addServiceBlock("documents");
 
+    function buildWideFormatOptions(maxMultiplier = 14) {
+      const items = [];
+      ["A4", "A3", "A2"].forEach(base => {
+        for (let n = 3; n <= maxMultiplier; n++) items.push(`${base}x${n}`);
+      });
+      return items;
+    }
+
     function addServiceBlock(type = "documents") {
       const id = blockCounter++;
+
       serviceStates[id] = {
         resultsByType: {},
         notesByType: {},
         resultCollapsedByType: {},
         selectedExtraTypeByType: {},
-        tableColsByType: {}
+        sourceBytesByType: {},
+        sourceFileNameByType: {}
       };
 
       const block = document.createElement("div");
@@ -853,17 +842,13 @@
       if (!state.notesByType[type]) state.notesByType[type] = [];
       if (typeof state.resultCollapsedByType[type] !== "boolean") state.resultCollapsedByType[type] = false;
       if (typeof state.selectedExtraTypeByType[type] !== "string") state.selectedExtraTypeByType[type] = "";
-      if (!Array.isArray(state.tableColsByType[type])) state.tableColsByType[type] = [...DEFAULT_TABLE_COLS];
     }
 
     function getDefaultServiceName(type, id) {
       const map = {
         documents: `Документы #${id}`,
         drawings: `Чертежи #${id}`,
-        copy: `Ксерокопирование #${id}`,
-        scan: `Сканирование #${id}`,
-        photos: `Фотографии #${id}`,
-        stickers: `Стикеры #${id}`
+        separator: `Разделитель #${id}`
       };
       return map[type] || `Услуга #${id}`;
     }
@@ -900,14 +885,6 @@
               <input type="file" id="drawing-file-${id}" accept="application/pdf" />
             </div>
             <div class="field">
-              <label>Формат</label>
-              <select id="drawing-format-${id}">
-                <option value="A2">A2 (420×594 мм)</option>
-                <option value="A1">A1 (594×841 мм)</option>
-                <option value="A0">A0 (841×1189 мм)</option>
-              </select>
-            </div>
-            <div class="field">
               <label>Цветность</label>
               <select id="drawing-color-${id}">
                 <option value="bw">Ч/б</option>
@@ -915,8 +892,8 @@
               </select>
             </div>
             <div class="field">
-              <label>Количество</label>
-              <input type="number" id="drawing-qty-${id}" min="1" step="1" value="1" />
+              <label>Количество экземпляров</label>
+              <input type="number" id="drawing-copies-${id}" min="1" step="1" value="1" />
             </div>
             <div class="field">
               <label>Фальцовка</label>
@@ -933,115 +910,24 @@
         `;
       }
 
-      if (type === "copy") {
-        return `
-          <div class="grid-4">
-            <div class="field">
-              <label>Формат</label>
-              <select id="copy-format-${id}">
-                <option value="A4">A4 (210×297 мм)</option>
-                <option value="A3">A3 (297×420 мм)</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Цветность</label>
-              <select id="copy-color-${id}">
-                <option value="bw">Ч/б</option>
-                <option value="color">Цвет</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Источник</label>
-              <select id="copy-source-${id}">
-                <option value="feeder">Автоподатчик</option>
-                <option value="glass">Со стекла</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Количество прогонов</label>
-              <input type="number" id="copy-qty-${id}" min="1" step="1" value="1" />
-            </div>
-          </div>
-        `;
-      }
-
-      if (type === "scan") {
-        return `
-          <div class="grid-3">
-            <div class="field">
-              <label>Формат</label>
-              <select id="scan-format-${id}">
-                <option value="A4">A4 (210×297 мм)</option>
-                <option value="A3">A3 (297×420 мм)</option>
-                <option value="A2">A2 (420×594 мм)</option>
-                <option value="A1">A1 (594×841 мм)</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Источник</label>
-              <select id="scan-source-${id}">
-                <option value="feeder">Автоподатчик</option>
-                <option value="glass">Со стекла</option>
-                <option value="wide">Широкоформатный</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Количество сторон / прогонов</label>
-              <input type="number" id="scan-qty-${id}" min="1" step="1" value="1" />
-            </div>
-          </div>
-        `;
-      }
-
-      if (type === "photos") {
+      if (type === "separator") {
         return `
           <div class="grid">
+            <div class="field" style="grid-column:1 / -1;">
+              <label>PDF-файл для разделения</label>
+              <input type="file" id="separator-file-${id}" accept="application/pdf" />
+            </div>
             <div class="field">
-              <label>Формат</label>
-              <select id="photo-format-${id}">
-                <option value="doc10x15">Фото на документы 10×15</option>
-                <option value="10x15">10×15</option>
-                <option value="15x21_super">15×21 Super Glossy</option>
-                <option value="15x21_satin">15×21 Satin Warm</option>
-                <option value="21x30_super">21×30 Super Glossy</option>
-                <option value="21x30_satin">21×30 Satin Warm</option>
-                <option value="30x42_super">30×42 Super Glossy</option>
-                <option value="30x42_satin">30×42 Satin Warm</option>
-                <option value="42x60_satin">42×60 Satin Warm</option>
-                <option value="60x84_satin">60×84 Satin Warm</option>
+              <label>Режим определения цвета</label>
+              <select id="separator-print-mode-${id}">
+                <option value="auto">Автоопределение</option>
+                <option value="bw">Считать всё ч/б</option>
+                <option value="color">Считать всё цветным</option>
               </select>
             </div>
             <div class="field">
-              <label>Количество</label>
-              <input type="number" id="photo-qty-${id}" min="1" step="1" value="1" />
-            </div>
-          </div>
-        `;
-      }
-
-      if (type === "stickers") {
-        return `
-          <div class="grid">
-            <div class="field">
-              <label>Тип</label>
-              <select id="sticker-type-${id}">
-                <option value="paper30">Бумага Ø30 мм</option>
-                <option value="film30">Пленка Ø30 мм</option>
-                <option value="paper40">Бумага Ø40 мм</option>
-                <option value="film40">Пленка Ø40 мм</option>
-                <option value="paper50">Бумага Ø50 мм</option>
-                <option value="film50">Пленка Ø50 мм</option>
-                <option value="sra3_gloss_paper">Глянцевая самоклейка SRA3</option>
-                <option value="sra3_matte_paper">Матовая самоклейка SRA3</option>
-                <option value="sra3_clear_matte">Прозрачная матовая пленка SRA3</option>
-                <option value="sra3_clear_gloss">Прозрачная глянцевая пленка SRA3</option>
-                <option value="sra3_white_matte">Белая матовая пленка SRA3</option>
-                <option value="sra3_white_gloss">Белая глянцевая пленка SRA3</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Количество</label>
-              <input type="number" id="sticker-qty-${id}" min="1" step="1" value="1" />
+              <label>Количество экземпляров для расчёта цены</label>
+              <input type="number" id="separator-copies-${id}" min="1" step="1" value="1" />
             </div>
           </div>
         `;
@@ -1084,14 +970,8 @@
         baseRows = await calculateDocumentsBlock(id, customName, notes);
       } else if (type === "drawings") {
         baseRows = await calculateDrawingsBlock(id, customName, notes);
-      } else if (type === "copy") {
-        baseRows = calculateCopyBlock(id, customName);
-      } else if (type === "scan") {
-        baseRows = calculateScanBlock(id, customName);
-      } else if (type === "photos") {
-        baseRows = calculatePhotosBlock(id, customName);
-      } else if (type === "stickers") {
-        baseRows = calculateStickersBlock(id, customName);
+      } else if (type === "separator") {
+        baseRows = await calculateSeparatorBlock(id, customName, notes);
       }
 
       const state = serviceStates[id];
@@ -1105,9 +985,7 @@
       renderServiceResult(block);
 
       recalcOverallTotal();
-      if (setReadyText) {
-        setStatus("Готово.");
-      }
+      if (setReadyText) setStatus("Готово.");
     }
 
     async function calculateDocumentsBlock(id, customName, notes) {
@@ -1115,57 +993,63 @@
       const printMode = document.getElementById(`docs-print-mode-${id}`).value;
       const copies = Math.max(1, parseInt(document.getElementById(`docs-copies-${id}`).value || "1", 10));
 
-      if (!file) {
-        throw new Error(`В услуге "${customName}" не выбран PDF-файл.`);
+      if (!file) throw new Error(`В услуге "${customName}" не выбран PDF-файл.`);
+
+      const analysis = await analyzePdfAndGroup(file, printMode, copies, false);
+      serviceStates[id].sourceBytesByType.documents = analysis.bytes;
+      serviceStates[id].sourceFileNameByType.documents = file.name;
+
+      const rows = analysis.groups.map(group => ({
+        id: makeRowId(),
+        serviceCardId: id,
+        serviceType: "documents",
+        serviceName: customName,
+        actualFormatLabel: group.actualFormatLabel,
+        customPageNumbers: group.customPageNumbers,
+        billedFormat: group.billedFormat,
+        qty: group.qty,
+        unitPrice: group.priceInfo.price,
+        tariffCode: group.priceInfo.code,
+        tariffLabel: group.priceInfo.label,
+        priceSyncKey: group.priceInfo.syncKey,
+        unitPriceEditable: true,
+        qtyEditable: true,
+        billedFormatEditable: true,
+        editableFormats: buildEditableOptionsForRow(group.billedFormat),
+        colorMode: group.colorMode,
+        isExtraRow: false,
+        isSeparatorRow: false,
+        priceLocked: false,
+        priceWasManuallyChanged: false
+      }));
+
+      if (analysis.allCustomPages.length) {
+        notes.push(`Нестандартные страницы: ${compressPageRanges(analysis.allCustomPages)}.`);
       }
+      notes.push(...analysis.notes);
 
-      const rows = [];
-      const buffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-      const groups = {};
+      return rows;
+    }
 
-      for (let i = 1; i <= pdf.numPages; i++) {
-        setStatus(`Идёт анализ... ${file.name}: страница ${i} из ${pdf.numPages}`);
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 1 });
+    async function calculateDrawingsBlock(id, customName, notes) {
+      const file = document.getElementById(`drawing-file-${id}`).files[0];
+      const color = document.getElementById(`drawing-color-${id}`).value;
+      const copies = Math.max(1, parseInt(document.getElementById(`drawing-copies-${id}`).value || "1", 10));
+      const fold = document.getElementById(`drawing-fold-${id}`).value;
 
-        const widthMm = ptToMm(viewport.width);
-        const heightMm = ptToMm(viewport.height);
-        const exactFormat = detectFormat(widthMm, heightMm);
-        const nearestFormat = exactFormat === "CUSTOM" ? findNearestFormat(widthMm, heightMm) : exactFormat;
+      if (!file) throw new Error(`В услуге "${customName}" не выбран PDF-файл чертежей.`);
 
-        let colorMode = "bw";
-        if (printMode === "bw") colorMode = "bw";
-        else if (printMode === "color") colorMode = "color";
-        else colorMode = await detectPageColorMode(page);
+      const analysis = await analyzePdfAndGroup(file, color, copies, true);
+      serviceStates[id].sourceBytesByType.drawings = analysis.bytes;
+      serviceStates[id].sourceFileNameByType.drawings = file.name;
 
-        const actualLabel = buildActualFormatLabel(widthMm, heightMm, exactFormat);
-        const key = [actualLabel, colorMode, nearestFormat].join("||");
+      const rows = analysis.groups.map(group => {
+        const priceInfo = getPriceInfoByFormat(group.billedFormat, color, group.qty);
 
-        if (!groups[key]) {
-          groups[key] = {
-            serviceCardId: id,
-            serviceName: customName,
-            actualFormatLabel: actualLabel,
-            customPageNumbers: [],
-            billedFormat: nearestFormat,
-            colorMode,
-            qty: 0
-          };
-        }
-
-        groups[key].qty += copies;
-        if (exactFormat === "CUSTOM") {
-          groups[key].customPageNumbers.push(i);
-        }
-      }
-
-      Object.values(groups).forEach(group => {
-        const priceInfo = getDocumentPriceInfo(group.billedFormat, group.colorMode, group.qty);
-        rows.push({
+        return {
           id: makeRowId(),
           serviceCardId: id,
-          serviceType: "documents",
+          serviceType: "drawings",
           serviceName: customName,
           actualFormatLabel: group.actualFormatLabel,
           customPageNumbers: group.customPageNumbers,
@@ -1174,237 +1058,367 @@
           unitPrice: priceInfo.price,
           tariffCode: priceInfo.code,
           tariffLabel: priceInfo.label,
+          priceSyncKey: priceInfo.syncKey,
           unitPriceEditable: true,
           qtyEditable: true,
           billedFormatEditable: true,
-          editableFormats: [...FORMAT_OPTIONS],
-          colorMode: group.colorMode,
+          editableFormats: buildEditableOptionsForRow(group.billedFormat),
+          colorMode: color,
           isExtraRow: false,
-          priceLinked: true
-        });
+          isSeparatorRow: false,
+          priceLocked: false,
+          priceWasManuallyChanged: false
+        };
       });
 
-      const allCustomPages = rows.flatMap(r => r.customPageNumbers || []);
-      if (allCustomPages.length) {
-        notes.push(`Нестандартные страницы: ${compressPageRanges(allCustomPages)}.`);
-      }
-
-      return rows;
-    }
-
-    async function calculateDrawingsBlock(id, customName, notes) {
-      const color = document.getElementById(`drawing-color-${id}`).value;
-      const qtyManual = Math.max(1, parseInt(document.getElementById(`drawing-qty-${id}`).value || "1", 10));
-      const fold = document.getElementById(`drawing-fold-${id}`).value;
-      const file = document.getElementById(`drawing-file-${id}`).files[0];
-
-      const rows = [];
-
-      if (file) {
-        const buffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-        const groups = {};
-
-        for (let i = 1; i <= pdf.numPages; i++) {
-          setStatus(`Идёт анализ... ${file.name}: страница ${i} из ${pdf.numPages}`);
-          const page = await pdf.getPage(i);
-          const viewport = page.getViewport({ scale: 1 });
-
-          const widthMm = ptToMm(viewport.width);
-          const heightMm = ptToMm(viewport.height);
-          const exactFormat = detectFormat(widthMm, heightMm);
-          const nearestFormat = findNearestDrawingFormat(widthMm, heightMm);
-          const actualLabel = buildActualFormatLabel(widthMm, heightMm, exactFormat);
-          const key = [actualLabel, nearestFormat].join("||");
-
-          if (!groups[key]) {
-            groups[key] = {
-              serviceCardId: id,
-              serviceName: customName,
-              actualFormatLabel: actualLabel,
-              customPageNumbers: [],
-              billedFormat: nearestFormat,
-              qty: 0
-            };
-          }
-
-          groups[key].qty += 1;
-          if (exactFormat === "CUSTOM") {
-            groups[key].customPageNumbers.push(i);
-          }
-        }
-
-        Object.values(groups).forEach(group => {
-          const tariff = PRICES.drawings[color][group.billedFormat];
-          if (tariff) {
-            rows.push(fixedRow({
-              serviceCardId: id,
-              serviceName: customName,
-              actualFormatLabel: group.actualFormatLabel,
-              customPageNumbers: group.customPageNumbers,
-              billedFormat: group.billedFormat,
-              tariff,
-              qty: group.qty
-            }));
-          } else {
-            notes.push(`Для чертежа с размером ${group.actualFormatLabel} не найден подходящий тариф.`);
-          }
-        });
-      } else {
-        const format = document.getElementById(`drawing-format-${id}`).value;
-        const tariff = PRICES.drawings[color][format];
-        rows.push(fixedRow({
-          serviceCardId: id,
-          serviceName: customName,
-          actualFormatLabel: FORMAT_LABELS[format],
-          customPageNumbers: [],
-          billedFormat: format,
-          tariff,
-          qty: qtyManual
-        }));
-      }
-
       if (fold !== "none") {
-        const foldTariff = PRICES.drawings.fold[fold];
-        rows.push(fixedRow({
+        const foldTariff = PRICES.drawingsFold[fold];
+        const baseQty = rows.reduce((sum, row) => sum + row.qty, 0);
+
+        rows.push({
+          id: makeRowId(),
           serviceCardId: id,
+          serviceType: "drawings",
           serviceName: customName,
           actualFormatLabel: "Постобработка",
           customPageNumbers: [],
           billedFormat: "—",
-          tariff: foldTariff,
-          qty: rows.filter(r => r.tariffCode !== foldTariff.code).reduce((sum, r) => sum + r.qty, 0)
-        }));
+          qty: baseQty,
+          unitPrice: foldTariff.price,
+          tariffCode: foldTariff.code,
+          tariffLabel: foldTariff.label,
+          priceSyncKey: `FOLD:${foldTariff.code}`,
+          unitPriceEditable: true,
+          qtyEditable: true,
+          billedFormatEditable: false,
+          editableFormats: [],
+          colorMode: null,
+          isExtraRow: true,
+          isSeparatorRow: false,
+          priceLocked: false,
+          priceWasManuallyChanged: false
+        });
       }
 
-      const allCustomPages = rows.flatMap(r => r.customPageNumbers || []);
-      if (allCustomPages.length) {
-        notes.push(`Нестандартные страницы: ${compressPageRanges(allCustomPages)}.`);
+      if (analysis.allCustomPages.length) {
+        notes.push(`Нестандартные страницы: ${compressPageRanges(analysis.allCustomPages)}.`);
       }
+      notes.push(...analysis.notes);
 
       return rows;
     }
 
-    function calculateCopyBlock(id, customName) {
-      const format = document.getElementById(`copy-format-${id}`).value;
-      const color = document.getElementById(`copy-color-${id}`).value;
-      const source = document.getElementById(`copy-source-${id}`).value;
-      const qty = Math.max(1, parseInt(document.getElementById(`copy-qty-${id}`).value || "1", 10));
-      const tariff = PRICES.copy[format][color][source];
+    async function calculateSeparatorBlock(id, customName, notes) {
+      const file = document.getElementById(`separator-file-${id}`).files[0];
+      const printMode = document.getElementById(`separator-print-mode-${id}`).value;
+      const copies = Math.max(1, parseInt(document.getElementById(`separator-copies-${id}`).value || "1", 10));
 
-      return [fixedRow({
-        serviceCardId: id,
-        serviceName: customName,
-        actualFormatLabel: FORMAT_LABELS[format],
-        customPageNumbers: [],
-        billedFormat: format,
-        tariff,
-        qty
-      })];
-    }
+      if (!file) throw new Error(`В услуге "${customName}" не выбран PDF-файл.`);
 
-    function calculateScanBlock(id, customName) {
-      const format = document.getElementById(`scan-format-${id}`).value;
-      const source = document.getElementById(`scan-source-${id}`).value;
-      const qty = Math.max(1, parseInt(document.getElementById(`scan-qty-${id}`).value || "1", 10));
+      const analysis = await analyzePdfAndGroup(file, printMode, copies, true, true);
+      serviceStates[id].sourceBytesByType.separator = analysis.bytes;
+      serviceStates[id].sourceFileNameByType.separator = file.name;
 
-      let tariff = null;
-      if (format === "A4") {
-        tariff = qty <= 50
-          ? (source === "glass" ? PRICES.scan.A4.glass_lt50 : PRICES.scan.A4.feeder_lt50)
-          : (source === "glass" ? PRICES.scan.A4.glass_gte50 : PRICES.scan.A4.feeder_gte50);
-      } else if (format === "A3") {
-        tariff = qty <= 50
-          ? (source === "glass" ? PRICES.scan.A3.glass_lt50 : PRICES.scan.A3.feeder_lt50)
-          : (source === "glass" ? PRICES.scan.A3.glass_gte50 : PRICES.scan.A3.feeder_gte50);
-      } else {
-        tariff = PRICES.scan[format].wide;
-      }
-
-      return [fixedRow({
-        serviceCardId: id,
-        serviceName: customName,
-        actualFormatLabel: FORMAT_LABELS[format],
-        customPageNumbers: [],
-        billedFormat: format,
-        tariff,
-        qty
-      })];
-    }
-
-    function calculatePhotosBlock(id, customName) {
-      const format = document.getElementById(`photo-format-${id}`).value;
-      const qty = Math.max(1, parseInt(document.getElementById(`photo-qty-${id}`).value || "1", 10));
-
-      if (format === "10x15") {
-        const tariff = getTierRow(PRICES.photos["10x15"], qty);
-        return [fixedRow({
-          serviceCardId: id,
-          serviceName: customName,
-          actualFormatLabel: "10×15 см",
-          customPageNumbers: [],
-          billedFormat: "10×15",
-          tariff,
-          qty
-        })];
-      }
-
-      const tariff = PRICES.photos[format];
-      return [fixedRow({
-        serviceCardId: id,
-        serviceName: customName,
-        actualFormatLabel: tariff.label,
-        customPageNumbers: [],
-        billedFormat: tariff.label,
-        tariff,
-        qty
-      })];
-    }
-
-    function calculateStickersBlock(id, customName) {
-      const type = document.getElementById(`sticker-type-${id}`).value;
-      const qty = Math.max(1, parseInt(document.getElementById(`sticker-qty-${id}`).value || "1", 10));
-      const tariff = PRICES.stickers[type];
-
-      return [fixedRow({
-        serviceCardId: id,
-        serviceName: customName,
-        actualFormatLabel: tariff.label.includes("SRA3") ? "SRA3 (320×450 мм)" : tariff.label,
-        customPageNumbers: [],
-        billedFormat: tariff.label.includes("SRA3") ? "SRA3" : "—",
-        tariff,
-        qty
-      })];
-    }
-
-    function fixedRow({ serviceCardId, serviceName, actualFormatLabel, customPageNumbers, billedFormat, tariff, qty }) {
-      return {
+      const rows = analysis.groups.map(group => ({
         id: makeRowId(),
-        serviceCardId,
-        serviceType: "fixed",
-        serviceName,
-        actualFormatLabel,
-        customPageNumbers: customPageNumbers || [],
-        billedFormat,
-        qty,
-        unitPrice: tariff.price,
-        tariffCode: tariff.code,
-        tariffLabel: tariff.label,
+        serviceCardId: id,
+        serviceType: "separator",
+        serviceName: customName,
+        actualFormatLabel: group.actualFormatLabel,
+        customPageNumbers: group.pageNumbers,
+        billedFormat: group.billedFormat,
+        qty: group.qty,
+        unitPrice: group.priceInfo.price,
+        tariffCode: group.priceInfo.code,
+        tariffLabel: group.priceInfo.label,
+        priceSyncKey: group.priceInfo.syncKey,
         unitPriceEditable: true,
         qtyEditable: true,
-        billedFormatEditable: false,
-        editableFormats: [],
-        colorMode: null,
+        billedFormatEditable: true,
+        editableFormats: buildEditableOptionsForRow(group.billedFormat),
+        colorMode: group.colorMode,
         isExtraRow: false,
-        priceLinked: true
+        isSeparatorRow: true,
+        separatorDownloadable: true,
+        downloadPageNumbers: group.pageNumbers,
+        priceLocked: false,
+        priceWasManuallyChanged: false
+      }));
+
+      if (analysis.allCustomPages.length) {
+        notes.push(`Нестандартные страницы: ${compressPageRanges(analysis.allCustomPages)}.`);
+      }
+      notes.push("В разделе «Разделитель» можно скачать отдельные PDF по каждой получившейся категории.");
+      notes.push(...analysis.notes);
+
+      return rows;
+    }
+
+    async function analyzePdfAndGroup(file, printMode, copies, preferDrawingForWide = false, splitByCategory = false) {
+      const bytes = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+      const groupsMap = new Map();
+      const allCustomPages = [];
+      const notes = [];
+
+      for (let i = 1; i <= pdf.numPages; i++) {
+        setStatus(`Идёт анализ... ${file.name}: страница ${i} из ${pdf.numPages}`);
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1 });
+
+        const widthMm = ptToMm(viewport.width);
+        const heightMm = ptToMm(viewport.height);
+        const exactStandard = detectFormat(widthMm, heightMm);
+
+        let colorMode = "bw";
+        if (printMode === "bw" || printMode === "color") colorMode = printMode;
+        else colorMode = await detectPageColorMode(page);
+
+        const billed = getBestBillingFormat(widthMm, heightMm, colorMode, preferDrawingForWide);
+        const actualLabel = buildActualFormatLabel(widthMm, heightMm, exactStandard, billed.formatKey);
+        const priceInfo = getPriceInfoByFormat(billed.formatKey, colorMode, copies);
+
+        if (billed.isCustomLike) allCustomPages.push(i);
+        if (priceInfo.note) notes.push(`Стр. ${i}: ${priceInfo.note}`);
+
+        const groupKey = splitByCategory
+          ? `${colorMode}||${billed.formatKey}`
+          : `${actualLabel}||${colorMode}||${billed.formatKey}`;
+
+        if (!groupsMap.has(groupKey)) {
+          groupsMap.set(groupKey, {
+            actualFormatLabel: splitByCategory
+              ? `${colorMode === "color" ? "Цвет" : "Ч/б"} / ${getFormatDisplayLabel(billed.formatKey)}`
+              : actualLabel,
+            pageNumbers: [],
+            customPageNumbers: [],
+            billedFormat: billed.formatKey,
+            colorMode,
+            qty: 0,
+            priceInfo
+          });
+        }
+
+        const group = groupsMap.get(groupKey);
+        group.pageNumbers.push(i);
+        group.qty += copies;
+        if (billed.isCustomLike) group.customPageNumbers.push(i);
+      }
+
+      const groups = [...groupsMap.values()].map(group => ({
+        ...group,
+        pageNumbers: [...group.pageNumbers].sort((a, b) => a - b),
+        customPageNumbers: [...group.customPageNumbers].sort((a, b) => a - b)
+      }));
+
+      return { groups, allCustomPages, notes: uniqueStrings(notes), bytes };
+    }
+
+    function getBestBillingFormat(widthMm, heightMm, colorMode, preferDrawingForWide = false) {
+      const exact = detectFormat(widthMm, heightMm);
+
+      if (exact !== "CUSTOM") {
+        return {
+          formatKey: exact,
+          isCustomLike: false
+        };
+      }
+
+      const wide = detectExtendedWideFormat(widthMm, heightMm);
+      if (wide) {
+        return {
+          formatKey: wide.formatKey,
+          isCustomLike: true
+        };
+      }
+
+      const nearestStd = findNearestFormat(widthMm, heightMm);
+      if (preferDrawingForWide && ["A4", "A3"].includes(nearestStd)) {
+        return { formatKey: "A2", isCustomLike: true };
+      }
+
+      return {
+        formatKey: nearestStd,
+        isCustomLike: true
       };
     }
 
-    function restoreServiceResult(block) {
-      const id = Number(block.dataset.blockId);
-      const type = getCurrentTypeForBlock(block);
-      ensureTypeBuckets(id, type);
-      renderServiceResult(block);
+    function detectExtendedWideFormat(widthMm, heightMm) {
+      const shortSide = Math.min(widthMm, heightMm);
+      const longSide = Math.max(widthMm, heightMm);
+
+      let best = null;
+
+      ["A4", "A3", "A2"].forEach(base => {
+        const baseShort = FORMATS[base].h;
+        const baseStep = FORMATS[base].w;
+
+        const shortDiff = Math.abs(shortSide - baseShort);
+        if (shortDiff > TOLERANCE_MM + 3) return;
+
+        const rawMultiplier = longSide / baseStep;
+        const multiplier = Math.max(3, Math.ceil(rawMultiplier - 0.0001));
+        const targetLong = baseStep * multiplier;
+        const diff = Math.abs(longSide - targetLong) + shortDiff;
+
+        if (!best || diff < best.diff) {
+          best = {
+            diff,
+            formatKey: `${base}x${multiplier}`
+          };
+        }
+      });
+
+      return best;
+    }
+
+    function getPriceInfoByFormat(formatKey, colorMode, qty) {
+      if (PRICES.documentsBW[formatKey] || PRICES.documentsColor[formatKey]) {
+        return getDocumentPriceInfo(formatKey, colorMode, qty);
+      }
+
+      if (PRICES.drawingsExact[colorMode]?.[formatKey]) {
+        const tariff = PRICES.drawingsExact[colorMode][formatKey];
+        return {
+          price: tariff.price,
+          code: tariff.code,
+          label: tariff.label,
+          syncKey: `${colorMode}:${tariff.code}`,
+          note: ""
+        };
+      }
+
+      if (isWideFormatKey(formatKey)) {
+        return getWidePriceInfo(formatKey, colorMode);
+      }
+
+      return {
+        price: 0,
+        code: "—",
+        label: `Для ${formatKey} нет тарифа`,
+        syncKey: `MANUAL:${formatKey}:${colorMode}`,
+        note: `Не найден тариф для формата ${formatKey}.`
+      };
+    }
+
+    function getDocumentPriceInfo(format, colorMode, qty) {
+      if (colorMode === "bw") {
+        if (!PRICES.documentsBW[format]) {
+          const wideFallback = isWideFormatKey(format) ? getWidePriceInfo(format, colorMode) : null;
+          if (wideFallback) return wideFallback;
+
+          if (PRICES.drawingsExact.bw[format]) {
+            const tariff = PRICES.drawingsExact.bw[format];
+            return {
+              price: tariff.price,
+              code: tariff.code,
+              label: tariff.label,
+              syncKey: `bw:${tariff.code}`,
+              note: ""
+            };
+          }
+
+          return { price: 0, code: "—", label: `Для ${format} нет автоматической цены`, syncKey: `MANUAL:${format}:bw`, note: "" };
+        }
+
+        const tier = getTierRow(PRICES.documentsBW[format], qty);
+        return {
+          price: tier.price,
+          code: tier.code,
+          label: tier.label,
+          syncKey: `bw:${tier.code}`,
+          note: ""
+        };
+      }
+
+      if (!PRICES.documentsColor[format]) {
+        const wideFallback = isWideFormatKey(format) ? getWidePriceInfo(format, colorMode) : null;
+        if (wideFallback) return wideFallback;
+
+        if (PRICES.drawingsExact.color[format]) {
+          const tariff = PRICES.drawingsExact.color[format];
+          return {
+            price: tariff.price,
+            code: tariff.code,
+            label: tariff.label,
+            syncKey: `color:${tariff.code}`,
+            note: ""
+          };
+        }
+
+        return { price: 0, code: "—", label: `Для ${format} нет автоматической цены`, syncKey: `MANUAL:${format}:color`, note: "" };
+      }
+
+      const info = PRICES.documentsColor[format];
+      return {
+        price: info.max,
+        code: info.code,
+        label: `${info.label} (${money(info.min)} – ${money(info.max)})`,
+        syncKey: `color:${info.code}`,
+        note: ""
+      };
+    }
+
+    function getWidePriceInfo(formatKey, colorMode) {
+      const parsed = parseWideFormatKey(formatKey);
+      if (!parsed) {
+        return {
+          price: 0,
+          code: "—",
+          label: `Не удалось распознать формат ${formatKey}`,
+          syncKey: `MANUAL:${formatKey}:${colorMode}`,
+          note: ""
+        };
+      }
+
+      const { base, multiplier } = parsed;
+      const table = PRICES.drawingsWide[colorMode]?.[base];
+
+      if (!table) {
+        return {
+          price: 0,
+          code: "—",
+          label: `Для ${formatKey} нет широкоформатного тарифа`,
+          syncKey: `MANUAL:${formatKey}:${colorMode}`,
+          note: ""
+        };
+      }
+
+      if (table[multiplier]) {
+        const tariff = table[multiplier];
+        return {
+          price: tariff.price,
+          code: tariff.code,
+          label: tariff.label,
+          syncKey: `${colorMode}:${tariff.code}`,
+          note: ""
+        };
+      }
+
+      const knownMultipliers = Object.keys(table).map(Number).sort((a, b) => a - b);
+      const maxKnown = knownMultipliers[knownMultipliers.length - 1];
+      const prevKnown = knownMultipliers[knownMultipliers.length - 2] ?? maxKnown - 1;
+      const lastPrice = table[maxKnown].price;
+      const prevPrice = table[prevKnown].price;
+      const step = lastPrice - prevPrice;
+
+      const extrapolatedPrice = lastPrice + (multiplier - maxKnown) * step;
+      const size = getWideFormatSize(base, multiplier);
+
+      return {
+        price: extrapolatedPrice,
+        code: `${table[maxKnown].code}+`,
+        label: `Широкоформатная струйная печать, ${colorMode === "color" ? "цветн" : "ч/б"}, формат ${base}х${multiplier} (${size.w}×${size.h} мм), цена продолжена по шагу прайса`,
+        syncKey: `${colorMode}:EXT:${base}`,
+        note: `Для ${base}х${multiplier} применено продолжение шага сверх прайса.`
+      };
+    }
+
+    function getTierRow(tiers, qty) {
+      for (const tier of tiers) {
+        if (qty <= tier.max) return tier;
+      }
+      return tiers[tiers.length - 1];
     }
 
     function renderServiceResult(block) {
@@ -1417,7 +1431,6 @@
       const notes = state.notesByType[type] || [];
       const resultCollapsed = state.resultCollapsedByType[type];
       const selectedExtraType = state.selectedExtraTypeByType[type] || "";
-      const colWidths = normalizeColWidths(state.tableColsByType[type]);
 
       const resultBox = block.querySelector(".service-result");
 
@@ -1429,6 +1442,8 @@
 
       resultBox.style.display = "block";
 
+      const showExtras = type !== "separator";
+
       resultBox.innerHTML = `
         <button type="button" class="result-toggle">
           <span class="service-result-title">Результат расчёта</span>
@@ -1437,52 +1452,60 @@
 
         <div class="result-content ${resultCollapsed ? "collapsed" : ""}">
           <div class="table-wrap">
-            <table data-table-owner="${id}" data-table-type="${escapeHtml(type)}">
+            <table>
               <colgroup>
-                ${colWidths.map((w, index) => `<col class="resizable-col" data-col-index="${index}" style="width:${w}%;">`).join("")}
+                <col class="col-tariff">
+                <col class="col-actual">
+                <col class="col-custom">
+                <col class="col-format">
+                <col class="col-qty">
+                <col class="col-price">
+                <col class="col-sum">
               </colgroup>
               <thead>
                 <tr>
-                  ${renderHeaderCell("Пункт прайса", 0, true)}
-                  ${renderHeaderCell("Фактический размер", 1, true)}
-                  ${renderHeaderCell("Нестандартные стр.", 2)}
-                  ${renderHeaderCell("Формат для расчёта", 3)}
-                  ${renderHeaderCell("Количество", 4)}
-                  ${renderHeaderCell("Цена за ед.", 5)}
-                  ${renderHeaderCell("Сумма", 6)}
+                  <th class="text-left">Пункт прайса</th>
+                  <th class="text-left">Фактический размер</th>
+                  <th>Нестандартные стр.</th>
+                  <th>Формат для расчёта</th>
+                  <th>Количество</th>
+                  <th>Цена за ед.</th>
+                  <th>Сумма</th>
                 </tr>
               </thead>
               <tbody>
                 ${rows.map(row => renderRowHtml(row)).join("")}
 
-                <tr class="add-extra-trigger-row">
-                  <td colspan="7">
-                    <div class="extra-inline-toolbar">
-                      <div class="inline-extra-title">Добавить опцию</div>
-                      <div class="extra-type-buttons">
-                        ${EXTRA_TYPES.map(item => `
-                          <button type="button"
-                                  class="extra-type-btn ${item.key === selectedExtraType ? "active" : ""}"
-                                  data-extra-type="${item.key}">
-                            ${item.label}
-                          </button>
-                        `).join("")}
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-
-                ${selectedExtraType ? `
-                  <tr class="extra-inline-row">
+                ${showExtras ? `
+                  <tr class="add-extra-trigger-row">
                     <td colspan="7">
-                      <div class="extra-inline-box">
-                        ${renderInlineExtraOptions(id, type, selectedExtraType)}
-                        <div style="margin-top:12px;">
-                          <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
+                      <div class="extra-inline-toolbar">
+                        <div class="inline-extra-title">Добавить опцию</div>
+                        <div class="extra-type-buttons">
+                          ${EXTRA_TYPES.map(item => `
+                            <button type="button"
+                                    class="extra-type-btn ${item.key === selectedExtraType ? "active" : ""}"
+                                    data-extra-type="${item.key}">
+                              ${item.label}
+                            </button>
+                          `).join("")}
                         </div>
                       </div>
                     </td>
                   </tr>
+
+                  ${selectedExtraType ? `
+                    <tr class="extra-inline-row">
+                      <td colspan="7">
+                        <div class="extra-inline-box">
+                          ${renderInlineExtraOptions(id, type, selectedExtraType)}
+                          <div style="margin-top:12px;">
+                            <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ` : ""}
                 ` : ""}
               </tbody>
             </table>
@@ -1495,17 +1518,6 @@
       bindResultArea(block);
     }
 
-    function renderHeaderCell(text, index, isLeft = false) {
-      return `
-        <th data-col-index="${index}" class="${isLeft ? "text-left" : ""}">
-          <div class="th-inner ${isLeft ? "text-left" : ""}">
-            <span>${escapeHtml(text)}</span>
-            <span class="col-resizer" data-col-index="${index}"></span>
-          </div>
-        </th>
-      `;
-    }
-
     function renderRowHtml(row) {
       const billedFormatCell = row.billedFormatEditable
         ? formatSelectHtml(row)
@@ -1515,46 +1527,36 @@
         ? `<input type="number" min="1" step="1" class="row-qty-input row-qty-editor" data-row-id="${row.id}" value="${String(row.qty)}">`
         : escapeHtml(String(row.qty));
 
-      const unitPriceCell = row.unitPriceEditable
-        ? `
-          <div class="row-price-box">
-            <input type="number" min="0" step="0.01" class="row-price-input row-price-editor" data-row-id="${row.id}" value="${formatInputNumber(row.unitPrice)}">
-            <button type="button"
-                    class="price-lock-btn ${row.priceLinked ? "locked" : ""}"
-                    data-row-id="${row.id}"
-                    title="${row.priceLinked ? "Цена связана с одинаковыми пунктами прайса" : "Цена изменяется только у этой строки"}">
-              ${row.priceLinked ? "🔒" : "🔓"}
-            </button>
-            ${row.isExtraRow ? `
-              <button type="button"
-                      class="row-remove-extra-btn"
-                      data-row-id="${row.id}"
-                      title="Удалить дополнительную строку">
-                ×
-              </button>
-            ` : ""}
-          </div>
-        `
-        : money(row.unitPrice);
-
       const customPagesText = row.customPageNumbers && row.customPageNumbers.length
         ? compressPageRanges(row.customPageNumbers)
         : "—";
+
+      const lockIcon = row.priceLocked ? "🔒" : "🔓";
+      const priceCell = row.unitPriceEditable ? `
+        <div class="price-edit-box">
+          <input type="number" min="0" step="0.01" class="row-price-input row-price-editor" data-row-id="${row.id}" value="${formatInputNumber(row.unitPrice)}">
+          <button type="button" class="icon-btn lock-price-btn ${row.priceLocked ? "locked" : ""}" data-row-id="${row.id}" title="Изменять только эту цену">${lockIcon}</button>
+          ${row.isExtraRow ? `<button type="button" class="icon-btn remove-extra remove-extra-btn" data-row-id="${row.id}" title="Удалить доп. опцию">✕</button>` : ""}
+        </div>
+      ` : money(row.unitPrice);
+
+      const tariffCellExtra = row.isSeparatorRow && row.separatorDownloadable
+        ? `<div><button type="button" class="download-btn download-row-btn" data-row-id="${row.id}">Скачать PDF</button></div>`
+        : "";
 
       return `
         <tr data-row-id="${row.id}">
           <td class="text-left">
             <div>${escapeHtml(row.tariffCode || "—")}</div>
             <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
+            ${tariffCellExtra}
           </td>
           <td class="text-left">${escapeHtml(row.actualFormatLabel || "—")}</td>
           <td>${escapeHtml(customPagesText)}</td>
           <td>${billedFormatCell}</td>
           <td>${qtyCell}</td>
-          <td>${unitPriceCell}</td>
-          <td class="money row-sum-cell">
-            <div class="sum-cell-wrap">${money(row.qty * row.unitPrice)}</div>
-          </td>
+          <td>${priceCell}</td>
+          <td class="sum-cell row-sum-cell">${money(row.qty * row.unitPrice)}</td>
         </tr>
       `;
     }
@@ -1569,7 +1571,7 @@
                 <option value="staples2">2 скобы</option>
                 <option value="plastic">Пластиковая пружина</option>
                 <option value="metal">Металлическая пружина</option>
-                <option value="hardcover">Твердый переплет A4</option>
+                <option value="hardcover">Твёрдый переплёт A4</option>
               </select>
             </div>
             <div class="field">
@@ -1653,7 +1655,6 @@
 
       const state = serviceStates[id];
       const resultBox = block.querySelector(".service-result");
-
       const toggleBtn = resultBox.querySelector(".result-toggle");
       const inlineAddBtn = resultBox.querySelector(".inline-add-extra-btn");
 
@@ -1687,96 +1688,77 @@
       }
 
       bindRowEditors(block);
-      bindTableResizers(block);
     }
 
     function buildInlineExtraRow(id, type) {
       const serviceName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName(type, id);
       const extraType = serviceStates[id].selectedExtraTypeByType[type];
-
       if (!extraType) return null;
+
+      let tariff = null;
+      let actualFormatLabel = "Постобработка";
+      let billedFormat = "—";
+      let qty = 1;
 
       if (extraType === "binding") {
         const bindingType = document.getElementById(`inline-binding-type-${id}-${type}`).value;
-        const qty = Math.max(1, parseInt(document.getElementById(`inline-binding-qty-${id}-${type}`).value || "1", 10));
-        const tariff = PRICES.binding[bindingType];
-
-        return {
-          ...fixedRow({
-            serviceCardId: id,
-            serviceName,
-            actualFormatLabel: bindingType === "hardcover" ? "A4 (210×297 мм)" : "Постобработка",
-            customPageNumbers: [],
-            billedFormat: bindingType === "hardcover" ? "A4" : "—",
-            tariff,
-            qty
-          }),
-          isExtraRow: true,
-          priceLinked: false
-        };
+        qty = Math.max(1, parseInt(document.getElementById(`inline-binding-qty-${id}-${type}`).value || "1", 10));
+        tariff = PRICES.binding[bindingType];
+        if (bindingType === "hardcover") {
+          actualFormatLabel = "A4 (210×297 мм)";
+          billedFormat = "A4";
+        }
       }
 
       if (extraType === "multifora") {
         const format = document.getElementById(`inline-multifora-format-${id}-${type}`).value;
-        const qty = Math.max(1, parseInt(document.getElementById(`inline-multifora-qty-${id}-${type}`).value || "1", 10));
-        const tariff = PRICES.multifora[format];
-
-        return {
-          ...fixedRow({
-            serviceCardId: id,
-            serviceName,
-            actualFormatLabel: FORMAT_LABELS[format],
-            customPageNumbers: [],
-            billedFormat: format,
-            tariff,
-            qty
-          }),
-          isExtraRow: true,
-          priceLinked: false
-        };
+        qty = Math.max(1, parseInt(document.getElementById(`inline-multifora-qty-${id}-${type}`).value || "1", 10));
+        tariff = PRICES.multifora[format];
+        actualFormatLabel = getFormatDisplayLabel(format);
+        billedFormat = format;
       }
 
       if (extraType === "lamination") {
         const format = document.getElementById(`inline-lamination-format-${id}-${type}`).value;
-        const qty = Math.max(1, parseInt(document.getElementById(`inline-lamination-qty-${id}-${type}`).value || "1", 10));
-        const tariff = PRICES.lamination[format];
-
-        return {
-          ...fixedRow({
-            serviceCardId: id,
-            serviceName,
-            actualFormatLabel: FORMAT_LABELS[format],
-            customPageNumbers: [],
-            billedFormat: format,
-            tariff,
-            qty
-          }),
-          isExtraRow: true,
-          priceLinked: false
-        };
+        qty = Math.max(1, parseInt(document.getElementById(`inline-lamination-qty-${id}-${type}`).value || "1", 10));
+        tariff = PRICES.lamination[format];
+        actualFormatLabel = getFormatDisplayLabel(format);
+        billedFormat = format;
       }
 
       if (extraType === "folder") {
         const folderType = document.getElementById(`inline-folder-type-${id}-${type}`).value;
-        const qty = Math.max(1, parseInt(document.getElementById(`inline-folder-qty-${id}-${type}`).value || "1", 10));
-        const tariff = PRICES.folders[folderType];
-
-        return {
-          ...fixedRow({
-            serviceCardId: id,
-            serviceName,
-            actualFormatLabel: "—",
-            customPageNumbers: [],
-            billedFormat: "—",
-            tariff,
-            qty
-          }),
-          isExtraRow: true,
-          priceLinked: false
-        };
+        qty = Math.max(1, parseInt(document.getElementById(`inline-folder-qty-${id}-${type}`).value || "1", 10));
+        tariff = PRICES.folders[folderType];
+        actualFormatLabel = "—";
+        billedFormat = "—";
       }
 
-      return null;
+      if (!tariff) return null;
+
+      return {
+        id: makeRowId(),
+        serviceCardId: id,
+        serviceType: type,
+        serviceName,
+        actualFormatLabel,
+        customPageNumbers: [],
+        billedFormat,
+        qty,
+        unitPrice: tariff.price,
+        tariffCode: tariff.code,
+        tariffLabel: tariff.label,
+        priceSyncKey: `EXTRA:${tariff.code}`,
+        unitPriceEditable: true,
+        qtyEditable: true,
+        billedFormatEditable: false,
+        editableFormats: [],
+        colorMode: null,
+        isExtraRow: true,
+        isSeparatorRow: false,
+        priceLocked: false,
+        priceWasManuallyChanged: false
+      };
     }
 
     function bindRowEditors(block) {
@@ -1786,12 +1768,14 @@
           if (!row) return;
 
           row.unitPrice = Math.max(0, parseFlexibleNumber(e.target.value));
+          row.priceWasManuallyChanged = true;
 
-          if (row.priceLinked && row.tariffCode && row.tariffCode !== "—" && row.tariffCode !== "MANUAL") {
+          if (!row.priceLocked && row.priceSyncKey && !String(row.priceSyncKey).startsWith("MANUAL:")) {
             calculatedRows
-              .filter(r => r.id !== row.id && r.tariffCode === row.tariffCode && r.priceLinked)
+              .filter(r => r.id !== row.id && r.priceSyncKey === row.priceSyncKey && !r.priceLocked)
               .forEach(r => {
                 r.unitPrice = row.unitPrice;
+                r.priceWasManuallyChanged = true;
                 updateRowDom(r.id, { updatePriceInput: true });
               });
           }
@@ -1802,21 +1786,32 @@
         });
       });
 
-      block.querySelectorAll(".price-lock-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const row = calculatedRows.find(r => r.id === btn.dataset.rowId);
+      block.querySelectorAll(".lock-price-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const row = calculatedRows.find(r => r.id === e.currentTarget.dataset.rowId);
           if (!row) return;
-
-          row.priceLinked = !row.priceLinked;
-          updateRowDom(row.id, { updatePriceInput: false });
+          row.priceLocked = !row.priceLocked;
           syncStatesFromCalculatedRows();
+          renderServiceResult(block);
+          recalcOverallTotal();
         });
       });
 
-      block.querySelectorAll(".row-remove-extra-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const rowId = btn.dataset.rowId;
-          removeExtraRowById(rowId);
+      block.querySelectorAll(".remove-extra-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const rowId = e.currentTarget.dataset.rowId;
+          calculatedRows = calculatedRows.filter(r => r.id !== rowId);
+          syncStatesFromCalculatedRows();
+          renderServiceResult(block);
+          recalcOverallTotal();
+        });
+      });
+
+      block.querySelectorAll(".download-row-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          const row = calculatedRows.find(r => r.id === e.currentTarget.dataset.rowId);
+          if (!row) return;
+          await downloadSeparatorRowPdf(row);
         });
       });
 
@@ -1827,8 +1822,12 @@
 
           row.qty = Math.max(1, parsePositiveInt(e.target.value));
 
-          if (row.serviceType === "documents") {
-            recalculateDocumentRowByQty(row);
+          if (!row.priceWasManuallyChanged || !row.priceLocked) {
+            const newInfo = getPriceInfoByFormat(row.billedFormat, row.colorMode || "bw", row.qty);
+            row.tariffCode = newInfo.code;
+            row.tariffLabel = newInfo.label;
+            row.priceSyncKey = newInfo.syncKey;
+            if (!row.priceWasManuallyChanged || !row.priceLocked) row.unitPrice = newInfo.price;
           }
 
           updateRowDom(row.id, { updateQtyInput: false, updatePriceInput: true });
@@ -1843,10 +1842,16 @@
           if (!row) return;
 
           row.billedFormat = e.target.value;
-          const newInfo = getDocumentPriceInfo(row.billedFormat, row.colorMode, row.qty);
+          row.editableFormats = buildEditableOptionsForRow(row.billedFormat);
+
+          const newInfo = getPriceInfoByFormat(row.billedFormat, row.colorMode || "bw", row.qty);
           row.tariffCode = newInfo.code;
           row.tariffLabel = newInfo.label;
-          row.unitPrice = newInfo.price;
+          row.priceSyncKey = newInfo.syncKey;
+
+          if (!row.priceLocked || !row.priceWasManuallyChanged) {
+            row.unitPrice = newInfo.price;
+          }
 
           updateRowDom(row.id, { updatePriceInput: true });
           syncStatesFromCalculatedRows();
@@ -1855,91 +1860,32 @@
       });
     }
 
-    function bindTableResizers(block) {
-      const table = block.querySelector("table[data-table-owner]");
-      if (!table) return;
-
-      const ownerId = Number(table.dataset.tableOwner);
-      const type = table.dataset.tableType;
-      const state = serviceStates[ownerId];
-      if (!state) return;
-
-      table.querySelectorAll(".col-resizer").forEach(handle => {
-        handle.addEventListener("mousedown", (event) => {
-          event.preventDefault();
-
-          const colIndex = Number(handle.dataset.colIndex);
-          const startX = event.clientX;
-          const startWidths = normalizeColWidths(state.tableColsByType[type]);
-          const tableRect = table.getBoundingClientRect();
-          const minPercent = 7;
-
-          function onMove(moveEvent) {
-            const deltaPx = moveEvent.clientX - startX;
-            const deltaPercent = (deltaPx / tableRect.width) * 100;
-
-            let left = startWidths[colIndex] + deltaPercent;
-            let right = startWidths[colIndex + 1] - deltaPercent;
-
-            if (colIndex >= startWidths.length - 1) return;
-            if (left < minPercent) {
-              right -= (minPercent - left);
-              left = minPercent;
-            }
-            if (right < minPercent) {
-              left -= (minPercent - right);
-              right = minPercent;
-            }
-            if (left < minPercent || right < minPercent) return;
-
-            const next = [...startWidths];
-            next[colIndex] = left;
-            next[colIndex + 1] = right;
-            state.tableColsByType[type] = normalizeColWidths(next);
-            applyColWidths(table, state.tableColsByType[type]);
-          }
-
-          function onUp() {
-            window.removeEventListener("mousemove", onMove);
-            window.removeEventListener("mouseup", onUp);
-          }
-
-          window.addEventListener("mousemove", onMove);
-          window.addEventListener("mouseup", onUp);
-        });
-      });
-    }
-
-    function removeExtraRowById(rowId) {
-      const row = calculatedRows.find(r => r.id === rowId);
-      if (!row || !row.isExtraRow) return;
-
+    async function downloadSeparatorRowPdf(row) {
       const state = serviceStates[row.serviceCardId];
-      if (!state) return;
+      const bytes = state?.sourceBytesByType?.separator;
+      const originalFileName = state?.sourceFileNameByType?.separator || "separated";
+      if (!bytes || !row.downloadPageNumbers?.length) return;
 
-      Object.keys(state.resultsByType).forEach(type => {
-        state.resultsByType[type] = (state.resultsByType[type] || []).filter(r => r.id !== rowId);
-      });
+      const sourcePdf = await PDFDocument.load(bytes);
+      const newPdf = await PDFDocument.create();
+      const pageIndexes = row.downloadPageNumbers.map(n => n - 1);
+      const copiedPages = await newPdf.copyPages(sourcePdf, pageIndexes);
 
-      rebuildCalculatedRows();
+      copiedPages.forEach(p => newPdf.addPage(p));
 
-      const block = document.querySelector(`.service-card[data-block-id="${row.serviceCardId}"]`);
-      if (block) renderServiceResult(block);
+      const out = await newPdf.save();
+      const blob = new Blob([out], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
 
-      recalcOverallTotal();
-    }
+      const a = document.createElement("a");
+      const cleanName = originalFileName.replace(/\.pdf$/i, "");
+      a.href = url;
+      a.download = `${cleanName}__${sanitizeFileName(row.colorMode === "color" ? "цвет" : "чб")}__${sanitizeFileName(row.billedFormat)}__стр_${compressPageRanges(row.downloadPageNumbers).replaceAll(", ", "_").replaceAll("-", "_")}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
 
-    function applyColWidths(table, widths) {
-      const cols = table.querySelectorAll("col[data-col-index]");
-      cols.forEach((col, index) => {
-        col.style.width = `${widths[index]}%`;
-      });
-    }
-
-    function normalizeColWidths(widths) {
-      const arr = Array.isArray(widths) && widths.length === 7 ? [...widths] : [...DEFAULT_TABLE_COLS];
-      const sum = arr.reduce((a, b) => a + b, 0) || 1;
-      return arr.map(v => (v / sum) * 100);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
     }
 
     function updateRowDom(rowId, options = {}) {
@@ -1947,65 +1893,41 @@
       const tr = document.querySelector(`tr[data-row-id="${rowId}"]`);
       if (!row || !tr) return;
 
-      const cells = tr.children;
+      const tds = tr.children;
+      if (!tds.length) return;
 
-      cells[0].innerHTML = `
+      tds[0].innerHTML = `
         <div>${escapeHtml(row.tariffCode || "—")}</div>
         <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
+        ${row.isSeparatorRow && row.separatorDownloadable ? `<div><button type="button" class="download-btn download-row-btn" data-row-id="${row.id}">Скачать PDF</button></div>` : ""}
       `;
-      cells[1].textContent = row.actualFormatLabel || "—";
-      cells[2].textContent = row.customPageNumbers && row.customPageNumbers.length ? compressPageRanges(row.customPageNumbers) : "—";
 
-      if (row.billedFormatEditable) {
-        const select = tr.querySelector(".row-format-select");
-        if (select && select.value !== row.billedFormat) {
-          select.value = row.billedFormat;
-        }
-      }
+      tds[1].textContent = row.actualFormatLabel || "—";
+      tds[2].textContent = row.customPageNumbers?.length ? compressPageRanges(row.customPageNumbers) : "—";
+
+      const formatSelect = tr.querySelector(".row-format-select");
+      if (formatSelect && formatSelect.value !== row.billedFormat) formatSelect.value = row.billedFormat;
 
       const qtyInput = tr.querySelector(".row-qty-editor");
-      if (qtyInput && options.updateQtyInput !== false) {
-        qtyInput.value = row.qty;
-      }
+      if (qtyInput && options.updateQtyInput !== false) qtyInput.value = row.qty;
 
       const priceInput = tr.querySelector(".row-price-editor");
-      if (priceInput && options.updatePriceInput !== false) {
-        priceInput.value = formatInputNumber(row.unitPrice);
-      }
+      if (priceInput && options.updatePriceInput !== false) priceInput.value = formatInputNumber(row.unitPrice);
 
-      const lockBtn = tr.querySelector(".price-lock-btn");
+      const lockBtn = tr.querySelector(".lock-price-btn");
       if (lockBtn) {
-        lockBtn.classList.toggle("locked", !!row.priceLinked);
-        lockBtn.textContent = row.priceLinked ? "🔒" : "🔓";
-        lockBtn.title = row.priceLinked
-          ? "Цена связана с одинаковыми пунктами прайса"
-          : "Цена изменяется только у этой строки";
+        lockBtn.textContent = row.priceLocked ? "🔒" : "🔓";
+        lockBtn.classList.toggle("locked", !!row.priceLocked);
       }
 
       const sumCell = tr.querySelector(".row-sum-cell");
-      if (sumCell) {
-        sumCell.innerHTML = `<div class="sum-cell-wrap">${money(row.qty * row.unitPrice)}</div>`;
-      }
-    }
-
-    function recalculateDocumentRowByQty(row) {
-      const newInfo = getDocumentPriceInfo(row.billedFormat, row.colorMode, row.qty);
-      row.tariffCode = newInfo.code;
-      row.tariffLabel = newInfo.label;
-
-      if (row.colorMode === "bw") {
-        row.unitPrice = newInfo.price;
-      } else if (!isFiniteNumber(row.unitPrice) || row.unitPrice <= 0) {
-        row.unitPrice = newInfo.price;
-      }
+      if (sumCell) sumCell.textContent = money(row.qty * row.unitPrice);
     }
 
     function rebuildCalculatedRows() {
       calculatedRows = [];
-      Object.entries(serviceStates).forEach(([id, state]) => {
-        Object.values(state.resultsByType).forEach(rows => {
-          calculatedRows.push(...rows);
-        });
+      Object.values(serviceStates).forEach(state => {
+        Object.values(state.resultsByType).forEach(rows => calculatedRows.push(...rows));
       });
     }
 
@@ -2018,6 +1940,13 @@
       });
     }
 
+    function restoreServiceResult(block) {
+      const id = Number(block.dataset.blockId);
+      const type = getCurrentTypeForBlock(block);
+      ensureTypeBuckets(id, type);
+      renderServiceResult(block);
+    }
+
     function recalcOverallTotal() {
       const total = calculatedRows.reduce((sum, row) => sum + row.qty * row.unitPrice, 0);
       overallTotalBox.style.display = calculatedRows.length ? "block" : "none";
@@ -2027,62 +1956,69 @@
     function formatSelectHtml(row) {
       const options = row.editableFormats.map(fmt => {
         const selected = fmt === row.billedFormat ? " selected" : "";
-        return `<option value="${fmt}"${selected}>${escapeHtml(FORMAT_LABELS[fmt] || fmt)}</option>`;
+        return `<option value="${fmt}"${selected}>${escapeHtml(getFormatDisplayLabel(fmt))}</option>`;
       }).join("");
 
-      return `
-        <select class="row-select row-format-select" data-row-id="${row.id}">
-          ${options}
-        </select>
-      `;
+      return `<select class="row-select row-format-select" data-row-id="${row.id}">${options}</select>`;
     }
 
-    function getDocumentPriceInfo(format, colorMode, qty) {
-      if (LARGE_DOC_FORMATS.includes(format)) {
-        const tariff = PRICES.drawings[colorMode === "color" ? "color" : "bw"][format];
-        if (!tariff) {
-          return { price: 0, code: "—", label: `Для ${format} нет автоматической цены` };
-        }
-        return {
-          price: tariff.price,
-          code: tariff.code,
-          label: tariff.label
-        };
+    function buildEditableOptionsForRow(currentFormat) {
+      const options = new Set(ALL_DOC_OPTIONS);
+      if (currentFormat) options.add(currentFormat);
+      return [...options].sort(compareFormatKeys);
+    }
+
+    function compareFormatKeys(a, b) {
+      const order = ["A6","A5","A4","A3","A2","A1","A0"];
+      const ia = order.indexOf(a);
+      const ib = order.indexOf(b);
+
+      const aWide = parseWideFormatKey(a);
+      const bWide = parseWideFormatKey(b);
+
+      if (ia !== -1 && ib !== -1) return ia - ib;
+      if (ia !== -1) return -1;
+      if (ib !== -1) return 1;
+
+      if (aWide && bWide) {
+        const baseOrder = { A4: 1, A3: 2, A2: 3 };
+        if (baseOrder[aWide.base] !== baseOrder[bWide.base]) return baseOrder[aWide.base] - baseOrder[bWide.base];
+        return aWide.multiplier - bWide.multiplier;
       }
 
-      if (colorMode === "bw") {
-        if (!PRICES.documentsBW[format]) {
-          return { price: 0, code: "—", label: `Для ${format} нет автоматической цены ч/б` };
-        }
-        const tier = getTierRow(PRICES.documentsBW[format], qty);
-        return {
-          price: tier.price,
-          code: tier.code,
-          label: tier.label
-        };
+      return String(a).localeCompare(String(b), "ru");
+    }
+
+    function getFormatDisplayLabel(key) {
+      if (FORMATS[key]) return `${key} (${FORMATS[key].w}×${FORMATS[key].h} мм)`;
+
+      const parsed = parseWideFormatKey(key);
+      if (parsed) {
+        const size = getWideFormatSize(parsed.base, parsed.multiplier);
+        return `${parsed.base}×${parsed.multiplier} (${size.w}×${size.h} мм)`;
       }
 
-      if (!PRICES.documentsColor[format]) {
-        return { price: 0, code: "—", label: `Для ${format} нет автоматической цветной цены` };
-      }
+      return key;
+    }
 
-      const info = PRICES.documentsColor[format];
+    function getWideFormatSize(base, multiplier) {
       return {
-        price: info.max,
-        code: info.code,
-        label: `${info.label} (${money(info.min)} – ${money(info.max)})`
+        w: FORMATS[base].w * multiplier,
+        h: FORMATS[base].h
       };
     }
 
-    function getTierRow(tiers, qty) {
-      for (const tier of tiers) {
-        if (qty <= tier.max) return tier;
-      }
-      return tiers[tiers.length - 1];
+    function parseWideFormatKey(key) {
+      const match = /^([A][234])x(\d+)$/i.exec(String(key));
+      if (!match) return null;
+      return {
+        base: match[1].toUpperCase(),
+        multiplier: Number(match[2])
+      };
     }
 
-    function makeRowId() {
-      return "row_" + Math.random().toString(36).slice(2, 11);
+    function isWideFormatKey(key) {
+      return !!parseWideFormatKey(key);
     }
 
     function clearAll() {
@@ -2141,6 +2077,10 @@
         .replaceAll("'", "&#039;");
     }
 
+    function sanitizeFileName(value) {
+      return String(value).replace(/[\\/:*?"<>|]+/g, "_");
+    }
+
     function detectFormat(widthMm, heightMm) {
       for (const [name, size] of Object.entries(FORMATS)) {
         const normalMatch =
@@ -2177,24 +2117,7 @@
       return best;
     }
 
-    function findNearestDrawingFormat(widthMm, heightMm) {
-      const drawingFormats = ["A2", "A1", "A0"];
-      let best = "A2";
-      let bestDistance = Infinity;
-
-      drawingFormats.forEach(name => {
-        const size = FORMATS[name];
-        const dist = distanceToFormat(widthMm, heightMm, size);
-        if (dist < bestDistance) {
-          bestDistance = dist;
-          best = name;
-        }
-      });
-
-      return best;
-    }
-
-    function buildActualFormatLabel(widthMm, heightMm, exactFormat) {
+    function buildActualFormatLabel(widthMm, heightMm, exactFormat, billedFormat) {
       const w = round1(widthMm);
       const h = round1(heightMm);
 
@@ -2202,8 +2125,7 @@
         return `${exactFormat} (${FORMATS[exactFormat].w}×${FORMATS[exactFormat].h} мм)`;
       }
 
-      const nearest = findNearestFormat(widthMm, heightMm);
-      return `≈ ${nearest} (${FORMATS[nearest].w}×${FORMATS[nearest].h} мм), файл: ${w}×${h} мм`;
+      return `≈ ${getFormatDisplayLabel(billedFormat)}, файл: ${w}×${h} мм`;
     }
 
     function compressPageRanges(pages) {
@@ -2227,6 +2149,10 @@
 
       ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
       return ranges.join(", ");
+    }
+
+    function uniqueStrings(arr) {
+      return [...new Set(arr.filter(Boolean))];
     }
 
     async function detectPageColorMode(page) {
@@ -2264,6 +2190,10 @@
       }
 
       return "bw";
+    }
+
+    function makeRowId() {
+      return "row_" + Math.random().toString(36).slice(2, 11);
     }
   </script>
 </body>
