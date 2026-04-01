@@ -19,7 +19,6 @@
       --white: #ffffff;
       --danger: #b00020;
 
-      /* Меняй только эти переменные, если хочешь управлять шириной столбцов */
       --col-tariff: 20%;
       --col-actual: 18%;
       --col-custom: 12%;
@@ -293,6 +292,14 @@
       display: none;
     }
 
+    .result-actions {
+      display: flex;
+      justify-content: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
     .table-wrap {
       width: 100%;
       overflow: hidden;
@@ -335,6 +342,10 @@
       text-align: left !important;
     }
 
+    .format-cell {
+      text-align: left !important;
+    }
+
     .sum-cell {
       text-align: right !important;
       white-space: nowrap;
@@ -364,7 +375,7 @@
       border: 1px solid #ccc;
       font-size: 14px;
       background: #fff;
-      text-align: center;
+      text-align: left;
       height: 40px;
     }
 
@@ -583,13 +594,13 @@
     const MAX_WIDE_OPTION_MULTIPLIER = 14;
 
     const FORMATS = {
-      A6:   { w: 105, h: 148 },
-      A5:   { w: 148, h: 210 },
-      A4:   { w: 210, h: 297 },
-      A3:   { w: 297, h: 420 },
-      A2:   { w: 420, h: 594 },
-      A1:   { w: 594, h: 841 },
-      A0:   { w: 841, h: 1189 }
+      A6: { w: 105, h: 148 },
+      A5: { w: 148, h: 210 },
+      A4: { w: 210, h: 297 },
+      A3: { w: 297, h: 420 },
+      A2: { w: 420, h: 594 },
+      A1: { w: 594, h: 841 },
+      A0: { w: 841, h: 1189 }
     };
 
     const DOC_STANDARD_OPTIONS = ["A6", "A5", "A4", "A3", "A2", "A1", "A0"];
@@ -597,9 +608,9 @@
     const ALL_DOC_OPTIONS = [...DOC_STANDARD_OPTIONS, ...DOC_WIDE_OPTIONS];
 
     const SERVICE_TYPES = [
+      { key: "separator", label: "Разделитель" },
       { key: "documents", label: "Документы" },
-      { key: "drawings", label: "Чертежи" },
-      { key: "separator", label: "Разделитель" }
+      { key: "drawings", label: "Чертежи" }
     ];
 
     const EXTRA_TYPES = [
@@ -743,11 +754,26 @@
     const statusBox = document.getElementById("status");
     const overallTotalBox = document.getElementById("overallTotal");
 
-    addServiceBtn.addEventListener("click", () => addServiceBlock("documents"));
+    addServiceBtn.addEventListener("click", () => addServiceBlock("separator"));
     clearBtn.addEventListener("click", clearAll);
     calculateAllBtn.addEventListener("click", calculateAllServices);
 
-    addServiceBlock("documents");
+    servicesContainer.addEventListener("click", async (e) => {
+      const rowBtn = e.target.closest(".download-row-btn");
+      if (rowBtn) {
+        const row = calculatedRows.find(r => r.id === rowBtn.dataset.rowId);
+        if (row) await downloadSeparatorRowPdf(row);
+        return;
+      }
+
+      const allBtn = e.target.closest(".download-all-separator-btn");
+      if (allBtn) {
+        const serviceCardId = Number(allBtn.dataset.serviceCardId);
+        await downloadAllSeparatorPdfs(serviceCardId);
+      }
+    });
+
+    addServiceBlock("separator");
 
     function buildWideFormatOptions(maxMultiplier = 14) {
       const items = [];
@@ -757,7 +783,7 @@
       return items;
     }
 
-    function addServiceBlock(type = "documents") {
+    function addServiceBlock(type = "separator") {
       const id = blockCounter++;
 
       serviceStates[id] = {
@@ -846,9 +872,9 @@
 
     function getDefaultServiceName(type, id) {
       const map = {
+        separator: `Разделитель #${id}`,
         documents: `Документы #${id}`,
-        drawings: `Чертежи #${id}`,
-        separator: `Разделитель #${id}`
+        drawings: `Чертежи #${id}`
       };
       return map[type] || `Услуга #${id}`;
     }
@@ -989,7 +1015,8 @@
     }
 
     async function calculateDocumentsBlock(id, customName, notes) {
-      const file = document.getElementById(`docs-file-${id}`).files[0];
+      const fileInput = document.getElementById(`docs-file-${id}`);
+      const file = fileInput?.files?.[0];
       const printMode = document.getElementById(`docs-print-mode-${id}`).value;
       const copies = Math.max(1, parseInt(document.getElementById(`docs-copies-${id}`).value || "1", 10));
 
@@ -1032,7 +1059,8 @@
     }
 
     async function calculateDrawingsBlock(id, customName, notes) {
-      const file = document.getElementById(`drawing-file-${id}`).files[0];
+      const fileInput = document.getElementById(`drawing-file-${id}`);
+      const file = fileInput?.files?.[0];
       const color = document.getElementById(`drawing-color-${id}`).value;
       const copies = Math.max(1, parseInt(document.getElementById(`drawing-copies-${id}`).value || "1", 10));
       const fold = document.getElementById(`drawing-fold-${id}`).value;
@@ -1109,7 +1137,8 @@
     }
 
     async function calculateSeparatorBlock(id, customName, notes) {
-      const file = document.getElementById(`separator-file-${id}`).files[0];
+      const fileInput = document.getElementById(`separator-file-${id}`);
+      const file = fileInput?.files?.[0];
       const printMode = document.getElementById(`separator-print-mode-${id}`).value;
       const copies = Math.max(1, parseInt(document.getElementById(`separator-copies-${id}`).value || "1", 10));
 
@@ -1148,15 +1177,17 @@
       if (analysis.allCustomPages.length) {
         notes.push(`Нестандартные страницы: ${compressPageRanges(analysis.allCustomPages)}.`);
       }
-      notes.push("В разделе «Разделитель» можно скачать отдельные PDF по каждой получившейся категории.");
+      notes.push("В разделе «Разделитель» можно скачать отдельные PDF по каждой категории или скачать всё сразу.");
       notes.push(...analysis.notes);
 
       return rows;
     }
 
     async function analyzePdfAndGroup(file, printMode, copies, preferDrawingForWide = false, splitByCategory = false) {
-      const bytes = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+      const rawBytes = await file.arrayBuffer();
+      const bytes = new Uint8Array(rawBytes);
+
+      const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
       const groupsMap = new Map();
       const allCustomPages = [];
       const notes = [];
@@ -1443,6 +1474,7 @@
       resultBox.style.display = "block";
 
       const showExtras = type !== "separator";
+      const separatorRows = rows.filter(r => r.isSeparatorRow);
 
       resultBox.innerHTML = `
         <button type="button" class="result-toggle">
@@ -1451,6 +1483,12 @@
         </button>
 
         <div class="result-content ${resultCollapsed ? "collapsed" : ""}">
+          ${type === "separator" && separatorRows.length ? `
+            <div class="result-actions">
+              <button type="button" class="btn-primary download-all-separator-btn" data-service-card-id="${id}">Скачать всё</button>
+            </div>
+          ` : ""}
+
           <div class="table-wrap">
             <table>
               <colgroup>
@@ -1467,7 +1505,7 @@
                   <th class="text-left">Пункт прайса</th>
                   <th class="text-left">Фактический размер</th>
                   <th>Нестандартные стр.</th>
-                  <th>Формат для расчёта</th>
+                  <th class="text-left">Формат для расчёта</th>
                   <th>Количество</th>
                   <th>Цена за ед.</th>
                   <th>Сумма</th>
@@ -1553,7 +1591,7 @@
           </td>
           <td class="text-left">${escapeHtml(row.actualFormatLabel || "—")}</td>
           <td>${escapeHtml(customPagesText)}</td>
-          <td>${billedFormatCell}</td>
+          <td class="format-cell">${billedFormatCell}</td>
           <td>${qtyCell}</td>
           <td>${priceCell}</td>
           <td class="sum-cell row-sum-cell">${money(row.qty * row.unitPrice)}</td>
@@ -1807,14 +1845,6 @@
         });
       });
 
-      block.querySelectorAll(".download-row-btn").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-          const row = calculatedRows.find(r => r.id === e.currentTarget.dataset.rowId);
-          if (!row) return;
-          await downloadSeparatorRowPdf(row);
-        });
-      });
-
       block.querySelectorAll(".row-qty-editor").forEach(input => {
         input.addEventListener("input", (e) => {
           const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
@@ -1861,31 +1891,95 @@
     }
 
     async function downloadSeparatorRowPdf(row) {
-      const state = serviceStates[row.serviceCardId];
-      const bytes = state?.sourceBytesByType?.separator;
-      const originalFileName = state?.sourceFileNameByType?.separator || "separated";
-      if (!bytes || !row.downloadPageNumbers?.length) return;
+      try {
+        const state = serviceStates[row.serviceCardId];
+        const bytes = state?.sourceBytesByType?.separator;
+        const originalFileName = state?.sourceFileNameByType?.separator || "separated";
+        if (!bytes || !row.downloadPageNumbers?.length) {
+          setStatus("Нет данных для скачивания.", true);
+          return;
+        }
 
-      const sourcePdf = await PDFDocument.load(bytes);
+        const outputBytes = await buildPdfForPageNumbers(bytes, row.downloadPageNumbers);
+        triggerPdfDownload(
+          outputBytes,
+          buildSeparatorFileName(originalFileName, row.colorMode, row.billedFormat, row.downloadPageNumbers)
+        );
+        setStatus("Файл скачан.");
+      } catch (error) {
+        console.error(error);
+        setStatus("Не удалось скачать PDF.", true);
+      }
+    }
+
+    async function downloadAllSeparatorPdfs(serviceCardId) {
+      try {
+        const rows = calculatedRows.filter(r => r.serviceCardId === serviceCardId && r.isSeparatorRow && r.downloadPageNumbers?.length);
+        if (!rows.length) {
+          setStatus("Нет файлов для скачивания.", true);
+          return;
+        }
+
+        setStatus("Подготавливаются файлы для скачивания...");
+
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+          const state = serviceStates[row.serviceCardId];
+          const bytes = state?.sourceBytesByType?.separator;
+          const originalFileName = state?.sourceFileNameByType?.separator || "separated";
+
+          const outputBytes = await buildPdfForPageNumbers(bytes, row.downloadPageNumbers);
+          triggerPdfDownload(
+            outputBytes,
+            buildSeparatorFileName(originalFileName, row.colorMode, row.billedFormat, row.downloadPageNumbers)
+          );
+
+          await wait(250);
+        }
+
+        setStatus("Все файлы отправлены на скачивание.");
+      } catch (error) {
+        console.error(error);
+        setStatus("Не удалось скачать все PDF.", true);
+      }
+    }
+
+    async function buildPdfForPageNumbers(sourceBytes, pageNumbers) {
+      const sourcePdf = await PDFDocument.load(sourceBytes.slice());
       const newPdf = await PDFDocument.create();
-      const pageIndexes = row.downloadPageNumbers.map(n => n - 1);
+      const pageIndexes = pageNumbers.map(n => n - 1);
       const copiedPages = await newPdf.copyPages(sourcePdf, pageIndexes);
 
       copiedPages.forEach(p => newPdf.addPage(p));
 
-      const out = await newPdf.save();
-      const blob = new Blob([out], { type: "application/pdf" });
+      return await newPdf.save();
+    }
+
+    function triggerPdfDownload(bytes, fileName) {
+      const blob = new Blob([bytes], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
 
       const a = document.createElement("a");
-      const cleanName = originalFileName.replace(/\.pdf$/i, "");
       a.href = url;
-      a.download = `${cleanName}__${sanitizeFileName(row.colorMode === "color" ? "цвет" : "чб")}__${sanitizeFileName(row.billedFormat)}__стр_${compressPageRanges(row.downloadPageNumbers).replaceAll(", ", "_").replaceAll("-", "_")}.pdf`;
+      a.download = fileName;
+      a.style.display = "none";
       document.body.appendChild(a);
       a.click();
       a.remove();
 
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    }
+
+    function buildSeparatorFileName(originalFileName, colorMode, billedFormat, pageNumbers) {
+      const cleanName = String(originalFileName || "separated").replace(/\.pdf$/i, "");
+      const pages = compressPageRanges(pageNumbers).replaceAll(", ", "_").replaceAll("-", "_");
+      const colorLabel = colorMode === "color" ? "цвет" : "чб";
+      const formatLabel = sanitizeFileName(String(billedFormat || "формат"));
+      return `${sanitizeFileName(cleanName)}__${sanitizeFileName(colorLabel)}__${formatLabel}__стр_${pages}.pdf`;
+    }
+
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     function updateRowDom(rowId, options = {}) {
@@ -2028,7 +2122,7 @@
       Object.keys(serviceStates).forEach(key => delete serviceStates[key]);
       overallTotalBox.style.display = "none";
       overallTotalBox.textContent = "";
-      addServiceBlock("documents");
+      addServiceBlock("separator");
       setStatus("");
     }
 
