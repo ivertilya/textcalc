@@ -581,6 +581,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -1177,7 +1178,7 @@
       if (analysis.allCustomPages.length) {
         notes.push(`Нестандартные страницы: ${compressPageRanges(analysis.allCustomPages)}.`);
       }
-      notes.push("В разделе «Разделитель» можно скачать отдельные PDF по каждой категории или скачать всё сразу.");
+      notes.push("В разделе «Разделитель» можно скачать отдельные PDF по каждой категории или скачать всё одним ZIP-архивом.");
       notes.push(...analysis.notes);
 
       return rows;
@@ -1895,16 +1896,16 @@
         const state = serviceStates[row.serviceCardId];
         const bytes = state?.sourceBytesByType?.separator;
         const originalFileName = state?.sourceFileNameByType?.separator || "separated";
+
         if (!bytes || !row.downloadPageNumbers?.length) {
           setStatus("Нет данных для скачивания.", true);
           return;
         }
 
         const outputBytes = await buildPdfForPageNumbers(bytes, row.downloadPageNumbers);
-        triggerPdfDownload(
-          outputBytes,
-          buildSeparatorFileName(originalFileName, row.colorMode, row.billedFormat, row.downloadPageNumbers)
-        );
+        const fileName = buildSeparatorFileName(originalFileName, row.colorMode, row.billedFormat, row.downloadPageNumbers);
+
+        triggerPdfDownload(outputBytes, fileName);
         setStatus("Файл скачан.");
       } catch (error) {
         console.error(error);
@@ -1914,33 +1915,46 @@
 
     async function downloadAllSeparatorPdfs(serviceCardId) {
       try {
-        const rows = calculatedRows.filter(r => r.serviceCardId === serviceCardId && r.isSeparatorRow && r.downloadPageNumbers?.length);
+        const rows = calculatedRows.filter(
+          r => r.serviceCardId === serviceCardId && r.isSeparatorRow && r.downloadPageNumbers?.length
+        );
+
         if (!rows.length) {
           setStatus("Нет файлов для скачивания.", true);
           return;
         }
 
-        setStatus("Подготавливаются файлы для скачивания...");
+        const state = serviceStates[serviceCardId];
+        const sourceBytes = state?.sourceBytesByType?.separator;
+        const originalFileName = state?.sourceFileNameByType?.separator || "separated";
 
-        for (let i = 0; i < rows.length; i++) {
-          const row = rows[i];
-          const state = serviceStates[row.serviceCardId];
-          const bytes = state?.sourceBytesByType?.separator;
-          const originalFileName = state?.sourceFileNameByType?.separator || "separated";
-
-          const outputBytes = await buildPdfForPageNumbers(bytes, row.downloadPageNumbers);
-          triggerPdfDownload(
-            outputBytes,
-            buildSeparatorFileName(originalFileName, row.colorMode, row.billedFormat, row.downloadPageNumbers)
-          );
-
-          await wait(250);
+        if (!sourceBytes) {
+          setStatus("Нет исходного PDF для архива.", true);
+          return;
         }
 
-        setStatus("Все файлы отправлены на скачивание.");
+        setStatus("Собирается ZIP-архив...");
+
+        const zip = new JSZip();
+        const cleanBaseName = String(originalFileName).replace(/\.pdf$/i, "");
+
+        for (const row of rows) {
+          const outputBytes = await buildPdfForPageNumbers(sourceBytes, row.downloadPageNumbers);
+          const entryName = buildSeparatorZipEntryName(cleanBaseName, row);
+          zip.file(entryName, outputBytes);
+        }
+
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+
+        triggerBlobDownload(
+          zipBlob,
+          `${sanitizeFileName(cleanBaseName)}__разделитель.zip`
+        );
+
+        setStatus("ZIP-архив скачан.");
       } catch (error) {
         console.error(error);
-        setStatus("Не удалось скачать все PDF.", true);
+        setStatus("Не удалось скачать ZIP-архив.", true);
       }
     }
 
@@ -1949,10 +1963,27 @@
       const newPdf = await PDFDocument.create();
       const pageIndexes = pageNumbers.map(n => n - 1);
       const copiedPages = await newPdf.copyPages(sourcePdf, pageIndexes);
-
       copiedPages.forEach(p => newPdf.addPage(p));
-
       return await newPdf.save();
+    }
+
+    function buildSeparatorZipEntryName(cleanBaseName, row) {
+      const colorLabel = row.colorMode === "color" ? "цвет" : "чб";
+      const formatLabel = sanitizeFileName(String(row.billedFormat || "формат"));
+      const pagesLabel = compressPageRanges(row.downloadPageNumbers)
+        .replaceAll(", ", "_")
+        .replaceAll("-", "_");
+
+      return `${formatLabel}__${colorLabel}__${sanitizeFileName(cleanBaseName)}__стр_${pagesLabel}.pdf`;
+    }
+
+    function buildSeparatorFileName(originalFileName, colorMode, billedFormat, pageNumbers) {
+      const cleanName = String(originalFileName || "separated").replace(/\.pdf$/i, "");
+      const pages = compressPageRanges(pageNumbers).replaceAll(", ", "_").replaceAll("-", "_");
+      const colorLabel = colorMode === "color" ? "цвет" : "чб";
+      const formatLabel = sanitizeFileName(String(billedFormat || "формат"));
+
+      return `${formatLabel}__${sanitizeFileName(colorLabel)}__${sanitizeFileName(cleanName)}__стр_${pages}.pdf`;
     }
 
     function triggerPdfDownload(bytes, fileName) {
@@ -1970,16 +2001,18 @@
       setTimeout(() => URL.revokeObjectURL(url), 3000);
     }
 
-    function buildSeparatorFileName(originalFileName, colorMode, billedFormat, pageNumbers) {
-      const cleanName = String(originalFileName || "separated").replace(/\.pdf$/i, "");
-      const pages = compressPageRanges(pageNumbers).replaceAll(", ", "_").replaceAll("-", "_");
-      const colorLabel = colorMode === "color" ? "цвет" : "чб";
-      const formatLabel = sanitizeFileName(String(billedFormat || "формат"));
-      return `${sanitizeFileName(cleanName)}__${sanitizeFileName(colorLabel)}__${formatLabel}__стр_${pages}.pdf`;
-    }
+    function triggerBlobDownload(blob, fileName) {
+      const url = URL.createObjectURL(blob);
 
-    function wait(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
     }
 
     function updateRowDom(rowId, options = {}) {
@@ -2063,7 +2096,7 @@
     }
 
     function compareFormatKeys(a, b) {
-      const order = ["A6","A5","A4","A3","A2","A1","A0"];
+      const order = ["A6", "A5", "A4", "A3", "A2", "A1", "A0"];
       const ia = order.indexOf(a);
       const ib = order.indexOf(b);
 
