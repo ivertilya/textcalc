@@ -1,586 +1,640 @@
 <!DOCTYPE html>
+
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Калькулятор печати</title>
+  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; }
 
     :root {
-      --bg: #f6f6f7;
+      --bg: #f0f0ed;
       --card: #ffffff;
-      --line: #dddddd;
-      --line-soft: #eeeeee;
-      --text: #111111;
-      --muted: #666666;
-      --black: #111111;
-      --white: #ffffff;
-      --danger: #b00020;
-
-      --col-tariff: 20%;
-      --col-actual: 18%;
-      --col-custom: 12%;
-      --col-format: 18%;
-      --col-qty: 10%;
-      --col-price: 12%;
-      --col-sum: 10%;
+      --card2: #f7f7f5;
+      --line: #e2e2de;
+      --line-soft: #eeeeea;
+      --text: #1a1a18;
+      --muted: #6b6b66;
+      --accent: #1a1a18;
+      --accent-fg: #ffffff;
+      --danger: #c0392b;
+      --danger-soft: #fdf0ef;
+      --green: #1a7a4a;
+      --green-soft: #edf7f2;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.07);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
     }
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Geologica', Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
+      min-height: 100vh;
     }
 
-    .wrap {
-      max-width: 1360px;
-      margin: 0 auto;
-      padding: 18px 24px 24px;
-    }
-
-    h1 {
-      margin: 0 0 10px;
-      font-size: 32px;
-    }
-
-    .top-bar {
+    /* ── HEADER ── */
+    .app-header {
+      background: var(--accent);
+      color: var(--accent-fg);
+      padding: 20px 32px 18px;
       display: flex;
-      gap: 12px;
       align-items: center;
+      justify-content: space-between;
+      gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 10px;
     }
 
-    .top-actions {
+    .app-logo {
       display: flex;
+      align-items: center;
       gap: 12px;
-      flex-wrap: wrap;
+    }
+
+    .app-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: #fff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .app-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
       margin: 0;
     }
 
-    .status-inline {
-      font-size: 14px;
-      color: #444;
-      min-height: 20px;
+    .app-subtitle {
+      font-size: 12px;
+      opacity: 0.55;
+      font-weight: 400;
+      margin: 0;
+    }
+
+    .header-actions {
       display: flex;
+      gap: 10px;
       align-items: center;
     }
 
+    /* ── WRAP ── */
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 24px 48px;
+    }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .status-pill {
+      font-size: 13px;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 6px 14px;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    .status-pill.error { color: var(--danger); border-color: #f5c6c2; background: var(--danger-soft); }
+
+    /* ── BUTTONS ── */
     button {
       cursor: pointer;
       border: none;
-      border-radius: 12px;
-      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      padding: 10px 20px;
       font-weight: 700;
       font-size: 14px;
+      font-family: inherit;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
     }
 
+    button:hover { opacity: 0.88; }
+    button:active { transform: scale(0.98); }
+
     .btn-primary {
-      background: var(--black);
-      color: var(--white);
+      background: var(--accent);
+      color: var(--accent-fg);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
     }
 
     .btn-secondary {
-      background: var(--white);
-      color: var(--black);
-      border: 1px solid #ccc;
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--line);
     }
 
     .btn-danger {
-      background: var(--white);
+      background: var(--danger-soft);
       color: var(--danger);
-      border: 1px solid #e0b4b4;
+      border: 1px solid #f5c6c2;
     }
 
-    .btn-mini {
-      padding: 8px 10px;
-      font-size: 12px;
-      border-radius: 10px;
-      font-weight: 700;
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px dashed var(--line);
     }
+
+    .btn-ghost:hover { color: var(--text); border-color: var(--text); opacity: 1; }
+
+    .btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 8px; }
+    .btn-xs { padding: 5px 10px; font-size: 12px; border-radius: 7px; }
 
     .icon-btn {
-      width: 40px;
-      min-width: 40px;
-      height: 40px;
+      width: 36px;
+      min-width: 36px;
+      height: 36px;
       padding: 0;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      background: #fff;
-      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      font-size: 15px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
     }
 
     .icon-btn.locked {
-      background: #111;
-      color: #fff;
-      border-color: #111;
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent);
     }
 
     .icon-btn.remove-extra {
       color: var(--danger);
-      border-color: #e0b4b4;
+      border-color: #f5c6c2;
+      background: var(--danger-soft);
     }
 
+    /* ── SERVICE CARD ── */
     .service-card {
       background: var(--card);
       border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 18px;
-      margin-bottom: 14px;
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
-    .service-header {
+    .card-header {
       display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      margin-bottom: 12px;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line-soft);
+      background: var(--card2);
     }
 
-    .service-header-main {
+    .card-type-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 4px 10px;
+      white-space: nowrap;
+    }
+
+    .card-type-badge.separator { color: #1a5fa0; border-color: #c3daf5; background: #eff6fd; }
+    .card-type-badge.folding { color: #7a4a1a; border-color: #f5dfc3; background: #fdf6ef; }
+
+    .card-name-input {
       flex: 1;
       min-width: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .service-title {
-      font-size: 20px;
+      padding: 8px 12px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: 16px;
       font-weight: 700;
-      margin: 0 0 10px;
+      font-family: inherit;
+      background: transparent;
+      color: var(--text);
+      transition: border-color 0.15s, background 0.15s;
     }
 
-    .service-name-input {
-      width: 100%;
-      max-width: 420px;
-      margin: 0;
-      padding: 10px 12px;
-      border: 1px solid #ccc;
-      border-radius: 12px;
-      font-size: 14px;
-      background: #fff;
-      height: 44px;
+    .card-name-input:focus {
+      outline: none;
+      border-color: var(--line);
+      background: var(--card);
     }
 
-    .service-type-buttons {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      width: 100%;
-      gap: 8px;
-      margin-bottom: 14px;
+    .card-body {
+      padding: 22px;
     }
 
-    .service-type-btn {
-      width: 100%;
-      padding: 12px 8px;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      background: #fff;
-      color: #111;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: center;
-    }
-
-    .service-type-btn.active {
-      background: #111;
-      border-color: #111;
-      color: #fff;
-    }
-
-    .grid {
+    /* ── GRID ── */
+    .grid-2 {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
+      gap: 16px;
     }
 
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
+      gap: 16px;
     }
 
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .col-span-full { grid-column: 1 / -1; }
+
+    /* ── FIELD ── */
+    .field { display: flex; flex-direction: column; gap: 6px; }
 
     .field label {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
     }
 
     input[type="text"],
-    input[type="file"],
-    select,
-    input[type="number"] {
+    input[type="number"],
+    select {
       width: 100%;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 12px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
       font-size: 14px;
-      background: #fff;
-      height: 44px;
+      font-family: inherit;
+      background: var(--card);
+      color: var(--text);
+      height: 42px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(26,26,24,0.08);
     }
 
     input[type="number"] {
       text-align: center;
-      appearance: textfield;
       -moz-appearance: textfield;
     }
 
     input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
+    input[type="number"]::-webkit-inner-spin-button { display: none; }
+
+    /* ── FILE UPLOAD AREA ── */
+    .file-upload-area {
+      border: 2px dashed var(--line);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      background: var(--card2);
+      position: relative;
     }
 
-    input[type="file"] {
-      height: auto;
-      padding: 10px;
+    .file-upload-area:hover,
+    .file-upload-area.dragover {
+      border-color: var(--accent);
+      background: #f5f5f2;
     }
 
-    .service-actions {
+    .file-upload-area input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      height: 100%;
+      width: 100%;
+    }
+
+    .file-upload-icon { font-size: 28px; margin-bottom: 8px; }
+    .file-upload-label { font-size: 14px; font-weight: 600; color: var(--text); }
+    .file-upload-hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .file-list {
       display: flex;
-      justify-content: flex-start;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .file-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--green-soft);
+      border: 1px solid #b8e4cc;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .file-chip-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--green); font-weight: 600; }
+    .file-chip-remove { cursor: pointer; color: var(--muted); font-size: 16px; line-height: 1; padding: 0 2px; background: none; border: none; }
+    .file-chip-remove:hover { color: var(--danger); }
+
+    /* ── FOLDING OPTIONS ── */
+    .fold-option-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
       margin-top: 14px;
     }
 
-    .service-result {
-      margin-top: 20px;
-      padding-top: 18px;
-      border-top: 1px solid var(--line-soft);
+    .fold-option-card {
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
     }
 
-    .result-toggle {
-      width: 100%;
-      background: transparent;
-      border: none;
-      border-radius: 0;
-      padding: 0;
+    .fold-option-card:hover { border-color: var(--accent); }
+    .fold-option-card.active { border-color: var(--accent); background: #f0f0ed; }
+
+    .fold-option-title { font-size: 13px; font-weight: 700; }
+    .fold-option-price { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    /* ── CARD FOOTER ── */
+    .card-footer {
+      padding: 16px 22px;
+      border-top: 1px solid var(--line-soft);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      color: #111;
-      text-align: left;
-      margin-bottom: 12px;
+      gap: 12px;
+      background: var(--card2);
     }
 
-    .service-result-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin: 0;
-    }
-
-    .result-chevron {
-      font-size: 18px;
-      line-height: 1;
-    }
-
-    .result-content {
-      display: block;
-    }
-
-    .result-content.collapsed {
+    /* ── RESULT SECTION ── */
+    .result-section {
+      border-top: 2px solid var(--line-soft);
       display: none;
     }
 
-    .result-actions {
+    .result-section.visible { display: block; }
+
+    .result-header {
       display: flex;
-      justify-content: flex-start;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 22px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .result-header:hover { background: var(--card2); }
+
+    .result-title { font-size: 15px; font-weight: 700; }
+    .result-subtotal {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .result-chevron { font-size: 16px; color: var(--muted); transition: transform 0.2s; }
+    .result-chevron.open { transform: rotate(180deg); }
+
+    .result-body {
+      padding: 0 22px 20px;
+    }
+
+    .result-body.collapsed { display: none; }
+
+    /* ── DOWNLOAD ACTIONS ── */
+    .download-actions {
+      display: flex;
       gap: 10px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       flex-wrap: wrap;
     }
 
+    /* ── TABLE ── */
     .table-wrap {
       width: 100%;
-      overflow: hidden;
+      overflow-x: auto;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       background: #fff;
-      table-layout: fixed;
+      min-width: 700px;
     }
-
-    col.col-tariff { width: var(--col-tariff); }
-    col.col-actual { width: var(--col-actual); }
-    col.col-custom { width: var(--col-custom); }
-    col.col-format { width: var(--col-format); }
-    col.col-qty { width: var(--col-qty); }
-    col.col-price { width: var(--col-price); }
-    col.col-sum { width: var(--col-sum); }
 
     th, td {
       vertical-align: middle;
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-      word-break: break-word;
-      overflow-wrap: anywhere;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--line-soft);
+      font-size: 13.5px;
     }
 
     th {
-      background: #fafafa;
+      background: #f7f7f5;
       font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--muted);
       white-space: nowrap;
-      text-align: center;
+      text-align: left;
     }
 
-    td { text-align: center; }
+    td { text-align: left; }
+    td.center { text-align: center; }
+    td.right { text-align: right; }
 
-    .text-left {
-      text-align: left !important;
-    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
 
-    .format-cell {
-      text-align: left !important;
-    }
+    .cell-code { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .cell-label { font-size: 13px; font-weight: 500; line-height: 1.3; }
+    .cell-size { font-size: 13px; font-family: monospace; color: var(--muted); }
 
     .sum-cell {
-      text-align: right !important;
+      font-size: 16px;
+      font-weight: 800;
       white-space: nowrap;
-      font-size: 18px;
-      font-weight: 700;
+      text-align: right !important;
     }
 
-    .small {
-      font-size: 12px;
-      color: #666;
-      line-height: 1.35;
-    }
-
-    .row-qty-input {
-      width: 100%;
-      max-width: 110px;
+    .row-qty-input, .row-price-input {
+      width: 90px;
       text-align: center;
-      height: 40px;
-      margin: 0 auto;
-    }
-
-    .row-select {
-      width: 100%;
-      min-width: 0;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      background: #fff;
-      text-align: left;
-      height: 40px;
+      height: 36px;
+      padding: 6px 10px;
+      font-size: 13px;
     }
 
     .price-edit-box {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
       gap: 6px;
-      flex-wrap: nowrap;
     }
 
-    .row-price-input {
-      width: 100%;
-      max-width: 110px;
-      min-width: 0;
-      text-align: center;
-      font-size: 14px;
-      height: 40px;
-    }
-
+    /* ── NOTE ── */
     .note-box {
       margin-top: 14px;
-      padding: 12px 14px;
-      border: 1px solid #eee;
-      border-radius: 12px;
-      background: #fafafa;
+      padding: 12px 16px;
+      background: #fffbee;
+      border: 1px solid #f0e0a0;
+      border-radius: var(--radius-sm);
       font-size: 13px;
-      line-height: 1.5;
-      color: #444;
+      line-height: 1.6;
+      color: #5a4a00;
     }
 
-    .add-extra-trigger-row {
-      background: #fcfcfc;
-    }
-
-    .extra-inline-row td {
-      background: #fafafa;
-      padding: 14px;
-    }
-
-    .extra-inline-box {
-      border: 1px solid #eee;
-      border-radius: 12px;
-      padding: 14px;
-      background: #fff;
-    }
-
-    .extra-inline-toolbar {
-      display: grid;
-      grid-template-columns: 180px 1fr;
-      gap: 14px;
-      align-items: start;
-    }
-
-    .inline-extra-title {
-      font-size: 14px;
-      font-weight: 700;
-      padding-top: 10px;
-      text-align: left;
-    }
-
-    .extra-type-buttons {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .extra-type-btn {
-      background: #fff;
-      color: #111;
-      border: 1px solid #ccc;
-      border-radius: 12px;
-      padding: 10px 14px;
-      font-weight: 700;
-      font-size: 14px;
-    }
-
-    .extra-type-btn.active {
-      background: #111;
-      color: #fff;
-      border-color: #111;
-    }
-
-    .download-btn {
-      margin-top: 8px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      padding: 8px 10px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      background: #fff;
-      color: #111;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
+    /* ── BOTTOM TOTAL ── */
     .bottom-bar {
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
+      align-items: center;
       gap: 16px;
       margin-top: 8px;
+      flex-wrap: wrap;
     }
 
-    .after-cards-actions {
-      display: flex;
-      justify-content: flex-start;
-      margin: 0;
+    .total-block {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-radius: var(--radius);
+      padding: 18px 28px;
+      display: none;
     }
 
-    .overall-total {
-      margin-top: 0;
-      font-size: 40px;
-      font-weight: 800;
-      line-height: 1.1;
-      text-align: right;
-      margin-left: auto;
+    .total-block.visible { display: block; }
+    .total-label { font-size: 12px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .total-amount { font-size: 40px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+
+    /* ── SEPARATOR PROGRESS ── */
+    .progress-bar-wrap {
+      height: 4px;
+      background: var(--line);
+      border-radius: 2px;
+      margin-top: 10px;
+      overflow: hidden;
+      display: none;
     }
 
-    @media (max-width: 1100px) {
-      .extra-inline-toolbar {
-        grid-template-columns: 1fr;
-      }
+    .progress-bar-wrap.visible { display: block; }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width 0.3s;
+      width: 0%;
     }
 
-    @media (max-width: 900px) {
-      .grid, .grid-3 {
-        grid-template-columns: 1fr;
-      }
-
-      .service-header {
-        flex-direction: column;
-      }
-
-      .service-type-buttons {
-        grid-template-columns: 1fr;
-      }
-
-      .overall-total {
-        font-size: 32px;
-      }
-
-      .bottom-bar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .overall-total {
-        text-align: left;
-      }
-
-      table, thead, tbody, tr, th, td, colgroup, col {
-        display: block;
-        width: 100% !important;
-      }
-
-      thead {
-        display: none;
-      }
-
-      tr {
-        border-bottom: 1px solid #eee;
-      }
-
-      td {
-        text-align: left !important;
-        padding: 8px 10px;
-      }
-
-      .sum-cell {
-        text-align: left !important;
-      }
-
-      .price-edit-box {
-        justify-content: flex-start;
-      }
+    /* ── HEADER BTN INVERSE ── */
+    .btn-inverse {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+      backdrop-filter: blur(4px);
     }
+
+    .btn-inverse:hover { background: rgba(255,255,255,0.25); opacity: 1; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .empty-state-sub { font-size: 14px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .app-header { padding: 14px 18px; }
+      .wrap { padding: 18px 14px 40px; }
+      .card-body, .result-body { padding: 16px; }
+      .card-header, .card-footer { padding: 14px 16px; }
+      .result-header { padding: 12px 16px; }
+      .total-amount { font-size: 32px; }
+      .bottom-bar { flex-direction: column; align-items: stretch; }
+    }
+
+    /* Drag & drop highlight */
+    .service-card.drag-highlight { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,26,24,0.12); }
   </style>
+
 </head>
 <body>
+
+  <header class="app-header">
+    <div class="app-logo">
+      <div class="app-logo-icon">🖨</div>
+      <div>
+        <div class="app-title">Калькулятор печати</div>
+        <div class="app-subtitle">Разделитель · Фальцовка</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-inverse btn-sm" id="calculateAllBtn">Рассчитать все</button>
+      <button class="btn-inverse btn-sm" id="clearBtn">Сбросить</button>
+    </div>
+  </header>
+
   <div class="wrap">
-    <h1>Калькулятор печати</h1>
-
-    <div class="top-bar">
-      <div class="top-actions">
-        <button class="btn-primary" id="calculateAllBtn">Рассчитать все услуги</button>
-        <button class="btn-secondary" id="clearBtn">Сбросить всё</button>
-      </div>
-      <div id="status" class="status-inline"></div>
+    <div class="toolbar">
+      <button class="btn-primary" id="addSeparatorBtn">+ Разделитель</button>
+      <button class="btn-secondary" id="addFoldingBtn">+ Фальцовка</button>
+      <div id="status" class="status-pill" style="display:none;"></div>
     </div>
 
-    <div id="servicesContainer"></div>
+```
+<div id="servicesContainer"></div>
 
-    <div class="bottom-bar">
-      <div class="after-cards-actions">
-        <button class="btn-primary" id="addServiceBtn">+ Добавить услугу</button>
-      </div>
-      <div id="overallTotal" class="overall-total" style="display:none;"></div>
-    </div>
+<div class="bottom-bar">
+  <div></div>
+  <div id="totalBlock" class="total-block">
+    <div class="total-label">Итого</div>
+    <div id="totalAmount" class="total-amount"></div>
+  </div>
+</div>
+```
+
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <script>
@@ -589,10 +643,10 @@
 
     const { PDFDocument } = PDFLib;
 
+    // ── CONSTANTS ──────────────────────────────────────────────────
     const TOLERANCE_MM = 8;
     const COLOR_TOLERANCE = 18;
     const SAMPLE_STEP = 8;
-    const MAX_WIDE_OPTION_MULTIPLIER = 14;
 
     const FORMATS = {
       A6: { w: 105, h: 148 },
@@ -604,1739 +658,990 @@
       A0: { w: 841, h: 1189 }
     };
 
-    const DOC_STANDARD_OPTIONS = ["A6", "A5", "A4", "A3", "A2", "A1", "A0"];
-    const DOC_WIDE_OPTIONS = buildWideFormatOptions(MAX_WIDE_OPTION_MULTIPLIER);
-    const ALL_DOC_OPTIONS = [...DOC_STANDARD_OPTIONS, ...DOC_WIDE_OPTIONS];
+    // Базовые тарифы фальцовки из прайса (целые листы)
+    // Ключ: "исходный-под"
+    const FOLD_BASE_PRICES = {
+      "A3-A4": { price: 8,  code: "1110", label: "Фальцевание А3 → А4" },
+      "A2-A4": { price: 18, code: "1111", label: "Фальцевание А2 → А4" },
+      "A1-A4": { price: 26, code: "1112", label: "Фальцевание А1 → А4" },
+      "A2-A3": { price: 18, code: "1113", label: "Фальцевание А2 → А3" },
+      "A1-A3": { price: 26, code: "1114", label: "Фальцевание А1 → А3" },
+      "custom-A4": { price: 5, code: "1115", label: "Фальцевание нестандарт из расчёта А4" }
+    };
 
-    const SERVICE_TYPES = [
-      { key: "separator", label: "Разделитель" },
-      { key: "documents", label: "Документы" },
-      { key: "drawings", label: "Чертежи" }
-    ];
+    // Площади в условных единицах (A4 = 1)
+    const FORMAT_AREA = {
+      A4: 1, A3: 2, A2: 4, A1: 8, A0: 16,
+      A5: 0.5, A6: 0.25
+    };
 
-    const EXTRA_TYPES = [
-      { key: "binding", label: "+ Брошюровка" },
-      { key: "multifora", label: "+ Мультифоры" },
-      { key: "lamination", label: "+ Ламинирование" },
-      { key: "folder", label: "+ Папка" }
-    ];
-
+    // Цены на печать для разделителя
     const PRICES = {
       documentsBW: {
         A4: [
-          { max: 10, price: 10.0, code: "1001", label: "Цифровая печать, ч/б, формат А4 до 10 прог." },
-          { max: 50, price: 7.0, code: "1002", label: "Цифровая печать, ч/б, формат А4 от 11–50 прог." },
-          { max: 100, price: 6.0, code: "1003", label: "Цифровая печать, ч/б, формат А4 от 51–100 прог." },
-          { max: 500, price: 5.5, code: "1004", label: "Цифровая печать, ч/б, формат А4 от 101–500 прог." },
-          { max: Infinity, price: 5.0, code: "1005", label: "Цифровая печать, ч/б, формат А4 от 501 прог." }
+          { max: 10,       price: 10.0, code: "1001", label: "Цифровая печать ч/б А4, до 10 прог." },
+          { max: 50,       price: 7.0,  code: "1002", label: "Цифровая печать ч/б А4, 11–50 прог." },
+          { max: 100,      price: 6.0,  code: "1003", label: "Цифровая печать ч/б А4, 51–100 прог." },
+          { max: 500,      price: 5.5,  code: "1004", label: "Цифровая печать ч/б А4, 101–500 прог." },
+          { max: Infinity, price: 5.0,  code: "1005", label: "Цифровая печать ч/б А4, от 501 прог." }
         ],
         A3: [
-          { max: 10, price: 20.0, code: "1008", label: "Цифровая печать, ч/б, формат А3 до 10 прог." },
-          { max: 50, price: 16.0, code: "1009", label: "Цифровая печать, ч/б, формат А3 от 11–50 прог." },
-          { max: 100, price: 14.0, code: "1010", label: "Цифровая печать, ч/б, формат А3 от 51–100 прог." },
-          { max: 500, price: 12.0, code: "1011", label: "Цифровая печать, ч/б, формат А3 от 101–500 прог." },
-          { max: Infinity, price: 11.0, code: "1012", label: "Цифровая печать, ч/б, формат А3 от 501 прог." }
+          { max: 10,       price: 20.0, code: "1008", label: "Цифровая печать ч/б А3, до 10 прог." },
+          { max: 50,       price: 16.0, code: "1009", label: "Цифровая печать ч/б А3, 11–50 прог." },
+          { max: 100,      price: 14.0, code: "1010", label: "Цифровая печать ч/б А3, 51–100 прог." },
+          { max: 500,      price: 12.0, code: "1011", label: "Цифровая печать ч/б А3, 101–500 прог." },
+          { max: Infinity, price: 11.0, code: "1012", label: "Цифровая печать ч/б А3, от 501 прог." }
         ]
       },
-
       documentsColor: {
-        A4: { min: 15.0, max: 30.0, code: "1006–1007", label: "Цифровая печать, цветн., формат А4" },
-        A3: { min: 30.0, max: 45.0, code: "1013–1014", label: "Цифровая печать, цветн., формат А3" }
+        A4: { min: 15.0, max: 30.0, code: "1006–1007", label: "Цифровая печать цветн. А4" },
+        A3: { min: 30.0, max: 45.0, code: "1013–1014", label: "Цифровая печать цветн. А3" }
       },
-
       drawingsExact: {
-        bw: {
-          A2: { price: 65.0, code: "1039", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А2" },
-          A1: { price: 110.0, code: "1049", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А1" },
-          A0: { price: 220.0, code: "1051", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А0" }
-        },
-        color: {
-          A2: { price: 75.0, code: "1040", label: "Широкоформатная струйная печать, чертеж, цветн, формат А2" },
-          A1: { price: 130.0, code: "1050", label: "Широкоформатная струйная печать, чертеж, цветн, формат А1" },
-          A0: { price: 260.0, code: "1052", label: "Широкоформатная струйная печать, чертеж, цветн, формат А0" }
-        }
+        bw:    { A2: { price: 65, code: "1039" }, A1: { price: 110, code: "1049" }, A0: { price: 220, code: "1051" } },
+        color: { A2: { price: 75, code: "1040" }, A1: { price: 130, code: "1050" }, A0: { price: 260, code: "1052" } }
       },
-
       drawingsWide: {
         bw: {
-          A4: {
-            3: { price: 52.0, code: "1015", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А4х3" },
-            4: { price: 69.0, code: "1017", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А4х4" },
-            5: { price: 86.0, code: "1019", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А4х5" },
-            6: { price: 104.0, code: "1021", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А4х6" },
-            7: { price: 121.0, code: "1023", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А4х7" },
-            8: { price: 138.0, code: "1025", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А4х8" }
-          },
-          A3: {
-            3: { price: 104.0, code: "1027", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А3х3" },
-            4: { price: 138.0, code: "1029", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А3х4" },
-            5: { price: 173.0, code: "1031", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А3х5" },
-            6: { price: 207.0, code: "1033", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А3х6" },
-            7: { price: 242.0, code: "1035", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А3х7" },
-            8: { price: 276.0, code: "1037", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А3х8" }
-          },
-          A2: {
-            3: { price: 207.0, code: "1041", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А2х3" },
-            4: { price: 276.0, code: "1043", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А2х4" },
-            5: { price: 345.0, code: "1045", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А2х5" },
-            6: { price: 414.0, code: "1047", label: "Широкоформатная струйная печать, чертеж, ч/б, формат А2х6" }
-          }
+          A4: { 3:52,4:69,5:86,6:104,7:121,8:138 },
+          A3: { 3:104,4:138,5:173,6:207,7:242,8:276 },
+          A2: { 3:207,4:276,5:345,6:414 }
         },
         color: {
-          A4: {
-            3: { price: 60.0, code: "1016", label: "Широкоформатная струйная печать, чертеж, цветн, формат А4х3" },
-            4: { price: 81.0, code: "1018", label: "Широкоформатная струйная печать, чертеж, цветн, формат А4х4" },
-            5: { price: 101.0, code: "1020", label: "Широкоформатная струйная печать, чертеж, цветн, формат А4х5" },
-            6: { price: 121.0, code: "1022", label: "Широкоформатная струйная печать, чертеж, цветн, формат А4х6" },
-            7: { price: 141.0, code: "1024", label: "Широкоформатная струйная печать, чертеж, цветн, формат А4х7" },
-            8: { price: 161.0, code: "1026", label: "Широкоформатная струйная печать, чертеж, цветн, формат А4х8" }
-          },
-          A3: {
-            3: { price: 121.0, code: "1028", label: "Широкоформатная струйная печать, чертеж, цветн, формат А3х3" },
-            4: { price: 161.0, code: "1030", label: "Широкоформатная струйная печать, чертеж, цветн, формат А3х4" },
-            5: { price: 201.0, code: "1032", label: "Широкоформатная струйная печать, чертеж, цветн, формат А3х5" },
-            6: { price: 242.0, code: "1034", label: "Широкоформатная струйная печать, чертеж, цветн, формат А3х6" },
-            7: { price: 282.0, code: "1036", label: "Широкоформатная струйная печать, чертеж, цветн, формат А3х7" },
-            8: { price: 322.0, code: "1038", label: "Широкоформатная струйная печать, чертеж, цветн, формат А3х8" }
-          },
-          A2: {
-            3: { price: 242.0, code: "1042", label: "Широкоформатная струйная печать, чертеж, цветн, формат А2х3" },
-            4: { price: 322.0, code: "1044", label: "Широкоформатная струйная печать, чертеж, цветн, формат А2х4" },
-            5: { price: 403.0, code: "1046", label: "Широкоформатная струйная печать, чертеж, цветн, формат А2х5" },
-            6: { price: 483.0, code: "1048", label: "Широкоформатная струйная печать, чертеж, цветн, формат А2х6" }
-          }
+          A4: { 3:60,4:81,5:101,6:121,7:141,8:161 },
+          A3: { 3:121,4:161,5:201,6:242,7:282,8:322 },
+          A2: { 3:242,4:322,5:403,6:483 }
         }
-      },
-
-      drawingsFold: {
-        "A2-A4": { price: 18.0, code: "1111", label: "Фальцевание, исходный А2, под А4" },
-        "A1-A4": { price: 26.0, code: "1112", label: "Фальцевание, исходный А1, под А4" },
-        "A2-A3": { price: 18.0, code: "1113", label: "Фальцевание, исходный А2, под А3" },
-        "A1-A3": { price: 26.0, code: "1114", label: "Фальцевание, исходный А1, под А3" },
-        custom: { price: 5.0, code: "1115", label: "Фальцевание, нестандарт из расчёта А4" }
-      },
-
-      lamination: {
-        A6: { price: 25.0, code: "1120", label: "Ламинирование пакетное, формат А6" },
-        A5: { price: 40.0, code: "1121", label: "Ламинирование пакетное, формат А5" },
-        A4: { price: 60.0, code: "1122", label: "Ламинирование пакетное, формат А4" },
-        A3: { price: 110.0, code: "1123", label: "Ламинирование пакетное, формат А3" }
-      },
-
-      binding: {
-        staples2: { price: 35.0, code: "1109", label: "Брошюровка на 2 скобы" },
-        hardcover: { price: 550.0, code: "1084", label: "Твёрдый переплёт MetalBind, формат А4" },
-        plastic: { price: 290.0, code: "1091", label: "Брошюровка на пласт. пружину, до 500л" },
-        metal: { price: 185.0, code: "1103", label: "Брошюровка на металл. пружину, до 120л" }
-      },
-
-      multifora: {
-        A5: { price: 5.0, code: "1178", label: "Папка-вкладыш с перфорацией А5 (мультифора)" },
-        A4: { price: 7.0, code: "1179", label: "Папка-вкладыш с перфорацией А4 (мультифора)" },
-        A3: { price: 14.0, code: "1180", label: "Папка-вкладыш с перфорацией А3 (мультифора)" }
-      },
-
-      folders: {
-        folder20: { price: 200.0, code: "1172", label: "Папка на 20 мультифор" },
-        folder30: { price: 250.0, code: "1173", label: "Папка на 30 мультифор" },
-        folder40: { price: 300.0, code: "1174", label: "Папка на 40 мультифор" },
-        folder60: { price: 350.0, code: "1175", label: "Папка на 60 мультифор" }
       }
     };
 
+    // ── STATE ──────────────────────────────────────────────────────
     let blockCounter = 1;
     let calculatedRows = [];
     const serviceStates = {};
 
-    const servicesContainer = document.getElementById("servicesContainer");
-    const addServiceBtn = document.getElementById("addServiceBtn");
-    const calculateAllBtn = document.getElementById("calculateAllBtn");
-    const clearBtn = document.getElementById("clearBtn");
-    const statusBox = document.getElementById("status");
-    const overallTotalBox = document.getElementById("overallTotal");
+    // ── DOM REFS ───────────────────────────────────────────────────
+    const container = document.getElementById("servicesContainer");
+    const statusEl = document.getElementById("status");
+    const totalBlock = document.getElementById("totalBlock");
+    const totalAmount = document.getElementById("totalAmount");
 
-    addServiceBtn.addEventListener("click", () => addServiceBlock("separator"));
-    clearBtn.addEventListener("click", clearAll);
-    calculateAllBtn.addEventListener("click", calculateAllServices);
+    document.getElementById("addSeparatorBtn").addEventListener("click", () => addBlock("separator"));
+    document.getElementById("addFoldingBtn").addEventListener("click", () => addBlock("folding"));
+    document.getElementById("calculateAllBtn").addEventListener("click", calcAll);
+    document.getElementById("clearBtn").addEventListener("click", clearAll);
 
-    servicesContainer.addEventListener("click", async (e) => {
-      const rowBtn = e.target.closest(".download-row-btn");
-      if (rowBtn) {
-        const row = calculatedRows.find(r => r.id === rowBtn.dataset.rowId);
-        if (row) await downloadSeparatorRowPdf(row);
-        return;
-      }
+    // Initial blocks
+    addBlock("separator");
+    addBlock("folding");
 
-      const allBtn = e.target.closest(".download-all-separator-btn");
-      if (allBtn) {
-        const serviceCardId = Number(allBtn.dataset.serviceCardId);
-        await downloadAllSeparatorPdfs(serviceCardId);
-      }
-    });
-
-    addServiceBlock("separator");
-
-    function buildWideFormatOptions(maxMultiplier = 14) {
-      const items = [];
-      ["A4", "A3", "A2"].forEach(base => {
-        for (let n = 3; n <= maxMultiplier; n++) items.push(`${base}x${n}`);
-      });
-      return items;
-    }
-
-    function addServiceBlock(type = "separator") {
+    // ── ADD BLOCK ──────────────────────────────────────────────────
+    function addBlock(type) {
       const id = blockCounter++;
 
       serviceStates[id] = {
-        resultsByType: {},
-        notesByType: {},
-        resultCollapsedByType: {},
-        selectedExtraTypeByType: {},
-        sourceBytesByType: {},
-        sourceFileNameByType: {}
+        type,
+        files: [],         // for separator: array of {name, bytes}
+        rows: [],
+        notes: [],
+        collapsed: false,
+        // for folding
+        selectedFolds: [], // array of {key, qty}
       };
 
-      const block = document.createElement("div");
-      block.className = "service-card";
-      block.dataset.blockId = String(id);
-      block.dataset.serviceType = type;
+      const card = document.createElement("div");
+      card.className = "service-card";
+      card.dataset.id = id;
+      card.dataset.type = type;
 
-      block.innerHTML = `
-        <div class="service-header">
-          <div class="service-header-main">
-            <div class="service-title">Услуга #${id}</div>
-            <input type="text" class="service-name-input" id="service-name-${id}" value="${escapeHtml(getDefaultServiceName(type, id))}" />
+      const typeBadge = type === "separator"
+        ? `<span class="card-type-badge separator">📄 Разделитель</span>`
+        : `<span class="card-type-badge folding">📐 Фальцовка</span>`;
+
+      const defaultName = type === "separator" ? `Разделитель #${id}` : `Фальцовка #${id}`;
+
+      card.innerHTML = `
+        <div class="card-header">
+          ${typeBadge}
+          <input type="text" class="card-name-input" value="${escapeHtml(defaultName)}" placeholder="Название услуги">
+          <button type="button" class="btn-danger btn-sm remove-card-btn">✕ Удалить</button>
+        </div>
+        <div class="card-body">
+          ${type === "separator" ? renderSeparatorBody(id) : renderFoldingBody(id)}
+        </div>
+        <div class="card-footer">
+          <button type="button" class="btn-primary calc-btn">Рассчитать</button>
+          <div class="progress-bar-wrap" id="progress-wrap-${id}">
+            <div class="progress-bar-fill" id="progress-bar-${id}"></div>
           </div>
-          <button type="button" class="btn-danger remove-service-btn">Удалить</button>
         </div>
-
-        <div class="service-type-buttons">
-          ${SERVICE_TYPES.map(item => `
-            <button type="button"
-                    class="service-type-btn ${item.key === type ? "active" : ""}"
-                    data-service-type="${item.key}">
-              ${item.label}
-            </button>
-          `).join("")}
+        <div class="result-section" id="result-${id}">
+          <div class="result-header" id="result-header-${id}">
+            <div class="result-title">Результат расчёта</div>
+            <div style="display:flex;align-items:center;gap:16px;">
+              <div class="result-subtotal" id="result-subtotal-${id}"></div>
+              <div class="result-chevron open" id="result-chevron-${id}">▾</div>
+            </div>
+          </div>
+          <div class="result-body" id="result-body-${id}"></div>
         </div>
-
-        <div class="service-body">${renderServiceFields(id, type)}</div>
-
-        <div class="service-actions">
-          <button type="button" class="btn-secondary calc-service-btn">Рассчитать эту услугу</button>
-        </div>
-
-        <div class="service-result" id="service-result-${id}" style="display:none;"></div>
       `;
 
-      servicesContainer.appendChild(block);
+      container.appendChild(card);
+      bindCard(card, id, type);
+    }
 
-      block.querySelectorAll(".service-type-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const newType = btn.dataset.serviceType;
-          block.dataset.serviceType = newType;
+    function renderSeparatorBody(id) {
+      return `
+        <div class="grid-2">
+          <div class="field col-span-full">
+            <label>PDF-файлы (можно несколько)</label>
+            <div class="file-upload-area" id="upload-area-${id}">
+              <input type="file" id="sep-files-${id}" accept="application/pdf" multiple>
+              <div class="file-upload-icon">📂</div>
+              <div class="file-upload-label">Нажмите или перетащите PDF-файлы</div>
+              <div class="file-upload-hint">Поддерживается несколько файлов</div>
+            </div>
+            <div class="file-list" id="file-list-${id}"></div>
+          </div>
+          <div class="field">
+            <label>Режим цвета</label>
+            <select id="sep-mode-${id}">
+              <option value="auto">Автоопределение</option>
+              <option value="bw">Всё ч/б</option>
+              <option value="color">Всё цветное</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Кол-во экземпляров</label>
+            <input type="number" id="sep-copies-${id}" min="1" step="1" value="1">
+          </div>
+        </div>
+      `;
+    }
 
-          block.querySelectorAll(".service-type-btn").forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
+    function renderFoldingBody(id) {
+      // Build fold options with price calculation info
+      const foldOptions = [
+        { key: "A3-A4", fromFmt: "A3", toFmt: "A4" },
+        { key: "A2-A4", fromFmt: "A2", toFmt: "A4" },
+        { key: "A1-A4", fromFmt: "A1", toFmt: "A4" },
+        { key: "A2-A3", fromFmt: "A2", toFmt: "A3" },
+        { key: "A1-A3", fromFmt: "A1", toFmt: "A3" },
+        { key: "custom-A4", fromFmt: "нестандарт", toFmt: "А4" }
+      ];
 
-          const nameInput = block.querySelector(`#service-name-${id}`);
-          nameInput.value = getDefaultServiceName(newType, id);
+      return `
+        <div class="grid-2">
+          <div class="field col-span-full">
+            <label>PDF-файлы для определения форматов (необязательно)</label>
+            <div class="file-upload-area" id="fold-upload-area-${id}">
+              <input type="file" id="fold-files-${id}" accept="application/pdf" multiple>
+              <div class="file-upload-icon">📂</div>
+              <div class="file-upload-label">Нажмите или перетащите PDF-файлы</div>
+              <div class="file-upload-hint">Формат листов будет определён автоматически</div>
+            </div>
+            <div class="file-list" id="fold-file-list-${id}"></div>
+          </div>
+          <div class="field">
+            <label>Кол-во экземпляров</label>
+            <input type="number" id="fold-copies-${id}" min="1" step="1" value="1">
+          </div>
+          <div></div>
+        </div>
+        <div style="margin-top:18px;">
+          <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:10px;">
+            Тип фальцовки — выберите один или несколько
+          </label>
+          <div class="fold-option-grid" id="fold-options-${id}">
+            ${foldOptions.map(opt => {
+              const tariff = FOLD_BASE_PRICES[opt.key];
+              return `
+                <div class="fold-option-card" data-key="${opt.key}">
+                  <div class="fold-option-title">${opt.fromFmt} → ${opt.toFmt}</div>
+                  <div class="fold-option-price">${tariff ? tariff.price + ' ₽/лист' : ''}</div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+        <div style="margin-top:18px;" id="fold-manual-section-${id}" class="fold-manual-section"></div>
+      `;
+    }
 
-          block.querySelector(".service-body").innerHTML = renderServiceFields(id, newType);
-          restoreServiceResult(block);
-        });
-      });
-
-      block.querySelector(".remove-service-btn").addEventListener("click", () => {
+    function bindCard(card, id, type) {
+      // Remove
+      card.querySelector(".remove-card-btn").addEventListener("click", () => {
         delete serviceStates[id];
-        block.remove();
-        rebuildCalculatedRows();
-        recalcOverallTotal();
+        card.remove();
+        rebuildRows();
+        updateTotal();
       });
 
-      block.querySelector(".calc-service-btn").addEventListener("click", async () => {
-        await calculateSingleService(block);
+      // Calc
+      card.querySelector(".calc-btn").addEventListener("click", () => calcBlock(card, id));
+
+      // Result toggle
+      const rHeader = document.getElementById(`result-header-${id}`);
+      rHeader.addEventListener("click", () => {
+        const state = serviceStates[id];
+        state.collapsed = !state.collapsed;
+        document.getElementById(`result-body-${id}`).classList.toggle("collapsed", state.collapsed);
+        document.getElementById(`result-chevron-${id}`).classList.toggle("open", !state.collapsed);
       });
-    }
-
-    function getCurrentTypeForBlock(block) {
-      return block.dataset.serviceType;
-    }
-
-    function ensureTypeBuckets(id, type) {
-      const state = serviceStates[id];
-      if (!state.resultsByType[type]) state.resultsByType[type] = [];
-      if (!state.notesByType[type]) state.notesByType[type] = [];
-      if (typeof state.resultCollapsedByType[type] !== "boolean") state.resultCollapsedByType[type] = false;
-      if (typeof state.selectedExtraTypeByType[type] !== "string") state.selectedExtraTypeByType[type] = "";
-    }
-
-    function getDefaultServiceName(type, id) {
-      const map = {
-        separator: `Разделитель #${id}`,
-        documents: `Документы #${id}`,
-        drawings: `Чертежи #${id}`
-      };
-      return map[type] || `Услуга #${id}`;
-    }
-
-    function renderServiceFields(id, type) {
-      if (type === "documents") {
-        return `
-          <div class="grid">
-            <div class="field" style="grid-column:1 / -1;">
-              <label>PDF-файл</label>
-              <input type="file" id="docs-file-${id}" accept="application/pdf" />
-            </div>
-            <div class="field">
-              <label>Тип печати</label>
-              <select id="docs-print-mode-${id}">
-                <option value="auto">Автоопределение по страницам</option>
-                <option value="bw">Печатать всё в ч/б</option>
-                <option value="color">Печатать всё в цвете</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Количество экземпляров</label>
-              <input type="number" id="docs-copies-${id}" min="1" step="1" value="1" />
-            </div>
-          </div>
-        `;
-      }
-
-      if (type === "drawings") {
-        return `
-          <div class="grid">
-            <div class="field" style="grid-column:1 / -1;">
-              <label>PDF-файл чертежей</label>
-              <input type="file" id="drawing-file-${id}" accept="application/pdf" />
-            </div>
-            <div class="field">
-              <label>Цветность</label>
-              <select id="drawing-color-${id}">
-                <option value="bw">Ч/б</option>
-                <option value="color">Цвет</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Количество экземпляров</label>
-              <input type="number" id="drawing-copies-${id}" min="1" step="1" value="1" />
-            </div>
-            <div class="field">
-              <label>Фальцовка</label>
-              <select id="drawing-fold-${id}">
-                <option value="none">Без фальцовки</option>
-                <option value="A2-A4">A2 → A4</option>
-                <option value="A1-A4">A1 → A4</option>
-                <option value="A2-A3">A2 → A3</option>
-                <option value="A1-A3">A1 → A3</option>
-                <option value="custom">Нестандарт</option>
-              </select>
-            </div>
-          </div>
-        `;
-      }
 
       if (type === "separator") {
-        return `
-          <div class="grid">
-            <div class="field" style="grid-column:1 / -1;">
-              <label>PDF-файл для разделения</label>
-              <input type="file" id="separator-file-${id}" accept="application/pdf" />
-            </div>
-            <div class="field">
-              <label>Режим определения цвета</label>
-              <select id="separator-print-mode-${id}">
-                <option value="auto">Автоопределение</option>
-                <option value="bw">Считать всё ч/б</option>
-                <option value="color">Считать всё цветным</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Количество экземпляров для расчёта цены</label>
-              <input type="number" id="separator-copies-${id}" min="1" step="1" value="1" />
-            </div>
-          </div>
-        `;
+        bindSeparatorFileInput(card, id);
+      } else {
+        bindFoldingOptions(card, id);
+        bindFoldingFileInput(card, id);
       }
-
-      return "";
     }
 
-    async function calculateAllServices() {
-      const blocks = [...document.querySelectorAll(".service-card")];
-      if (!blocks.length) {
-        setStatus("Добавь хотя бы одну услугу.", true);
+    // ── FILE INPUT BINDING ─────────────────────────────────────────
+    function bindSeparatorFileInput(card, id) {
+      const input = document.getElementById(`sep-files-${id}`);
+      const area = document.getElementById(`upload-area-${id}`);
+
+      input.addEventListener("change", () => {
+        addFilesToState(id, "separator", input.files);
+        input.value = "";
+        renderFileList(id, "separator");
+      });
+
+      area.addEventListener("dragover", e => { e.preventDefault(); area.classList.add("dragover"); });
+      area.addEventListener("dragleave", () => area.classList.remove("dragover"));
+      area.addEventListener("drop", e => {
+        e.preventDefault();
+        area.classList.remove("dragover");
+        addFilesToState(id, "separator", e.dataTransfer.files);
+        renderFileList(id, "separator");
+      });
+    }
+
+    function bindFoldingFileInput(card, id) {
+      const input = document.getElementById(`fold-files-${id}`);
+      const area = document.getElementById(`fold-upload-area-${id}`);
+
+      input.addEventListener("change", () => {
+        addFilesToState(id, "folding", input.files);
+        input.value = "";
+        renderFileList(id, "folding");
+      });
+
+      area.addEventListener("dragover", e => { e.preventDefault(); area.classList.add("dragover"); });
+      area.addEventListener("dragleave", () => area.classList.remove("dragover"));
+      area.addEventListener("drop", e => {
+        e.preventDefault();
+        area.classList.remove("dragover");
+        addFilesToState(id, "folding", e.dataTransfer.files);
+        renderFileList(id, "folding");
+      });
+    }
+
+    function addFilesToState(id, type, fileList) {
+      const state = serviceStates[id];
+      if (!state) return;
+
+      const files = [...fileList].filter(f => f.type === "application/pdf" || f.name.endsWith(".pdf"));
+      files.forEach(f => {
+        if (!state.files.find(sf => sf.name === f.name)) {
+          state.files.push({ name: f.name, fileRef: f, bytes: null });
+        }
+      });
+    }
+
+    function renderFileList(id, type) {
+      const state = serviceStates[id];
+      const listEl = document.getElementById(type === "separator" ? `file-list-${id}` : `fold-file-list-${id}`);
+      if (!listEl || !state) return;
+
+      if (!state.files.length) {
+        listEl.innerHTML = "";
         return;
       }
 
-      setStatus("Идёт анализ...");
-      try {
-        for (const block of blocks) {
-          await calculateSingleService(block, false);
-        }
-        setStatus("Готово.");
-      } catch (error) {
-        console.error(error);
-        setStatus(error.message || "Ошибка расчёта.", true);
-      }
-    }
+      listEl.innerHTML = state.files.map((f, idx) => `
+        <div class="file-chip">
+          <span>📄</span>
+          <span class="file-chip-name">${escapeHtml(f.name)}</span>
+          <button class="file-chip-remove" data-idx="${idx}">×</button>
+        </div>
+      `).join("");
 
-    async function calculateSingleService(block, setReadyText = true) {
-      const id = Number(block.dataset.blockId);
-      const type = getCurrentTypeForBlock(block);
-      ensureTypeBuckets(id, type);
-
-      const customName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName(type, id);
-      const notes = [];
-      let baseRows = [];
-
-      setStatus("Идёт анализ...");
-
-      if (type === "documents") {
-        baseRows = await calculateDocumentsBlock(id, customName, notes);
-      } else if (type === "drawings") {
-        baseRows = await calculateDrawingsBlock(id, customName, notes);
-      } else if (type === "separator") {
-        baseRows = await calculateSeparatorBlock(id, customName, notes);
-      }
-
-      const state = serviceStates[id];
-      const oldRows = state.resultsByType[type] || [];
-      const extraRows = oldRows.filter(r => r.isExtraRow);
-
-      state.resultsByType[type] = [...baseRows, ...extraRows];
-      state.notesByType[type] = notes;
-
-      rebuildCalculatedRows();
-      renderServiceResult(block);
-
-      recalcOverallTotal();
-      if (setReadyText) setStatus("Готово.");
-    }
-
-    async function calculateDocumentsBlock(id, customName, notes) {
-      const fileInput = document.getElementById(`docs-file-${id}`);
-      const file = fileInput?.files?.[0];
-      const printMode = document.getElementById(`docs-print-mode-${id}`).value;
-      const copies = Math.max(1, parseInt(document.getElementById(`docs-copies-${id}`).value || "1", 10));
-
-      if (!file) throw new Error(`В услуге "${customName}" не выбран PDF-файл.`);
-
-      const analysis = await analyzePdfAndGroup(file, printMode, copies, false, false);
-      serviceStates[id].sourceBytesByType.documents = analysis.bytes;
-      serviceStates[id].sourceFileNameByType.documents = file.name;
-
-      const rows = analysis.groups.map(group => ({
-        id: makeRowId(),
-        serviceCardId: id,
-        serviceType: "documents",
-        serviceName: customName,
-        actualFormatLabel: group.actualFormatLabel,
-        customPageNumbers: group.customPageNumbers,
-        billedFormat: group.billedFormat,
-        qty: group.qty,
-        unitPrice: group.priceInfo.price,
-        tariffCode: group.priceInfo.code,
-        tariffLabel: group.priceInfo.label,
-        priceSyncKey: group.priceInfo.syncKey,
-        unitPriceEditable: true,
-        qtyEditable: true,
-        billedFormatEditable: true,
-        editableFormats: buildEditableOptionsForRow(group.billedFormat),
-        colorMode: group.colorMode,
-        isExtraRow: false,
-        isSeparatorRow: false,
-        priceLocked: false,
-        priceWasManuallyChanged: false
-      }));
-
-      if (analysis.allCustomPages.length) {
-        notes.push(`Нестандартные страницы: ${compressPageRanges(analysis.allCustomPages)}.`);
-      }
-      notes.push(...analysis.notes);
-
-      return rows;
-    }
-
-    async function calculateDrawingsBlock(id, customName, notes) {
-      const fileInput = document.getElementById(`drawing-file-${id}`);
-      const file = fileInput?.files?.[0];
-      const color = document.getElementById(`drawing-color-${id}`).value;
-      const copies = Math.max(1, parseInt(document.getElementById(`drawing-copies-${id}`).value || "1", 10));
-      const fold = document.getElementById(`drawing-fold-${id}`).value;
-
-      if (!file) throw new Error(`В услуге "${customName}" не выбран PDF-файл чертежей.`);
-
-      const analysis = await analyzePdfAndGroup(file, color, copies, true, false);
-      serviceStates[id].sourceBytesByType.drawings = analysis.bytes;
-      serviceStates[id].sourceFileNameByType.drawings = file.name;
-
-      const rows = analysis.groups.map(group => {
-        const priceInfo = getPriceInfoByFormat(group.billedFormat, color, group.qty);
-
-        return {
-          id: makeRowId(),
-          serviceCardId: id,
-          serviceType: "drawings",
-          serviceName: customName,
-          actualFormatLabel: group.actualFormatLabel,
-          customPageNumbers: group.customPageNumbers,
-          billedFormat: group.billedFormat,
-          qty: group.qty,
-          unitPrice: priceInfo.price,
-          tariffCode: priceInfo.code,
-          tariffLabel: priceInfo.label,
-          priceSyncKey: priceInfo.syncKey,
-          unitPriceEditable: true,
-          qtyEditable: true,
-          billedFormatEditable: true,
-          editableFormats: buildEditableOptionsForRow(group.billedFormat),
-          colorMode: color,
-          isExtraRow: false,
-          isSeparatorRow: false,
-          priceLocked: false,
-          priceWasManuallyChanged: false
-        };
-      });
-
-      if (fold !== "none") {
-        const foldTariff = PRICES.drawingsFold[fold];
-        const baseQty = rows.reduce((sum, row) => sum + row.qty, 0);
-
-        rows.push({
-          id: makeRowId(),
-          serviceCardId: id,
-          serviceType: "drawings",
-          serviceName: customName,
-          actualFormatLabel: "Постобработка",
-          customPageNumbers: [],
-          billedFormat: "—",
-          qty: baseQty,
-          unitPrice: foldTariff.price,
-          tariffCode: foldTariff.code,
-          tariffLabel: foldTariff.label,
-          priceSyncKey: `FOLD:${foldTariff.code}`,
-          unitPriceEditable: true,
-          qtyEditable: true,
-          billedFormatEditable: false,
-          editableFormats: [],
-          colorMode: null,
-          isExtraRow: true,
-          isSeparatorRow: false,
-          priceLocked: false,
-          priceWasManuallyChanged: false
+      listEl.querySelectorAll(".file-chip-remove").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.files.splice(Number(btn.dataset.idx), 1);
+          renderFileList(id, type);
         });
-      }
-
-      if (analysis.allCustomPages.length) {
-        notes.push(`Нестандартные страницы: ${compressPageRanges(analysis.allCustomPages)}.`);
-      }
-      notes.push(...analysis.notes);
-
-      return rows;
+      });
     }
 
-    async function calculateSeparatorBlock(id, customName, notes) {
-      const fileInput = document.getElementById(`separator-file-${id}`);
-      const file = fileInput?.files?.[0];
-      const printMode = document.getElementById(`separator-print-mode-${id}`).value;
-      const copies = Math.max(1, parseInt(document.getElementById(`separator-copies-${id}`).value || "1", 10));
+    // ── FOLDING OPTIONS ────────────────────────────────────────────
+    function bindFoldingOptions(card, id) {
+      const optionsEl = document.getElementById(`fold-options-${id}`);
+      const state = serviceStates[id];
 
-      if (!file) throw new Error(`В услуге "${customName}" не выбран PDF-файл.`);
+      optionsEl.querySelectorAll(".fold-option-card").forEach(optCard => {
+        optCard.addEventListener("click", () => {
+          const key = optCard.dataset.key;
+          optCard.classList.toggle("active");
 
-      const analysis = await analyzePdfAndGroup(file, printMode, copies, true, false);
-      serviceStates[id].sourceBytesByType.separator = analysis.bytes;
-      serviceStates[id].sourceFileNameByType.separator = file.name;
+          const idx = state.selectedFolds.findIndex(f => f.key === key);
+          if (idx >= 0) {
+            state.selectedFolds.splice(idx, 1);
+          } else {
+            state.selectedFolds.push({ key, qty: 1 });
+          }
 
-      const rows = analysis.groups.map(group => ({
-        id: makeRowId(),
-        serviceCardId: id,
-        serviceType: "separator",
-        serviceName: customName,
-        actualFormatLabel: group.actualFormatLabel,
-        customPageNumbers: group.customPageNumbers,
-        billedFormat: group.billedFormat,
-        qty: group.qty,
-        unitPrice: group.priceInfo.price,
-        tariffCode: group.priceInfo.code,
-        tariffLabel: group.priceInfo.label,
-        priceSyncKey: group.priceInfo.syncKey,
-        unitPriceEditable: true,
-        qtyEditable: true,
-        billedFormatEditable: true,
-        editableFormats: buildEditableOptionsForRow(group.billedFormat),
-        colorMode: group.colorMode,
-        isExtraRow: false,
-        isSeparatorRow: true,
-        separatorDownloadable: true,
-        downloadPageNumbers: group.pageNumbers,
-        priceLocked: false,
-        priceWasManuallyChanged: false
-      }));
-
-      if (analysis.allCustomPages.length) {
-        notes.push(`Нестандартные страницы: ${compressPageRanges(analysis.allCustomPages)}.`);
-      }
-      notes.push("В разделе «Разделитель» можно скачать отдельные PDF по каждой категории или скачать всё одним ZIP-архивом.");
-      notes.push(...analysis.notes);
-
-      return rows;
+          renderFoldManualSection(id);
+        });
+      });
     }
 
-    async function analyzePdfAndGroup(file, printMode, copies, preferDrawingForWide = false, splitByCategory = false) {
-      const rawBytes = await file.arrayBuffer();
-      const bytes = new Uint8Array(rawBytes);
+    function renderFoldManualSection(id) {
+      const state = serviceStates[id];
+      const section = document.getElementById(`fold-manual-section-${id}`);
+      if (!section) return;
 
-      const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
-      const groupsMap = new Map();
-      const allCustomPages = [];
+      if (!state.selectedFolds.length) {
+        section.innerHTML = "";
+        return;
+      }
+
+      section.innerHTML = `
+        <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:10px;">
+          Количество листов по каждому типу фальцовки
+        </label>
+        <div class="grid-2">
+          ${state.selectedFolds.map((f, idx) => {
+            const tariff = FOLD_BASE_PRICES[f.key];
+            return `
+              <div class="field">
+                <label>${tariff ? tariff.label : f.key}</label>
+                <input type="number" class="fold-qty-input" data-idx="${idx}" min="1" step="1" value="${f.qty}">
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+
+      section.querySelectorAll(".fold-qty-input").forEach(inp => {
+        inp.addEventListener("input", () => {
+          const idx = Number(inp.dataset.idx);
+          state.selectedFolds[idx].qty = Math.max(1, parseInt(inp.value) || 1);
+        });
+      });
+    }
+
+    // ── CALCULATE ALL ──────────────────────────────────────────────
+    async function calcAll() {
+      const cards = [...document.querySelectorAll(".service-card")];
+      for (const card of cards) {
+        await calcBlock(card, Number(card.dataset.id));
+      }
+    }
+
+    async function calcBlock(card, id) {
+      const state = serviceStates[id];
+      if (!state) return;
+
+      setStatus("Идёт анализ...");
+
+      try {
+        if (state.type === "separator") {
+          await calcSeparator(card, id);
+        } else {
+          await calcFolding(card, id);
+        }
+
+        renderResult(card, id);
+        rebuildRows();
+        updateTotal();
+        setStatus("");
+      } catch (err) {
+        console.error(err);
+        setStatus(err.message || "Ошибка расчёта.", true);
+      }
+    }
+
+    // ── SEPARATOR CALC ─────────────────────────────────────────────
+    async function calcSeparator(card, id) {
+      const state = serviceStates[id];
+
+      if (!state.files.length) throw new Error("Добавьте хотя бы один PDF-файл.");
+
+      const printMode = document.getElementById(`sep-mode-${id}`).value;
+      const copies = Math.max(1, parseInt(document.getElementById(`sep-copies-${id}`).value) || 1);
+
+      const allRows = [];
       const notes = [];
 
-      for (let i = 1; i <= pdf.numPages; i++) {
-        setStatus(`Идёт анализ... ${file.name}: страница ${i} из ${pdf.numPages}`);
+      for (const fileEntry of state.files) {
+        // Load bytes if needed
+        if (!fileEntry.bytes) {
+          fileEntry.bytes = new Uint8Array(await fileEntry.fileRef.arrayBuffer());
+        }
+
+        const rows = await analyzeSeparatorPdf(fileEntry, printMode, copies, id, state.files.length);
+        allRows.push(...rows);
+      }
+
+      // Preserve extra rows
+      const extraRows = (state.rows || []).filter(r => r.isExtra);
+      state.rows = [...allRows, ...extraRows];
+      state.notes = notes;
+    }
+
+    async function analyzeSeparatorPdf(fileEntry, printMode, copies, blockId, totalFiles) {
+      const pdf = await pdfjsLib.getDocument({ data: fileEntry.bytes.slice() }).promise;
+      const groupsMap = new Map();
+      const totalPages = pdf.numPages;
+
+      for (let i = 1; i <= totalPages; i++) {
+        setProgress(blockId, i / totalPages * 100);
+        setStatus(`Анализ ${fileEntry.name}: страница ${i}/${totalPages}`);
+
         const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 1 });
+        const vp = page.getViewport({ scale: 1 });
 
-        const widthMm = ptToMm(viewport.width);
-        const heightMm = ptToMm(viewport.height);
-        const exactStandard = detectFormat(widthMm, heightMm);
+        const wMm = ptToMm(vp.width);
+        const hMm = ptToMm(vp.height);
 
-        let colorMode = "bw";
-        if (printMode === "bw" || printMode === "color") colorMode = printMode;
-        else colorMode = await detectPageColorMode(page);
+        let colorMode = printMode === "auto" ? await detectColor(page) : printMode;
 
-        const billed = getBestBillingFormat(widthMm, heightMm, colorMode, preferDrawingForWide);
-        const actualLabel = buildActualFormatLabel(widthMm, heightMm, exactStandard, billed.formatKey);
-        const priceInfo = getPriceInfoByFormat(billed.formatKey, colorMode, copies);
+        const detected = detectFormat(wMm, hMm);
+        const billed = detected !== "CUSTOM" ? detected : findSmallestFitting(wMm, hMm) || findNearest(wMm, hMm);
 
-        if (billed.isCustomLike) allCustomPages.push(i);
-        if (priceInfo.note) notes.push(`Стр. ${i}: ${priceInfo.note}`);
+        // Exact size label (not rounded to standard)
+        const actualLabel = buildExactSizeLabel(wMm, hMm, detected);
 
-        const groupKey = splitByCategory
-          ? `${colorMode}||${billed.formatKey}`
-          : `${actualLabel}||${colorMode}||${billed.formatKey}`;
+        const priceInfo = getSepPrice(billed, colorMode, copies);
+        const groupKey = `${fileEntry.name}||${actualLabel}||${colorMode}||${billed}`;
 
         if (!groupsMap.has(groupKey)) {
           groupsMap.set(groupKey, {
-            actualFormatLabel: actualLabel,
-            pageNumbers: [],
-            customPageNumbers: [],
-            billedFormat: billed.formatKey,
+            fileName: fileEntry.name,
+            fileBytes: fileEntry.bytes,
+            actualLabel,
             colorMode,
+            billedFormat: billed,
+            pages: [],
             qty: 0,
             priceInfo
           });
         }
 
-        const group = groupsMap.get(groupKey);
-        group.pageNumbers.push(i);
-        group.qty += copies;
-        if (billed.isCustomLike) group.customPageNumbers.push(i);
+        const g = groupsMap.get(groupKey);
+        g.pages.push(i);
+        g.qty += copies;
       }
 
-      const groups = [...groupsMap.values()].map(group => ({
-        ...group,
-        pageNumbers: [...group.pageNumbers].sort((a, b) => a - b),
-        customPageNumbers: [...group.customPageNumbers].sort((a, b) => a - b)
+      setProgress(blockId, 0);
+
+      return [...groupsMap.values()].map(g => ({
+        id: makeId(),
+        blockId,
+        fileName: g.fileName,
+        fileBytes: g.fileBytes,
+        actualLabel: g.actualLabel,
+        colorMode: g.colorMode,
+        billedFormat: g.billedFormat,
+        pages: g.pages,
+        qty: g.qty,
+        copies,
+        unitPrice: g.priceInfo.price,
+        tariffCode: g.priceInfo.code,
+        tariffLabel: g.priceInfo.label,
+        priceLocked: false,
+        isExtra: false,
+        isSeparator: true,
+        priceSyncKey: `${g.colorMode}:${g.billedFormat}`
       }));
-
-      return { groups, allCustomPages, notes: uniqueStrings(notes), bytes };
     }
 
-    function getBestBillingFormat(widthMm, heightMm, colorMode, preferDrawingForWide = false) {
-      const exact = detectFormat(widthMm, heightMm);
+    // ── FOLDING CALC ───────────────────────────────────────────────
+    async function calcFolding(card, id) {
+      const state = serviceStates[id];
+      const copies = Math.max(1, parseInt(document.getElementById(`fold-copies-${id}`).value) || 1);
+      const rows = [];
 
-      if (exact !== "CUSTOM") {
-        return {
-          formatKey: exact,
-          isCustomLike: false
-        };
-      }
-
-      const fittingFormat = findSmallestFittingFormat(widthMm, heightMm);
-      if (fittingFormat) {
-        return {
-          formatKey: fittingFormat,
-          isCustomLike: true
-        };
-      }
-
-      const wide = detectExtendedWideFormat(widthMm, heightMm);
-      if (wide) {
-        return {
-          formatKey: wide.formatKey,
-          isCustomLike: true
-        };
-      }
-
-      const nearestStd = findNearestFormat(widthMm, heightMm);
-      if (preferDrawingForWide && ["A4", "A3"].includes(nearestStd)) {
-        return { formatKey: "A2", isCustomLike: true };
-      }
-
-      return {
-        formatKey: nearestStd,
-        isCustomLike: true
-      };
-    }
-
-    function detectExtendedWideFormat(widthMm, heightMm) {
-      const shortSide = Math.min(widthMm, heightMm);
-      const longSide = Math.max(widthMm, heightMm);
-
-      let best = null;
-
-      ["A4", "A3", "A2"].forEach(base => {
-        const baseShort = FORMATS[base].h;
-        const baseStep = FORMATS[base].w;
-
-        const shortDiff = Math.abs(shortSide - baseShort);
-        if (shortDiff > TOLERANCE_MM + 3) return;
-
-        const rawMultiplier = longSide / baseStep;
-        const multiplier = Math.max(3, Math.ceil(rawMultiplier - 0.0001));
-        const targetLong = baseStep * multiplier;
-        const diff = Math.abs(longSide - targetLong) + shortDiff;
-
-        if (!best || diff < best.diff) {
-          best = {
-            diff,
-            formatKey: `${base}x${multiplier}`
-          };
-        }
-      });
-
-      return best;
-    }
-
-    function getPriceInfoByFormat(formatKey, colorMode, qty) {
-      if (PRICES.documentsBW[formatKey] || PRICES.documentsColor[formatKey]) {
-        return getDocumentPriceInfo(formatKey, colorMode, qty);
-      }
-
-      if (PRICES.drawingsExact[colorMode]?.[formatKey]) {
-        const tariff = PRICES.drawingsExact[colorMode][formatKey];
-        return {
-          price: tariff.price,
-          code: tariff.code,
-          label: tariff.label,
-          syncKey: `${colorMode}:${tariff.code}`,
-          note: ""
-        };
-      }
-
-      if (isWideFormatKey(formatKey)) {
-        return getWidePriceInfo(formatKey, colorMode);
-      }
-
-      return {
-        price: 0,
-        code: "—",
-        label: `Для ${formatKey} нет тарифа`,
-        syncKey: `MANUAL:${formatKey}:${colorMode}`,
-        note: `Не найден тариф для формата ${formatKey}.`
-      };
-    }
-
-    function getDocumentPriceInfo(format, colorMode, qty) {
-      if (colorMode === "bw") {
-        if (!PRICES.documentsBW[format]) {
-          const wideFallback = isWideFormatKey(format) ? getWidePriceInfo(format, colorMode) : null;
-          if (wideFallback) return wideFallback;
-
-          if (PRICES.drawingsExact.bw[format]) {
-            const tariff = PRICES.drawingsExact.bw[format];
-            return {
-              price: tariff.price,
-              code: tariff.code,
-              label: tariff.label,
-              syncKey: `bw:${tariff.code}`,
-              note: ""
-            };
+      // If files uploaded, detect their formats and auto-populate qty
+      if (state.files.length) {
+        for (const fileEntry of state.files) {
+          if (!fileEntry.bytes) {
+            fileEntry.bytes = new Uint8Array(await fileEntry.fileRef.arrayBuffer());
           }
 
-          return { price: 0, code: "—", label: `Для ${format} нет автоматической цены`, syncKey: `MANUAL:${format}:bw`, note: "" };
-        }
+          const pdf = await pdfjsLib.getDocument({ data: fileEntry.bytes.slice() }).promise;
+          const formatCounts = {};
 
-        const tier = getTierRow(PRICES.documentsBW[format], qty);
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const vp = page.getViewport({ scale: 1 });
+            const fmt = detectFormat(ptToMm(vp.width), ptToMm(vp.height));
+            const key = fmt !== "CUSTOM" ? fmt : "A4";
+            formatCounts[key] = (formatCounts[key] || 0) + 1;
+          }
+
+          // Map detected formats to fold rows
+          Object.entries(formatCounts).forEach(([fmt, count]) => {
+            const foldKey = findFoldKey(fmt, state.selectedFolds);
+            if (!foldKey) return;
+
+            const tariff = FOLD_BASE_PRICES[foldKey];
+            const calc = calcFoldPrice(fmt, foldKey);
+            const qty = count * copies;
+
+            rows.push({
+              id: makeId(),
+              blockId: id,
+              actualLabel: fmt,
+              colorMode: null,
+              billedFormat: fmt,
+              qty,
+              copies,
+              unitPrice: calc.price,
+              tariffCode: tariff.code,
+              tariffLabel: `${tariff.label} (${fmt}, ${calc.ratio.toFixed(2)}×)`,
+              priceLocked: false,
+              isExtra: false,
+              isSeparator: false,
+              foldKey
+            });
+          });
+        }
+      }
+
+      // Manual selected folds
+      if (!rows.length) {
+        state.selectedFolds.forEach(sf => {
+          const tariff = FOLD_BASE_PRICES[sf.key];
+          if (!tariff) return;
+
+          rows.push({
+            id: makeId(),
+            blockId: id,
+            actualLabel: sf.key.split("-")[0],
+            colorMode: null,
+            billedFormat: "—",
+            qty: sf.qty * copies,
+            copies,
+            unitPrice: tariff.price,
+            tariffCode: tariff.code,
+            tariffLabel: tariff.label,
+            priceLocked: false,
+            isExtra: false,
+            isSeparator: false,
+            foldKey: sf.key
+          });
+        });
+      }
+
+      if (!rows.length) throw new Error("Выберите тип фальцовки или загрузите PDF.");
+
+      const extraRows = (state.rows || []).filter(r => r.isExtra);
+      state.rows = [...rows, ...extraRows];
+      state.notes = [];
+    }
+
+    // Calculates fold price proportionally based on sheet area relative to A2
+    // A2→A4 = 18₽, A3→A4 = 18×(A3/A2) = 18×0.5 = 9₽
+    // The base price comes from FOLD_BASE_PRICES for the target fold key
+    function calcFoldPrice(fromFmt, foldKey) {
+      const tariff = FOLD_BASE_PRICES[foldKey];
+      if (!tariff) return { price: 5, ratio: 1 };
+
+      // Find the base format for this fold key (e.g. A2-A4 → base = A2)
+      const baseFmt = foldKey.split("-")[0];
+      if (baseFmt === "custom") return { price: tariff.price, ratio: 1 };
+
+      const baseArea = FORMAT_AREA[baseFmt] || 1;
+      const fromArea = FORMAT_AREA[fromFmt] || 1;
+      const ratio = fromArea / baseArea;
+      const price = tariff.price * ratio;
+
+      return { price: Math.round(price * 100) / 100, ratio };
+    }
+
+    function findFoldKey(fmt, selectedFolds) {
+      if (!selectedFolds.length) return null;
+      // Try to find matching fold key by source format
+      const match = selectedFolds.find(sf => sf.key.startsWith(fmt + "-"));
+      return match ? match.key : selectedFolds[0]?.key || null;
+    }
+
+    // ── GET SEPARATOR PRICE ────────────────────────────────────────
+    function getSepPrice(fmt, colorMode, qty) {
+      // BW tiered pricing for A4/A3
+      if (colorMode === "bw" && PRICES.documentsBW[fmt]) {
+        const tiers = PRICES.documentsBW[fmt];
+        const tier = tiers.find(t => qty <= t.max) || tiers[tiers.length - 1];
+        return { price: tier.price, code: tier.code, label: tier.label };
+      }
+
+      // Color A4/A3
+      if (colorMode === "color" && PRICES.documentsColor[fmt]) {
+        const info = PRICES.documentsColor[fmt];
         return {
-          price: tier.price,
-          code: tier.code,
-          label: tier.label,
-          syncKey: `bw:${tier.code}`,
-          note: ""
+          price: info.min, // minimum by default
+          code: info.code,
+          label: `${info.label} (от ${info.min} до ${info.max} ₽)`
         };
       }
 
-      if (!PRICES.documentsColor[format]) {
-        const wideFallback = isWideFormatKey(format) ? getWidePriceInfo(format, colorMode) : null;
-        if (wideFallback) return wideFallback;
+      // Wide format drawings
+      if (PRICES.drawingsExact[colorMode]?.[fmt]) {
+        const t = PRICES.drawingsExact[colorMode][fmt];
+        return { price: t.price, code: t.code, label: `Широкоформатная струйная печать, ${colorMode === "color" ? "цветн" : "ч/б"}, ${fmt}` };
+      }
 
-        if (PRICES.drawingsExact.color[format]) {
-          const tariff = PRICES.drawingsExact.color[format];
+      // Wide multiplied formats
+      const wide = parseWideKey(fmt);
+      if (wide) {
+        const tbl = PRICES.drawingsWide[colorMode]?.[wide.base];
+        if (tbl && tbl[wide.n]) {
           return {
-            price: tariff.price,
-            code: tariff.code,
-            label: tariff.label,
-            syncKey: `color:${tariff.code}`,
-            note: ""
+            price: tbl[wide.n],
+            code: `wide-${colorMode}-${fmt}`,
+            label: `Широкоформатная струйная печать, ${colorMode === "color" ? "цветн" : "ч/б"}, ${fmt}`
           };
         }
-
-        return { price: 0, code: "—", label: `Для ${format} нет автоматической цены`, syncKey: `MANUAL:${format}:color`, note: "" };
       }
 
-      const info = PRICES.documentsColor[format];
-      return {
-        price: info.max,
-        code: info.code,
-        label: `${info.label} (${money(info.min)} – ${money(info.max)})`,
-        syncKey: `color:${info.code}`,
-        note: ""
-      };
+      return { price: 0, code: "—", label: `Нет тарифа для ${fmt}` };
     }
 
-    function getWidePriceInfo(formatKey, colorMode) {
-      const parsed = parseWideFormatKey(formatKey);
-      if (!parsed) {
-        return {
-          price: 0,
-          code: "—",
-          label: `Не удалось распознать формат ${formatKey}`,
-          syncKey: `MANUAL:${formatKey}:${colorMode}`,
-          note: ""
-        };
-      }
-
-      const { base, multiplier } = parsed;
-      const table = PRICES.drawingsWide[colorMode]?.[base];
-
-      if (!table) {
-        return {
-          price: 0,
-          code: "—",
-          label: `Для ${formatKey} нет широкоформатного тарифа`,
-          syncKey: `MANUAL:${formatKey}:${colorMode}`,
-          note: ""
-        };
-      }
-
-      if (table[multiplier]) {
-        const tariff = table[multiplier];
-        return {
-          price: tariff.price,
-          code: tariff.code,
-          label: tariff.label,
-          syncKey: `${colorMode}:${tariff.code}`,
-          note: ""
-        };
-      }
-
-      const knownMultipliers = Object.keys(table).map(Number).sort((a, b) => a - b);
-      const maxKnown = knownMultipliers[knownMultipliers.length - 1];
-      const prevKnown = knownMultipliers[knownMultipliers.length - 2] ?? maxKnown - 1;
-      const lastPrice = table[maxKnown].price;
-      const prevPrice = table[prevKnown].price;
-      const step = lastPrice - prevPrice;
-
-      const extrapolatedPrice = lastPrice + (multiplier - maxKnown) * step;
-      const size = getWideFormatSize(base, multiplier);
-
-      return {
-        price: extrapolatedPrice,
-        code: `${table[maxKnown].code}+`,
-        label: `Широкоформатная струйная печать, ${colorMode === "color" ? "цветн" : "ч/б"}, формат ${base}х${multiplier} (${size.w}×${size.h} мм), цена продолжена по шагу прайса`,
-        syncKey: `${colorMode}:EXT:${base}`,
-        note: `Для ${base}х${multiplier} применено продолжение шага сверх прайса.`
-      };
-    }
-
-    function getTierRow(tiers, qty) {
-      for (const tier of tiers) {
-        if (qty <= tier.max) return tier;
-      }
-      return tiers[tiers.length - 1];
-    }
-
-    function renderServiceResult(block) {
-      const id = Number(block.dataset.blockId);
-      const type = getCurrentTypeForBlock(block);
-      ensureTypeBuckets(id, type);
-
+    // ── RENDER RESULT ──────────────────────────────────────────────
+    function renderResult(card, id) {
       const state = serviceStates[id];
-      const rows = state.resultsByType[type] || [];
-      const notes = state.notesByType[type] || [];
-      const resultCollapsed = state.resultCollapsedByType[type];
-      const selectedExtraType = state.selectedExtraTypeByType[type] || "";
+      const resultEl = document.getElementById(`result-${id}`);
+      const bodyEl = document.getElementById(`result-body-${id}`);
+      const subtotalEl = document.getElementById(`result-subtotal-${id}`);
 
-      const resultBox = block.querySelector(".service-result");
-
-      if (!rows.length) {
-        resultBox.style.display = "none";
-        resultBox.innerHTML = "";
+      if (!state.rows || !state.rows.length) {
+        resultEl.classList.remove("visible");
         return;
       }
 
-      resultBox.style.display = "block";
+      resultEl.classList.add("visible");
+      bodyEl.classList.toggle("collapsed", !!state.collapsed);
+      document.getElementById(`result-chevron-${id}`).classList.toggle("open", !state.collapsed);
 
-      const showExtras = type !== "separator";
-      const separatorRows = rows.filter(r => r.isSeparatorRow);
+      const subtotal = state.rows.reduce((s, r) => s + r.qty * r.unitPrice, 0);
+      subtotalEl.textContent = money(subtotal);
 
-      resultBox.innerHTML = `
-        <button type="button" class="result-toggle">
-          <span class="service-result-title">Результат расчёта</span>
-          <span class="result-chevron">${resultCollapsed ? "▾" : "▴"}</span>
-        </button>
+      let html = "";
 
-        <div class="result-content ${resultCollapsed ? "collapsed" : ""}">
-          ${type === "separator" && separatorRows.length ? `
-            <div class="result-actions">
-              <button type="button" class="btn-primary download-all-separator-btn" data-service-card-id="${id}">Скачать всё</button>
-            </div>
-          ` : ""}
+      // Download buttons for separator
+      const sepRows = state.rows.filter(r => r.isSeparator);
+      if (sepRows.length) {
+        html += `<div class="download-actions">
+          <button type="button" class="btn-secondary btn-sm download-all-btn" data-id="${id}">⬇ Скачать всё (ZIP)</button>
+        </div>`;
+      }
 
-          <div class="table-wrap">
-            <table>
-              <colgroup>
-                <col class="col-tariff">
-                <col class="col-actual">
-                <col class="col-custom">
-                <col class="col-format">
-                <col class="col-qty">
-                <col class="col-price">
-                <col class="col-sum">
-              </colgroup>
-              <thead>
-                <tr>
-                  <th>Пункт прайса</th>
-                  <th>Фактический размер</th>
-                  <th>Нестандартные стр.</th>
-                  <th>Формат для расчёта</th>
-                  <th>Количество</th>
-                  <th>Цена за ед.</th>
-                  <th>Сумма</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${rows.map(row => renderRowHtml(row)).join("")}
+      html += `<div class="table-wrap"><table>
+        <thead>
+          <tr>
+            <th style="min-width:160px">Тариф</th>
+            <th>Файл / формат</th>
+            <th>Размер в файле</th>
+            <th>Кол-во</th>
+            <th>Цена / ед.</th>
+            <th style="text-align:right">Сумма</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${state.rows.map(row => renderRowHtml(row)).join("")}
+        </tbody>
+      </table></div>`;
 
-                ${showExtras ? `
-                  <tr class="add-extra-trigger-row">
-                    <td colspan="7">
-                      <div class="extra-inline-toolbar">
-                        <div class="inline-extra-title">Добавить опцию</div>
-                        <div class="extra-type-buttons">
-                          ${EXTRA_TYPES.map(item => `
-                            <button type="button"
-                                    class="extra-type-btn ${item.key === selectedExtraType ? "active" : ""}"
-                                    data-extra-type="${item.key}">
-                              ${item.label}
-                            </button>
-                          `).join("")}
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
+      if (state.notes && state.notes.length) {
+        html += `<div class="note-box">${state.notes.map(n => `• ${escapeHtml(n)}`).join("<br>")}</div>`;
+      }
 
-                  ${selectedExtraType ? `
-                    <tr class="extra-inline-row">
-                      <td colspan="7">
-                        <div class="extra-inline-box">
-                          ${renderInlineExtraOptions(id, type, selectedExtraType)}
-                          <div style="margin-top:12px;">
-                            <button type="button" class="btn-secondary inline-add-extra-btn">Добавить в расчёт</button>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  ` : ""}
-                ` : ""}
-              </tbody>
-            </table>
-          </div>
-
-          ${notes.length ? `<div class="note-box">${notes.map(n => `• ${escapeHtml(n)}`).join("<br>")}</div>` : ""}
-        </div>
-      `;
-
-      bindResultArea(block);
+      bodyEl.innerHTML = html;
+      bindResultEvents(bodyEl, card, id);
     }
 
     function renderRowHtml(row) {
-      const billedFormatCell = row.billedFormatEditable
-        ? formatSelectHtml(row)
-        : escapeHtml(row.billedFormat || "—");
+      const sum = row.qty * row.unitPrice;
 
-      const qtyCell = row.qtyEditable
-        ? `<input type="number" min="1" step="1" class="row-qty-input row-qty-editor" data-row-id="${row.id}" value="${String(row.qty)}">`
-        : escapeHtml(String(row.qty));
-
-      const customPagesText = row.customPageNumbers && row.customPageNumbers.length
-        ? compressPageRanges(row.customPageNumbers)
-        : "—";
-
-      const lockIcon = row.priceLocked ? "🔒" : "🔓";
-      const priceCell = row.unitPriceEditable ? `
+      const priceCell = `
         <div class="price-edit-box">
-          <input type="number" min="0" step="0.01" class="row-price-input row-price-editor" data-row-id="${row.id}" value="${formatInputNumber(row.unitPrice)}">
-          <button type="button" class="icon-btn lock-price-btn ${row.priceLocked ? "locked" : ""}" data-row-id="${row.id}" title="Изменять только эту цену">${lockIcon}</button>
-          ${row.isExtraRow ? `<button type="button" class="icon-btn remove-extra remove-extra-btn" data-row-id="${row.id}" title="Удалить доп. опцию">✕</button>` : ""}
-        </div>
-      ` : money(row.unitPrice);
+          <input type="number" class="row-price-input row-price-editor" data-row-id="${row.id}"
+                 value="${row.unitPrice.toFixed(2)}" min="0" step="0.01" style="width:90px;">
+          <button type="button" class="icon-btn lock-btn ${row.priceLocked ? "locked" : ""}" data-row-id="${row.id}"
+                  title="${row.priceLocked ? "Цена зафиксирована" : "Зафиксировать цену"}">
+            ${row.priceLocked ? "🔒" : "🔓"}
+          </button>
+        </div>`;
 
-      const tariffCellExtra = row.isSeparatorRow && row.separatorDownloadable
-        ? `<div><button type="button" class="download-btn download-row-btn" data-row-id="${row.id}">Скачать PDF</button></div>`
+      const removeBtn = row.isExtra
+        ? `<button type="button" class="icon-btn remove-extra" data-row-id="${row.id}" title="Удалить">✕</button>`
+        : "";
+
+      const downloadBtn = row.isSeparator
+        ? `<button type="button" class="btn-secondary btn-xs dl-row-btn" data-row-id="${row.id}">⬇ PDF</button>`
         : "";
 
       return `
         <tr data-row-id="${row.id}">
-          <td class="text-left">
-            <div>${escapeHtml(row.tariffCode || "—")}</div>
-            <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
-            ${tariffCellExtra}
+          <td>
+            <div class="cell-code">${escapeHtml(row.tariffCode || "—")}</div>
+            <div class="cell-label">${escapeHtml(row.tariffLabel || "—")}</div>
+            ${downloadBtn}
           </td>
-          <td class="text-left">${escapeHtml(row.actualFormatLabel || "—")}</td>
-          <td>${escapeHtml(customPagesText)}</td>
-          <td class="format-cell">${billedFormatCell}</td>
-          <td>${qtyCell}</td>
+          <td>${escapeHtml(row.fileName || row.billedFormat || "—")}</td>
+          <td class="cell-size">${escapeHtml(row.actualLabel || "—")}</td>
+          <td class="center">
+            <input type="number" class="row-qty-input row-qty-editor" data-row-id="${row.id}"
+                   value="${row.qty}" min="1" step="1">
+          </td>
           <td>${priceCell}</td>
-          <td class="sum-cell row-sum-cell">${money(row.qty * row.unitPrice)}</td>
-        </tr>
-      `;
+          <td class="right sum-cell" data-row-id="${row.id}">${money(sum)}</td>
+          <td>${removeBtn}</td>
+        </tr>`;
     }
 
-    function renderInlineExtraOptions(id, type, selectedExtraType) {
-      if (selectedExtraType === "binding") {
-        return `
-          <div class="grid-3">
-            <div class="field">
-              <label>Вид брошюровки</label>
-              <select id="inline-binding-type-${id}-${type}">
-                <option value="staples2">2 скобы</option>
-                <option value="plastic">Пластиковая пружина</option>
-                <option value="metal">Металлическая пружина</option>
-                <option value="hardcover">Твёрдый переплёт A4</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Количество</label>
-              <input type="number" id="inline-binding-qty-${id}-${type}" min="1" step="1" value="1" />
-            </div>
-            <div></div>
-          </div>
-        `;
-      }
-
-      if (selectedExtraType === "multifora") {
-        return `
-          <div class="grid-3">
-            <div class="field">
-              <label>Формат мультифор</label>
-              <select id="inline-multifora-format-${id}-${type}">
-                <option value="A5">A5</option>
-                <option value="A4">A4</option>
-                <option value="A3">A3</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Количество</label>
-              <input type="number" id="inline-multifora-qty-${id}-${type}" min="1" step="1" value="1" />
-            </div>
-            <div></div>
-          </div>
-        `;
-      }
-
-      if (selectedExtraType === "lamination") {
-        return `
-          <div class="grid-3">
-            <div class="field">
-              <label>Формат ламинирования</label>
-              <select id="inline-lamination-format-${id}-${type}">
-                <option value="A6">A6</option>
-                <option value="A5">A5</option>
-                <option value="A4">A4</option>
-                <option value="A3">A3</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Количество</label>
-              <input type="number" id="inline-lamination-qty-${id}-${type}" min="1" step="1" value="1" />
-            </div>
-            <div></div>
-          </div>
-        `;
-      }
-
-      if (selectedExtraType === "folder") {
-        return `
-          <div class="grid-3">
-            <div class="field">
-              <label>Вид папки</label>
-              <select id="inline-folder-type-${id}-${type}">
-                <option value="folder20">Папка на 20 мультифор</option>
-                <option value="folder30">Папка на 30 мультифор</option>
-                <option value="folder40">Папка на 40 мультифор</option>
-                <option value="folder60">Папка на 60 мультифор</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Количество</label>
-              <input type="number" id="inline-folder-qty-${id}-${type}" min="1" step="1" value="1" />
-            </div>
-            <div></div>
-          </div>
-        `;
-      }
-
-      return "";
-    }
-
-    function bindResultArea(block) {
-      const id = Number(block.dataset.blockId);
-      const type = getCurrentTypeForBlock(block);
-      ensureTypeBuckets(id, type);
-
+    function bindResultEvents(bodyEl, card, id) {
       const state = serviceStates[id];
-      const resultBox = block.querySelector(".service-result");
-      const toggleBtn = resultBox.querySelector(".result-toggle");
-      const inlineAddBtn = resultBox.querySelector(".inline-add-extra-btn");
 
-      toggleBtn.addEventListener("click", () => {
-        state.resultCollapsedByType[type] = !state.resultCollapsedByType[type];
-        renderServiceResult(block);
-      });
+      // Download all
+      bodyEl.querySelector(".download-all-btn")?.addEventListener("click", () => downloadAll(id));
 
-      resultBox.querySelectorAll(".extra-type-btn").forEach(btn => {
+      // Download row
+      bodyEl.querySelectorAll(".dl-row-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-          state.selectedExtraTypeByType[type] =
-            state.selectedExtraTypeByType[type] === btn.dataset.extraType ? "" : btn.dataset.extraType;
-          renderServiceResult(block);
+          const row = calculatedRows.find(r => r.id === btn.dataset.rowId);
+          if (row) downloadRowPdf(row);
         });
       });
 
-      if (inlineAddBtn) {
-        inlineAddBtn.addEventListener("click", () => {
-          const extraRow = buildInlineExtraRow(id, type);
-          if (!extraRow) return;
-
-          const rows = state.resultsByType[type] || [];
-          rows.push(extraRow);
-          state.resultsByType[type] = rows;
-          state.selectedExtraTypeByType[type] = "";
-
-          rebuildCalculatedRows();
-          renderServiceResult(block);
-          recalcOverallTotal();
+      // Remove extra
+      bodyEl.querySelectorAll(".remove-extra").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.rows = state.rows.filter(r => r.id !== btn.dataset.rowId);
+          rebuildRows();
+          renderResult(card, id);
+          updateTotal();
         });
-      }
+      });
 
-      bindRowEditors(block);
-    }
-
-    function buildInlineExtraRow(id, type) {
-      const serviceName = document.getElementById(`service-name-${id}`)?.value?.trim() || getDefaultServiceName(type, id);
-      const extraType = serviceStates[id].selectedExtraTypeByType[type];
-      if (!extraType) return null;
-
-      let tariff = null;
-      let actualFormatLabel = "Постобработка";
-      let billedFormat = "—";
-      let qty = 1;
-
-      if (extraType === "binding") {
-        const bindingType = document.getElementById(`inline-binding-type-${id}-${type}`).value;
-        qty = Math.max(1, parseInt(document.getElementById(`inline-binding-qty-${id}-${type}`).value || "1", 10));
-        tariff = PRICES.binding[bindingType];
-        if (bindingType === "hardcover") {
-          actualFormatLabel = "A4 (210×297 мм)";
-          billedFormat = "A4";
-        }
-      }
-
-      if (extraType === "multifora") {
-        const format = document.getElementById(`inline-multifora-format-${id}-${type}`).value;
-        qty = Math.max(1, parseInt(document.getElementById(`inline-multifora-qty-${id}-${type}`).value || "1", 10));
-        tariff = PRICES.multifora[format];
-        actualFormatLabel = getFormatDisplayLabel(format);
-        billedFormat = format;
-      }
-
-      if (extraType === "lamination") {
-        const format = document.getElementById(`inline-lamination-format-${id}-${type}`).value;
-        qty = Math.max(1, parseInt(document.getElementById(`inline-lamination-qty-${id}-${type}`).value || "1", 10));
-        tariff = PRICES.lamination[format];
-        actualFormatLabel = getFormatDisplayLabel(format);
-        billedFormat = format;
-      }
-
-      if (extraType === "folder") {
-        const folderType = document.getElementById(`inline-folder-type-${id}-${type}`).value;
-        qty = Math.max(1, parseInt(document.getElementById(`inline-folder-qty-${id}-${type}`).value || "1", 10));
-        tariff = PRICES.folders[folderType];
-        actualFormatLabel = "—";
-        billedFormat = "—";
-      }
-
-      if (!tariff) return null;
-
-      return {
-        id: makeRowId(),
-        serviceCardId: id,
-        serviceType: type,
-        serviceName,
-        actualFormatLabel,
-        customPageNumbers: [],
-        billedFormat,
-        qty,
-        unitPrice: tariff.price,
-        tariffCode: tariff.code,
-        tariffLabel: tariff.label,
-        priceSyncKey: `EXTRA:${tariff.code}`,
-        unitPriceEditable: true,
-        qtyEditable: true,
-        billedFormatEditable: false,
-        editableFormats: [],
-        colorMode: null,
-        isExtraRow: true,
-        isSeparatorRow: false,
-        priceLocked: false,
-        priceWasManuallyChanged: false
-      };
-    }
-
-    function bindRowEditors(block) {
-      block.querySelectorAll(".row-price-editor").forEach(input => {
-        input.addEventListener("input", (e) => {
-          const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
+      // Price edit
+      bodyEl.querySelectorAll(".row-price-editor").forEach(inp => {
+        inp.addEventListener("input", () => {
+          const row = calculatedRows.find(r => r.id === inp.dataset.rowId);
           if (!row) return;
-
-          row.unitPrice = Math.max(0, parseFlexibleNumber(e.target.value));
-          row.priceWasManuallyChanged = true;
-
-          if (!row.priceLocked && row.priceSyncKey && !String(row.priceSyncKey).startsWith("MANUAL:")) {
-            calculatedRows
-              .filter(r => r.id !== row.id && r.priceSyncKey === row.priceSyncKey && !r.priceLocked)
-              .forEach(r => {
-                r.unitPrice = row.unitPrice;
-                r.priceWasManuallyChanged = true;
-                updateRowDom(r.id, { updatePriceInput: true });
-              });
-          }
-
-          updateRowDom(row.id, { updatePriceInput: false });
-          syncStatesFromCalculatedRows();
-          recalcOverallTotal();
+          row.unitPrice = Math.max(0, parseFloat(inp.value.replace(",", ".")) || 0);
+          updateRowSum(inp.dataset.rowId);
+          updateSubtotal(id);
+          updateTotal();
         });
       });
 
-      block.querySelectorAll(".lock-price-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          const row = calculatedRows.find(r => r.id === e.currentTarget.dataset.rowId);
+      // Lock
+      bodyEl.querySelectorAll(".lock-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const row = calculatedRows.find(r => r.id === btn.dataset.rowId);
           if (!row) return;
           row.priceLocked = !row.priceLocked;
-          syncStatesFromCalculatedRows();
-          renderServiceResult(block);
-          recalcOverallTotal();
+          syncStateFromRows(id);
+          renderResult(card, id);
         });
       });
 
-      block.querySelectorAll(".remove-extra-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          const rowId = e.currentTarget.dataset.rowId;
-          calculatedRows = calculatedRows.filter(r => r.id !== rowId);
-          syncStatesFromCalculatedRows();
-          renderServiceResult(block);
-          recalcOverallTotal();
-        });
-      });
-
-      block.querySelectorAll(".row-qty-editor").forEach(input => {
-        input.addEventListener("input", (e) => {
-          const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
+      // Qty edit
+      bodyEl.querySelectorAll(".row-qty-editor").forEach(inp => {
+        inp.addEventListener("input", () => {
+          const row = calculatedRows.find(r => r.id === inp.dataset.rowId);
           if (!row) return;
+          row.qty = Math.max(1, parseInt(inp.value) || 1);
 
-          row.qty = Math.max(1, parsePositiveInt(e.target.value));
+          // Recalc price based on qty if not locked
+          if (!row.priceLocked && row.isSeparator) {
+            const newPrice = getSepPrice(row.billedFormat, row.colorMode, row.qty);
+            row.unitPrice = newPrice.price;
+            row.tariffCode = newPrice.code;
+            row.tariffLabel = newPrice.label;
 
-          if (!row.priceWasManuallyChanged || !row.priceLocked) {
-            const newInfo = getPriceInfoByFormat(row.billedFormat, row.colorMode || "bw", row.qty);
-            row.tariffCode = newInfo.code;
-            row.tariffLabel = newInfo.label;
-            row.priceSyncKey = newInfo.syncKey;
-            if (!row.priceWasManuallyChanged || !row.priceLocked) row.unitPrice = newInfo.price;
+            // Update price input display
+            const priceInput = inp.closest("tbody")?.querySelector(`.row-price-editor[data-row-id="${row.id}"]`);
+            if (priceInput) priceInput.value = row.unitPrice.toFixed(2);
           }
 
-          updateRowDom(row.id, { updateQtyInput: false, updatePriceInput: true });
-          syncStatesFromCalculatedRows();
-          recalcOverallTotal();
-        });
-      });
-
-      block.querySelectorAll(".row-format-select").forEach(select => {
-        select.addEventListener("change", (e) => {
-          const row = calculatedRows.find(r => r.id === e.target.dataset.rowId);
-          if (!row) return;
-
-          row.billedFormat = e.target.value;
-          row.editableFormats = buildEditableOptionsForRow(row.billedFormat);
-
-          const newInfo = getPriceInfoByFormat(row.billedFormat, row.colorMode || "bw", row.qty);
-          row.tariffCode = newInfo.code;
-          row.tariffLabel = newInfo.label;
-          row.priceSyncKey = newInfo.syncKey;
-
-          if (!row.priceLocked || !row.priceWasManuallyChanged) {
-            row.unitPrice = newInfo.price;
-          }
-
-          updateRowDom(row.id, { updatePriceInput: true });
-          syncStatesFromCalculatedRows();
-          recalcOverallTotal();
+          updateRowSum(row.id);
+          updateSubtotal(id);
+          syncStateFromRows(id);
+          updateTotal();
         });
       });
     }
 
-    async function downloadSeparatorRowPdf(row) {
-      try {
-        const state = serviceStates[row.serviceCardId];
-        const bytes = state?.sourceBytesByType?.separator;
-        const originalFileName = state?.sourceFileNameByType?.separator || "separated";
-
-        if (!bytes || !row.downloadPageNumbers?.length) {
-          setStatus("Нет данных для скачивания.", true);
-          return;
-        }
-
-        const outputBytes = await buildPdfForPageNumbers(bytes, row.downloadPageNumbers);
-        const fileName = buildSeparatorFileName(originalFileName, row.colorMode, row.billedFormat, row.downloadPageNumbers);
-
-        triggerPdfDownload(outputBytes, fileName);
-        setStatus("Файл скачан.");
-      } catch (error) {
-        console.error(error);
-        setStatus("Не удалось скачать PDF.", true);
-      }
-    }
-
-    async function downloadAllSeparatorPdfs(serviceCardId) {
-      try {
-        const rows = calculatedRows.filter(
-          r => r.serviceCardId === serviceCardId && r.isSeparatorRow && r.downloadPageNumbers?.length
-        );
-
-        if (!rows.length) {
-          setStatus("Нет файлов для скачивания.", true);
-          return;
-        }
-
-        const state = serviceStates[serviceCardId];
-        const sourceBytes = state?.sourceBytesByType?.separator;
-        const originalFileName = state?.sourceFileNameByType?.separator || "separated";
-
-        if (!sourceBytes) {
-          setStatus("Нет исходного PDF для архива.", true);
-          return;
-        }
-
-        setStatus("Собирается ZIP-архив...");
-
-        const zip = new JSZip();
-        const cleanBaseName = String(originalFileName).replace(/\.pdf$/i, "");
-
-        for (const row of rows) {
-          const outputBytes = await buildPdfForPageNumbers(sourceBytes, row.downloadPageNumbers);
-          const entryName = buildSeparatorZipEntryName(cleanBaseName, row);
-          zip.file(entryName, outputBytes);
-        }
-
-        const zipBlob = await zip.generateAsync({ type: "blob" });
-
-        triggerBlobDownload(
-          zipBlob,
-          `${sanitizeFileName(cleanBaseName)}__разделитель.zip`
-        );
-
-        setStatus("ZIP-архив скачан.");
-      } catch (error) {
-        console.error(error);
-        setStatus("Не удалось скачать ZIP-архив.", true);
-      }
-    }
-
-    async function buildPdfForPageNumbers(sourceBytes, pageNumbers) {
-      const sourcePdf = await PDFDocument.load(sourceBytes.slice());
-      const newPdf = await PDFDocument.create();
-      const pageIndexes = pageNumbers.map(n => n - 1);
-      const copiedPages = await newPdf.copyPages(sourcePdf, pageIndexes);
-      copiedPages.forEach(p => newPdf.addPage(p));
-      return await newPdf.save();
-    }
-
-    function buildSeparatorZipEntryName(cleanBaseName, row) {
-      const colorLabel = row.colorMode === "color" ? "цвет" : "чб";
-      const formatLabel = sanitizeFileName(String(row.billedFormat || "формат"));
-      const pagesLabel = compressPageRanges(row.downloadPageNumbers)
-        .replaceAll(", ", "_")
-        .replaceAll("-", "_");
-
-      return `${formatLabel}__${colorLabel}__${sanitizeFileName(cleanBaseName)}__стр_${pagesLabel}.pdf`;
-    }
-
-    function buildSeparatorFileName(originalFileName, colorMode, billedFormat, pageNumbers) {
-      const cleanName = String(originalFileName || "separated").replace(/\.pdf$/i, "");
-      const pages = compressPageRanges(pageNumbers).replaceAll(", ", "_").replaceAll("-", "_");
-      const colorLabel = colorMode === "color" ? "цвет" : "чб";
-      const formatLabel = sanitizeFileName(String(billedFormat || "формат"));
-
-      return `${formatLabel}__${sanitizeFileName(colorLabel)}__${sanitizeFileName(cleanName)}__стр_${pages}.pdf`;
-    }
-
-    function triggerPdfDownload(bytes, fileName) {
-      const blob = new Blob([bytes], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      setTimeout(() => URL.revokeObjectURL(url), 3000);
-    }
-
-    function triggerBlobDownload(blob, fileName) {
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      setTimeout(() => URL.revokeObjectURL(url), 3000);
-    }
-
-    function updateRowDom(rowId, options = {}) {
+    function updateRowSum(rowId) {
       const row = calculatedRows.find(r => r.id === rowId);
-      const tr = document.querySelector(`tr[data-row-id="${rowId}"]`);
-      if (!row || !tr) return;
-
-      const tds = tr.children;
-      if (!tds.length) return;
-
-      tds[0].innerHTML = `
-        <div>${escapeHtml(row.tariffCode || "—")}</div>
-        <div class="small">${escapeHtml(row.tariffLabel || "—")}</div>
-        ${row.isSeparatorRow && row.separatorDownloadable ? `<div><button type="button" class="download-btn download-row-btn" data-row-id="${row.id}">Скачать PDF</button></div>` : ""}
-      `;
-
-      tds[1].textContent = row.actualFormatLabel || "—";
-      tds[2].textContent = row.customPageNumbers?.length ? compressPageRanges(row.customPageNumbers) : "—";
-
-      const formatSelect = tr.querySelector(".row-format-select");
-      if (formatSelect && formatSelect.value !== row.billedFormat) formatSelect.value = row.billedFormat;
-
-      const qtyInput = tr.querySelector(".row-qty-editor");
-      if (qtyInput && options.updateQtyInput !== false) qtyInput.value = row.qty;
-
-      const priceInput = tr.querySelector(".row-price-editor");
-      if (priceInput && options.updatePriceInput !== false) priceInput.value = formatInputNumber(row.unitPrice);
-
-      const lockBtn = tr.querySelector(".lock-price-btn");
-      if (lockBtn) {
-        lockBtn.textContent = row.priceLocked ? "🔒" : "🔓";
-        lockBtn.classList.toggle("locked", !!row.priceLocked);
-      }
-
-      const sumCell = tr.querySelector(".row-sum-cell");
-      if (sumCell) sumCell.textContent = money(row.qty * row.unitPrice);
+      const cell = document.querySelector(`.sum-cell[data-row-id="${rowId}"]`);
+      if (row && cell) cell.textContent = money(row.qty * row.unitPrice);
     }
 
-    function rebuildCalculatedRows() {
+    function updateSubtotal(id) {
+      const state = serviceStates[id];
+      if (!state) return;
+      const sub = state.rows.reduce((s, r) => s + r.qty * r.unitPrice, 0);
+      const el = document.getElementById(`result-subtotal-${id}`);
+      if (el) el.textContent = money(sub);
+    }
+
+    function syncStateFromRows(id) {
+      const state = serviceStates[id];
+      if (!state) return;
+      state.rows = state.rows.map(r => calculatedRows.find(cr => cr.id === r.id) || r);
+    }
+
+    // ── DOWNLOAD ───────────────────────────────────────────────────
+    async function downloadRowPdf(row) {
+      if (!row.fileBytes || !row.pages?.length) {
+        setStatus("Нет данных для скачивания.", true);
+        return;
+      }
+
+      try {
+        const bytes = await buildPdf(row.fileBytes, row.pages);
+        const name = `${sanitize(row.billedFormat)}_${sanitize(row.colorMode || "")}_стр${compressRanges(row.pages)}.pdf`;
+        downloadBytes(bytes, name, "application/pdf");
+        setStatus("Файл скачан.");
+      } catch (e) {
+        setStatus("Ошибка при создании PDF.", true);
+      }
+    }
+
+    async function downloadAll(id) {
+      const state = serviceStates[id];
+      if (!state) return;
+
+      const sepRows = state.rows.filter(r => r.isSeparator && r.fileBytes && r.pages?.length);
+      if (!sepRows.length) {
+        setStatus("Нет файлов для скачивания.", true);
+        return;
+      }
+
+      setStatus("Собирается архив...");
+
+      try {
+        const zip = new JSZip();
+
+        for (const row of sepRows) {
+          const bytes = await buildPdf(row.fileBytes, row.pages);
+          const fname = `${sanitize(row.fileName || "file")}_${sanitize(row.billedFormat)}_${sanitize(row.colorMode || "bw")}_стр${compressRanges(row.pages)}.pdf`;
+          zip.file(fname, bytes);
+        }
+
+        const blob = await zip.generateAsync({ type: "blob" });
+        downloadBytes(blob, `разделитель_${id}.zip`, "application/zip");
+        setStatus("Архив скачан.");
+      } catch (e) {
+        console.error(e);
+        setStatus("Ошибка при создании архива.", true);
+      }
+    }
+
+    async function buildPdf(sourceBytes, pages) {
+      const src = await PDFDocument.load(sourceBytes.slice());
+      const out = await PDFDocument.create();
+      const copied = await out.copyPages(src, pages.map(p => p - 1));
+      copied.forEach(p => out.addPage(p));
+      return out.save();
+    }
+
+    function downloadBytes(data, name, mime) {
+      const blob = data instanceof Blob ? data : new Blob([data], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    }
+
+    // ── ROWS / TOTAL ───────────────────────────────────────────────
+    function rebuildRows() {
       calculatedRows = [];
       Object.values(serviceStates).forEach(state => {
-        Object.values(state.resultsByType).forEach(rows => calculatedRows.push(...rows));
+        if (state.rows) calculatedRows.push(...state.rows);
       });
     }
 
-    function syncStatesFromCalculatedRows() {
-      Object.entries(serviceStates).forEach(([id, state]) => {
-        Object.keys(state.resultsByType).forEach(type => {
-          const knownIds = new Set((state.resultsByType[type] || []).map(r => r.id));
-          state.resultsByType[type] = calculatedRows.filter(r => knownIds.has(r.id));
-        });
-      });
-    }
-
-    function restoreServiceResult(block) {
-      const id = Number(block.dataset.blockId);
-      const type = getCurrentTypeForBlock(block);
-      ensureTypeBuckets(id, type);
-      renderServiceResult(block);
-    }
-
-    function recalcOverallTotal() {
-      const total = calculatedRows.reduce((sum, row) => sum + row.qty * row.unitPrice, 0);
-      overallTotalBox.style.display = calculatedRows.length ? "block" : "none";
-      overallTotalBox.textContent = calculatedRows.length ? `Итого: ${money(total)}` : "";
-    }
-
-    function formatSelectHtml(row) {
-      const options = row.editableFormats.map(fmt => {
-        const selected = fmt === row.billedFormat ? " selected" : "";
-        return `<option value="${fmt}"${selected}>${escapeHtml(getFormatDisplayLabel(fmt))}</option>`;
-      }).join("");
-
-      return `<select class="row-select row-format-select" data-row-id="${row.id}">${options}</select>`;
-    }
-
-    function buildEditableOptionsForRow(currentFormat) {
-      const options = new Set(ALL_DOC_OPTIONS);
-      if (currentFormat) options.add(currentFormat);
-      return [...options].sort(compareFormatKeys);
-    }
-
-    function compareFormatKeys(a, b) {
-      const order = ["A6", "A5", "A4", "A3", "A2", "A1", "A0"];
-      const ia = order.indexOf(a);
-      const ib = order.indexOf(b);
-
-      const aWide = parseWideFormatKey(a);
-      const bWide = parseWideFormatKey(b);
-
-      if (ia !== -1 && ib !== -1) return ia - ib;
-      if (ia !== -1) return -1;
-      if (ib !== -1) return 1;
-
-      if (aWide && bWide) {
-        const baseOrder = { A4: 1, A3: 2, A2: 3 };
-        if (baseOrder[aWide.base] !== baseOrder[bWide.base]) return baseOrder[aWide.base] - baseOrder[bWide.base];
-        return aWide.multiplier - bWide.multiplier;
+    function updateTotal() {
+      const total = calculatedRows.reduce((s, r) => s + r.qty * r.unitPrice, 0);
+      if (calculatedRows.length) {
+        totalBlock.classList.add("visible");
+        totalAmount.textContent = money(total);
+      } else {
+        totalBlock.classList.remove("visible");
       }
-
-      return String(a).localeCompare(String(b), "ru");
     }
 
-    function getFormatDisplayLabel(key) {
-      if (FORMATS[key]) return `${key} (${FORMATS[key].w}×${FORMATS[key].h} мм)`;
+    // ── PROGRESS ───────────────────────────────────────────────────
+    function setProgress(id, pct) {
+      const wrap = document.getElementById(`progress-wrap-${id}`);
+      const bar = document.getElementById(`progress-bar-${id}`);
+      if (!wrap || !bar) return;
 
-      const parsed = parseWideFormatKey(key);
-      if (parsed) {
-        const size = getWideFormatSize(parsed.base, parsed.multiplier);
-        return `${parsed.base}×${parsed.multiplier} (${size.w}×${size.h} мм)`;
+      if (pct > 0 && pct < 100) {
+        wrap.classList.add("visible");
+        bar.style.width = pct + "%";
+      } else {
+        wrap.classList.remove("visible");
+        bar.style.width = "0%";
       }
-
-      return key;
     }
 
-    function getWideFormatSize(base, multiplier) {
-      return {
-        w: FORMATS[base].w * multiplier,
-        h: FORMATS[base].h
-      };
-    }
-
-    function parseWideFormatKey(key) {
-      const match = /^([A][234])x(\d+)$/i.exec(String(key));
-      if (!match) return null;
-      return {
-        base: match[1].toUpperCase(),
-        multiplier: Number(match[2])
-      };
-    }
-
-    function isWideFormatKey(key) {
-      return !!parseWideFormatKey(key);
+    // ── STATUS ─────────────────────────────────────────────────────
+    function setStatus(text, isError = false) {
+      if (!text) {
+        statusEl.style.display = "none";
+        return;
+      }
+      statusEl.style.display = "flex";
+      statusEl.textContent = text;
+      statusEl.className = "status-pill" + (isError ? " error" : "");
     }
 
     function clearAll() {
-      servicesContainer.innerHTML = "";
+      container.innerHTML = "";
       blockCounter = 1;
       calculatedRows = [];
-      Object.keys(serviceStates).forEach(key => delete serviceStates[key]);
-      overallTotalBox.style.display = "none";
-      overallTotalBox.textContent = "";
-      addServiceBlock("separator");
+      Object.keys(serviceStates).forEach(k => delete serviceStates[k]);
+      totalBlock.classList.remove("visible");
       setStatus("");
+      addBlock("separator");
+      addBlock("folding");
     }
 
-    function setStatus(text, isError = false) {
-      statusBox.textContent = text || "";
-      statusBox.style.color = isError ? "#b00020" : "#444";
-    }
-
-    function money(value) {
-      return `${Number(value).toFixed(2).replace(".", ",")} ₽`;
-    }
-
-    function formatInputNumber(value) {
-      if (!isFiniteNumber(value)) return "0.00";
-      return Number(value).toFixed(2);
-    }
-
-    function parseFlexibleNumber(value) {
-      const num = parseFloat(String(value).replace(",", "."));
-      return Number.isFinite(num) ? num : 0;
-    }
-
-    function parsePositiveInt(value) {
-      const num = parseInt(String(value), 10);
-      return Number.isFinite(num) && num > 0 ? num : 1;
-    }
-
-    function isFiniteNumber(value) {
-      return typeof value === "number" && Number.isFinite(value);
-    }
-
-    function ptToMm(pt) {
-      return pt * 25.4 / 72;
-    }
-
-    function round1(num) {
-      return Math.round(num * 10) / 10;
-    }
-
-    function escapeHtml(text) {
-      return String(text)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function sanitizeFileName(value) {
-      return String(value).replace(/[\\/:*?"<>|]+/g, "_");
-    }
-
-    function detectFormat(widthMm, heightMm) {
-      for (const [name, size] of Object.entries(FORMATS)) {
-        const normalMatch =
-          Math.abs(widthMm - size.w) <= TOLERANCE_MM &&
-          Math.abs(heightMm - size.h) <= TOLERANCE_MM;
-
-        const rotatedMatch =
-          Math.abs(widthMm - size.h) <= TOLERANCE_MM &&
-          Math.abs(heightMm - size.w) <= TOLERANCE_MM;
-
-        if (normalMatch || rotatedMatch) return name;
-      }
-      return "CUSTOM";
-    }
-
-    function distanceToFormat(widthMm, heightMm, size) {
-      const d1 = Math.abs(widthMm - size.w) + Math.abs(heightMm - size.h);
-      const d2 = Math.abs(widthMm - size.h) + Math.abs(heightMm - size.w);
-      return Math.min(d1, d2);
-    }
-
-    function findNearestFormat(widthMm, heightMm) {
-      let best = "A4";
-      let bestDistance = Infinity;
-
-      Object.entries(FORMATS).forEach(([name, size]) => {
-        const dist = distanceToFormat(widthMm, heightMm, size);
-        if (dist < bestDistance) {
-          bestDistance = dist;
-          best = name;
-        }
-      });
-
-      return best;
-    }
-
-    function findSmallestFittingFormat(widthMm, heightMm) {
-      const shortSide = Math.min(widthMm, heightMm);
-      const longSide = Math.max(widthMm, heightMm);
-
-      const orderedFormats = ["A6", "A5", "A4", "A3", "A2", "A1", "A0"];
-
-      for (const name of orderedFormats) {
-        const size = FORMATS[name];
-        const formatShort = Math.min(size.w, size.h);
-        const formatLong = Math.max(size.w, size.h);
-
-        if (shortSide <= formatShort + TOLERANCE_MM && longSide <= formatLong + TOLERANCE_MM) {
-          return name;
-        }
-      }
-
-      return null;
-    }
-
-    function buildActualFormatLabel(widthMm, heightMm, exactFormat, billedFormat) {
-      const w = round1(widthMm);
-      const h = round1(heightMm);
-
-      if (exactFormat !== "CUSTOM") {
-        return `${exactFormat} (${FORMATS[exactFormat].w}×${FORMATS[exactFormat].h} мм)`;
-      }
-
-      return `≈ ${getFormatDisplayLabel(billedFormat)}, файл: ${w}×${h} мм`;
-    }
-
-    function compressPageRanges(pages) {
-      const unique = [...new Set((pages || []).filter(n => Number.isFinite(n)).sort((a, b) => a - b))];
-      if (!unique.length) return "";
-
-      const ranges = [];
-      let start = unique[0];
-      let prev = unique[0];
-
-      for (let i = 1; i < unique.length; i++) {
-        const current = unique[i];
-        if (current === prev + 1) {
-          prev = current;
-          continue;
-        }
-        ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
-        start = current;
-        prev = current;
-      }
-
-      ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
-      return ranges.join(", ");
-    }
-
-    function uniqueStrings(arr) {
-      return [...new Set(arr.filter(Boolean))];
-    }
-
-    async function detectPageColorMode(page) {
-      const viewport = page.getViewport({ scale: 0.5 });
+    // ── PDF ANALYSIS ───────────────────────────────────────────────
+    async function detectColor(page) {
+      const vp = page.getViewport({ scale: 0.5 });
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      canvas.width = Math.max(1, Math.floor(vp.width));
+      canvas.height = Math.max(1, Math.floor(vp.height));
 
-      canvas.width = Math.max(1, Math.floor(viewport.width));
-      canvas.height = Math.max(1, Math.floor(viewport.height));
-
-      await page.render({ canvasContext: ctx, viewport }).promise;
+      await page.render({ canvasContext: ctx, viewport: vp }).promise;
       const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-      let coloredPixels = 0;
-
+      let colorPx = 0;
       for (let y = 0; y < height; y += SAMPLE_STEP) {
         for (let x = 0; x < width; x += SAMPLE_STEP) {
-          const idx = (y * width + x) * 4;
-          const r = data[idx];
-          const g = data[idx + 1];
-          const b = data[idx + 2];
-          const a = data[idx + 3];
-
+          const i = (y * width + x) * 4;
+          const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
           if (a < 10) continue;
-
-          if (
-            Math.abs(r - g) > COLOR_TOLERANCE ||
-            Math.abs(g - b) > COLOR_TOLERANCE ||
-            Math.abs(r - b) > COLOR_TOLERANCE
-          ) {
-            coloredPixels++;
-            if (coloredPixels >= 5) return "color";
+          if (Math.abs(r - g) > COLOR_TOLERANCE || Math.abs(g - b) > COLOR_TOLERANCE || Math.abs(r - b) > COLOR_TOLERANCE) {
+            if (++colorPx >= 5) return "color";
           }
         }
       }
@@ -2344,9 +1649,83 @@
       return "bw";
     }
 
-    function makeRowId() {
-      return "row_" + Math.random().toString(36).slice(2, 11);
+    function detectFormat(w, h) {
+      for (const [name, size] of Object.entries(FORMATS)) {
+        const n = Math.abs(w - size.w) <= TOLERANCE_MM && Math.abs(h - size.h) <= TOLERANCE_MM;
+        const r = Math.abs(w - size.h) <= TOLERANCE_MM && Math.abs(h - size.w) <= TOLERANCE_MM;
+        if (n || r) return name;
+      }
+      return "CUSTOM";
+    }
+
+    function findSmallestFitting(w, h) {
+      const short = Math.min(w, h), long = Math.max(w, h);
+      for (const name of ["A6","A5","A4","A3","A2","A1","A0"]) {
+        const s = FORMATS[name];
+        const fs = Math.min(s.w, s.h), fl = Math.max(s.w, s.h);
+        if (short <= fs + TOLERANCE_MM && long <= fl + TOLERANCE_MM) return name;
+      }
+      return null;
+    }
+
+    function findNearest(w, h) {
+      let best = "A4", bestDist = Infinity;
+      Object.entries(FORMATS).forEach(([name, size]) => {
+        const d = Math.min(
+          Math.abs(w - size.w) + Math.abs(h - size.h),
+          Math.abs(w - size.h) + Math.abs(h - size.w)
+        );
+        if (d < bestDist) { bestDist = d; best = name; }
+      });
+      return best;
+    }
+
+    // Exact size label — shows real mm from file without rounding to standard
+    function buildExactSizeLabel(wMm, hMm, detectedFmt) {
+      const w = Math.round(wMm * 10) / 10;
+      const h = Math.round(hMm * 10) / 10;
+      // Show exact dimensions
+      return `${w} × ${h} мм`;
+    }
+
+    function parseWideKey(key) {
+      const m = /^([A][234])x(\d+)$/i.exec(String(key));
+      return m ? { base: m[1].toUpperCase(), n: Number(m[2]) } : null;
+    }
+
+    // ── UTILS ──────────────────────────────────────────────────────
+    function ptToMm(pt) { return pt * 25.4 / 72; }
+
+    function money(v) {
+      return `${Number(v).toFixed(2).replace(".", ",")} ₽`;
+    }
+
+    function escapeHtml(t) {
+      return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    function sanitize(v) {
+      return String(v || "").replace(/[\\/:*?"<>|]+/g, "_");
+    }
+
+    function makeId() {
+      return "r_" + Math.random().toString(36).slice(2, 10);
+    }
+
+    function compressRanges(pages) {
+      if (!pages?.length) return "";
+      const sorted = [...new Set(pages)].sort((a, b) => a - b);
+      const ranges = [];
+      let start = sorted[0], prev = sorted[0];
+      for (let i = 1; i < sorted.length; i++) {
+        if (sorted[i] === prev + 1) { prev = sorted[i]; continue; }
+        ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+        start = prev = sorted[i];
+      }
+      ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+      return ranges.join(",");
     }
   </script>
+
 </body>
 </html>
