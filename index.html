@@ -741,12 +741,11 @@
 
       serviceStates[id] = {
         type,
-        files: [],         // for separator: array of {name, bytes}
+        files: type === "separator" ? [] : undefined,
+        foldLines: type === "folding" ? [] : undefined,
         rows: [],
         notes: [],
-        collapsed: false,
-        // for folding
-        selectedFolds: [], // array of {key, qty}
+        collapsed: false
       };
 
       const card = document.createElement("div");
@@ -820,53 +819,99 @@
       `;
     }
 
-    function renderFoldingBody(id) {
-      // Build fold options with price calculation info
-      const foldOptions = [
-        { key: "A3-A4", fromFmt: "A3", toFmt: "A4" },
-        { key: "A2-A4", fromFmt: "A2", toFmt: "A4" },
-        { key: "A1-A4", fromFmt: "A1", toFmt: "A4" },
-        { key: "A2-A3", fromFmt: "A2", toFmt: "A3" },
-        { key: "A1-A3", fromFmt: "A1", toFmt: "A3" },
-        { key: "custom-A4", fromFmt: "нестандарт", toFmt: "А4" }
-      ];
+    // Fold direction options
+    const FOLD_DIRECTIONS = [
+      { key: "A3-A4", label: "А3 → А4" },
+      { key: "A2-A4", label: "А2 → А4" },
+      { key: "A1-A4", label: "А1 → А4" },
+      { key: "A2-A3", label: "А2 → А3" },
+      { key: "A1-A3", label: "А1 → А3" },
+      { key: "custom-A4", label: "Нестандарт → А4" }
+    ];
 
+    // Formats that can be folded (source sheet formats)
+    const FOLD_SOURCE_FORMATS = ["A4","A3","A2","A1","A0",
+      "A4x3","A4x4","A4x5","A4x6","A4x7","A4x8",
+      "A3x3","A3x4","A3x5","A3x6","A3x7","A3x8",
+      "A2x3","A2x4","A2x5","A2x6"];
+
+    function renderFoldingBody(id) {
       return `
-        <div class="grid-2">
-          <div class="field col-span-full">
-            <label>PDF-файлы для определения форматов (необязательно)</label>
-            <div class="file-upload-area" id="fold-upload-area-${id}">
-              <input type="file" id="fold-files-${id}" accept="application/pdf" multiple>
-              <div class="file-upload-icon">📂</div>
-              <div class="file-upload-label">Нажмите или перетащите PDF-файлы</div>
-              <div class="file-upload-hint">Формат листов будет определён автоматически</div>
-            </div>
-            <div class="file-list" id="fold-file-list-${id}"></div>
+        <div id="fold-lines-${id}"></div>
+        <div style="margin-top:14px;">
+          <button type="button" class="btn-ghost btn-sm add-fold-line-btn" data-id="${id}">+ Добавить строку</button>
+        </div>
+      `;
+    }
+
+    function initFoldingLines(card, id) {
+      const state = serviceStates[id];
+      if (!state.foldLines) state.foldLines = [];
+      renderFoldLines(card, id);
+
+      card.querySelector(".add-fold-line-btn").addEventListener("click", () => {
+        state.foldLines.push({ direction: "A2-A4", format: "A2", qty: 1 });
+        renderFoldLines(card, id);
+      });
+    }
+
+    function renderFoldLines(card, id) {
+      const state = serviceStates[id];
+      const container = document.getElementById(`fold-lines-${id}`);
+      if (!container) return;
+
+      if (!state.foldLines.length) {
+        // Add one default line
+        state.foldLines.push({ direction: "A2-A4", format: "A2", qty: 1 });
+      }
+
+      container.innerHTML = state.foldLines.map((line, idx) => `
+        <div class="fold-line" data-idx="${idx}" style="display:grid;grid-template-columns:1fr 1fr 120px 36px;gap:10px;align-items:end;margin-bottom:10px;">
+          <div class="field">
+            ${idx === 0 ? '<label>Направление фальцовки</label>' : ''}
+            <select class="fold-direction-sel" data-idx="${idx}">
+              ${FOLD_DIRECTIONS.map(d => `<option value="${d.key}" ${d.key === line.direction ? "selected" : ""}>${escapeHtml(d.label)}</option>`).join("")}
+            </select>
           </div>
           <div class="field">
-            <label>Кол-во экземпляров</label>
-            <input type="number" id="fold-copies-${id}" min="1" step="1" value="1">
+            ${idx === 0 ? '<label>Формат листа</label>' : ''}
+            <select class="fold-format-sel" data-idx="${idx}">
+              ${FOLD_SOURCE_FORMATS.map(f => `<option value="${f}" ${f === line.format ? "selected" : ""}>${escapeHtml(formatLabel(f))}</option>`).join("")}
+            </select>
           </div>
-          <div></div>
-        </div>
-        <div style="margin-top:18px;">
-          <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:10px;">
-            Тип фальцовки — выберите один или несколько
-          </label>
-          <div class="fold-option-grid" id="fold-options-${id}">
-            ${foldOptions.map(opt => {
-              const tariff = FOLD_BASE_PRICES[opt.key];
-              return `
-                <div class="fold-option-card" data-key="${opt.key}">
-                  <div class="fold-option-title">${opt.fromFmt} → ${opt.toFmt}</div>
-                  <div class="fold-option-price">${tariff ? tariff.price + ' ₽/лист' : ''}</div>
-                </div>
-              `;
-            }).join("")}
+          <div class="field">
+            ${idx === 0 ? '<label>Количество</label>' : ''}
+            <input type="number" class="fold-qty-inp" data-idx="${idx}" min="1" step="1" value="${line.qty}">
+          </div>
+          <div style="${idx === 0 ? 'padding-top:22px' : ''}">
+            <button type="button" class="icon-btn remove-fold-line-btn" data-idx="${idx}" title="Удалить строку"
+              style="color:var(--danger);border-color:#f5c6c2;background:var(--danger-soft);">✕</button>
           </div>
         </div>
-        <div style="margin-top:18px;" id="fold-manual-section-${id}" class="fold-manual-section"></div>
-      `;
+      `).join("");
+
+      // Bind changes
+      container.querySelectorAll(".fold-direction-sel").forEach(sel => {
+        sel.addEventListener("change", () => {
+          state.foldLines[Number(sel.dataset.idx)].direction = sel.value;
+        });
+      });
+      container.querySelectorAll(".fold-format-sel").forEach(sel => {
+        sel.addEventListener("change", () => {
+          state.foldLines[Number(sel.dataset.idx)].format = sel.value;
+        });
+      });
+      container.querySelectorAll(".fold-qty-inp").forEach(inp => {
+        inp.addEventListener("input", () => {
+          state.foldLines[Number(inp.dataset.idx)].qty = Math.max(1, parseInt(inp.value) || 1);
+        });
+      });
+      container.querySelectorAll(".remove-fold-line-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.foldLines.splice(Number(btn.dataset.idx), 1);
+          renderFoldLines(card, id);
+        });
+      });
     }
 
     function bindCard(card, id, type) {
@@ -893,8 +938,7 @@
       if (type === "separator") {
         bindSeparatorFileInput(card, id);
       } else {
-        bindFoldingOptions(card, id);
-        bindFoldingFileInput(card, id);
+        initFoldingLines(card, id);
       }
     }
 
@@ -904,9 +948,9 @@
       const area = document.getElementById(`upload-area-${id}`);
 
       input.addEventListener("change", () => {
-        addFilesToState(id, "separator", input.files);
+        addFilesToState(id, input.files);
         input.value = "";
-        renderFileList(id, "separator");
+        renderFileList(id);
       });
 
       area.addEventListener("dragover", e => { e.preventDefault(); area.classList.add("dragover"); });
@@ -914,35 +958,14 @@
       area.addEventListener("drop", e => {
         e.preventDefault();
         area.classList.remove("dragover");
-        addFilesToState(id, "separator", e.dataTransfer.files);
-        renderFileList(id, "separator");
+        addFilesToState(id, e.dataTransfer.files);
+        renderFileList(id);
       });
     }
 
-    function bindFoldingFileInput(card, id) {
-      const input = document.getElementById(`fold-files-${id}`);
-      const area = document.getElementById(`fold-upload-area-${id}`);
-
-      input.addEventListener("change", () => {
-        addFilesToState(id, "folding", input.files);
-        input.value = "";
-        renderFileList(id, "folding");
-      });
-
-      area.addEventListener("dragover", e => { e.preventDefault(); area.classList.add("dragover"); });
-      area.addEventListener("dragleave", () => area.classList.remove("dragover"));
-      area.addEventListener("drop", e => {
-        e.preventDefault();
-        area.classList.remove("dragover");
-        addFilesToState(id, "folding", e.dataTransfer.files);
-        renderFileList(id, "folding");
-      });
-    }
-
-    function addFilesToState(id, type, fileList) {
+    function addFilesToState(id, fileList) {
       const state = serviceStates[id];
       if (!state) return;
-
       const files = [...fileList].filter(f => f.type === "application/pdf" || f.name.endsWith(".pdf"));
       files.forEach(f => {
         if (!state.files.find(sf => sf.name === f.name)) {
@@ -951,15 +974,12 @@
       });
     }
 
-    function renderFileList(id, type) {
+    function renderFileList(id) {
       const state = serviceStates[id];
-      const listEl = document.getElementById(type === "separator" ? `file-list-${id}` : `fold-file-list-${id}`);
+      const listEl = document.getElementById(`file-list-${id}`);
       if (!listEl || !state) return;
 
-      if (!state.files.length) {
-        listEl.innerHTML = "";
-        return;
-      }
+      if (!state.files.length) { listEl.innerHTML = ""; return; }
 
       listEl.innerHTML = state.files.map((f, idx) => `
         <div class="file-chip">
@@ -972,69 +992,12 @@
       listEl.querySelectorAll(".file-chip-remove").forEach(btn => {
         btn.addEventListener("click", () => {
           state.files.splice(Number(btn.dataset.idx), 1);
-          renderFileList(id, type);
+          renderFileList(id);
         });
       });
     }
 
-    // ── FOLDING OPTIONS ────────────────────────────────────────────
-    function bindFoldingOptions(card, id) {
-      const optionsEl = document.getElementById(`fold-options-${id}`);
-      const state = serviceStates[id];
-
-      optionsEl.querySelectorAll(".fold-option-card").forEach(optCard => {
-        optCard.addEventListener("click", () => {
-          const key = optCard.dataset.key;
-          optCard.classList.toggle("active");
-
-          const idx = state.selectedFolds.findIndex(f => f.key === key);
-          if (idx >= 0) {
-            state.selectedFolds.splice(idx, 1);
-          } else {
-            state.selectedFolds.push({ key, qty: 1 });
-          }
-
-          renderFoldManualSection(id);
-        });
-      });
-    }
-
-    function renderFoldManualSection(id) {
-      const state = serviceStates[id];
-      const section = document.getElementById(`fold-manual-section-${id}`);
-      if (!section) return;
-
-      if (!state.selectedFolds.length) {
-        section.innerHTML = "";
-        return;
-      }
-
-      section.innerHTML = `
-        <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:10px;">
-          Количество листов по каждому типу фальцовки
-        </label>
-        <div class="grid-2">
-          ${state.selectedFolds.map((f, idx) => {
-            const tariff = FOLD_BASE_PRICES[f.key];
-            return `
-              <div class="field">
-                <label>${tariff ? tariff.label : f.key}</label>
-                <input type="number" class="fold-qty-input" data-idx="${idx}" min="1" step="1" value="${f.qty}">
-              </div>
-            `;
-          }).join("")}
-        </div>
-      `;
-
-      section.querySelectorAll(".fold-qty-input").forEach(inp => {
-        inp.addEventListener("input", () => {
-          const idx = Number(inp.dataset.idx);
-          state.selectedFolds[idx].qty = Math.max(1, parseInt(inp.value) || 1);
-        });
-      });
-    }
-
-    // ── CALCULATE ALL ──────────────────────────────────────────────
+    // ── FOLDING CALC ───────────────────────────────────────────────
     async function calcAll() {
       const cards = [...document.querySelectorAll(".service-card")];
       for (const card of cards) {
@@ -1167,82 +1130,37 @@
     // ── FOLDING CALC ───────────────────────────────────────────────
     async function calcFolding(card, id) {
       const state = serviceStates[id];
-      const copies = Math.max(1, parseInt(document.getElementById(`fold-copies-${id}`).value) || 1);
       const rows = [];
 
-      // If files uploaded, detect their formats and auto-populate qty
-      if (state.files.length) {
-        for (const fileEntry of state.files) {
-          if (!fileEntry.bytes) {
-            fileEntry.bytes = new Uint8Array(await fileEntry.fileRef.arrayBuffer());
-          }
-
-          const pdf = await pdfjsLib.getDocument({ data: fileEntry.bytes.slice() }).promise;
-          const formatCounts = {};
-
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const vp = page.getViewport({ scale: 1 });
-            const fmt = detectFormat(ptToMm(vp.width), ptToMm(vp.height));
-            const key = fmt !== "CUSTOM" ? fmt : "A4";
-            formatCounts[key] = (formatCounts[key] || 0) + 1;
-          }
-
-          // Map detected formats to fold rows
-          Object.entries(formatCounts).forEach(([fmt, count]) => {
-            const foldKey = findFoldKey(fmt, state.selectedFolds);
-            if (!foldKey) return;
-
-            const tariff = FOLD_BASE_PRICES[foldKey];
-            const calc = calcFoldPrice(fmt, foldKey);
-            const qty = count * copies;
-
-            rows.push({
-              id: makeId(),
-              blockId: id,
-              actualLabel: fmt,
-              colorMode: null,
-              billedFormat: fmt,
-              qty,
-              copies,
-              unitPrice: calc.price,
-              tariffCode: tariff.code,
-              tariffLabel: `${tariff.label} (${fmt}, ${calc.ratio.toFixed(2)}×)`,
-              priceLocked: false,
-              isExtra: false,
-              isSeparator: false,
-              foldKey
-            });
-          });
-        }
+      if (!state.foldLines || !state.foldLines.length) {
+        throw new Error("Добавьте хотя бы одну строку фальцовки.");
       }
 
-      // Manual selected folds
-      if (!rows.length) {
-        state.selectedFolds.forEach(sf => {
-          const tariff = FOLD_BASE_PRICES[sf.key];
-          if (!tariff) return;
+      state.foldLines.forEach(line => {
+        const { direction, format, qty } = line;
+        const tariff = FOLD_BASE_PRICES[direction];
+        if (!tariff || qty < 1) return;
 
-          rows.push({
-            id: makeId(),
-            blockId: id,
-            actualLabel: sf.key.split("-")[0],
-            colorMode: null,
-            billedFormat: "—",
-            qty: sf.qty * copies,
-            copies,
-            unitPrice: tariff.price,
-            tariffCode: tariff.code,
-            tariffLabel: tariff.label,
-            priceLocked: false,
-            isExtra: false,
-            isSeparator: false,
-            foldKey: sf.key
-          });
+        const calc = calcFoldPrice(format, direction);
+
+        rows.push({
+          id: makeId(),
+          blockId: id,
+          actualLabel: formatLabel(format),
+          colorMode: null,
+          billedFormat: format,
+          qty,
+          unitPrice: calc.price,
+          tariffCode: tariff.code,
+          tariffLabel: `${tariff.label} · ${formatLabel(format)}${calc.ratio !== 1 ? ` (×${calc.ratio.toFixed(2)})` : ""}`,
+          priceLocked: false,
+          isExtra: false,
+          isSeparator: false,
+          foldKey: direction
         });
-      }
+      });
 
-      if (!rows.length) throw new Error("Выберите тип фальцовки или загрузите PDF.");
+      if (!rows.length) throw new Error("Заполните строки фальцовки корректно.");
 
       const extraRows = (state.rows || []).filter(r => r.isExtra);
       state.rows = [...rows, ...extraRows];
