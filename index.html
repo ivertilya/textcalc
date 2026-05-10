@@ -1139,25 +1139,29 @@
 
       setProgress(blockId, 0);
 
-      return [...groupsMap.values()].map(g => ({
-        id: makeId(),
-        blockId,
-        fileName: g.fileName,
-        fileBytes: g.fileBytes,
-        actualLabel: g.actualLabel,
-        colorMode: g.colorMode,
-        billedFormat: g.billedFormat,
-        pages: g.pages,
-        qty: g.qty,
-        copies,
-        unitPrice: g.priceInfo.price,
-        tariffCode: g.priceInfo.code,
-        tariffLabel: g.priceInfo.label,
-        priceLocked: false,
-        isExtra: false,
-        isSeparator: true,
-        priceSyncKey: `${g.colorMode}:${g.billedFormat}`
-      }));
+      return [...groupsMap.values()].map(g => {
+        // Recalculate price using TOTAL qty of this group (pages × copies)
+        const finalPrice = getSepPrice(g.billedFormat, g.colorMode, g.qty);
+        return {
+          id: makeId(),
+          blockId,
+          fileName: g.fileName,
+          fileBytes: g.fileBytes,
+          actualLabel: g.actualLabel,
+          colorMode: g.colorMode,
+          billedFormat: g.billedFormat,
+          pages: g.pages,
+          qty: g.qty,
+          copies,
+          unitPrice: finalPrice.price,
+          tariffCode: finalPrice.code,
+          tariffLabel: finalPrice.label,
+          priceLocked: false,
+          isExtra: false,
+          isSeparator: true,
+          priceSyncKey: `${g.colorMode}:${g.billedFormat}`
+        };
+      });
     }
 
     // ── FOLDING CALC ───────────────────────────────────────────────
@@ -1345,8 +1349,8 @@
         <thead>
           <tr>
             <th style="min-width:160px">Тариф</th>
-            <th>Файл / формат</th>
             <th>Размер в файле</th>
+            <th style="min-width:140px">Формат печати</th>
             <th>Кол-во</th>
             <th>Цена / ед.</th>
             <th style="text-align:right">Сумма</th>
@@ -1365,6 +1369,12 @@
       bodyEl.innerHTML = html;
       bindResultEvents(bodyEl, card, id);
     }
+
+    // All selectable formats for the format dropdown
+    const ALL_FORMATS = ["A6","A5","A4","A3","A2","A1","A0",
+      "A4x3","A4x4","A4x5","A4x6","A4x7","A4x8",
+      "A3x3","A3x4","A3x5","A3x6","A3x7","A3x8",
+      "A2x3","A2x4","A2x5","A2x6"];
 
     function renderRowHtml(row) {
       const sum = row.qty * row.unitPrice;
@@ -1387,6 +1397,13 @@
         ? `<button type="button" class="btn-secondary btn-xs dl-row-btn" data-row-id="${row.id}">⬇ PDF</button>`
         : "";
 
+      // Format select — only for separator rows, folding rows show "—"
+      const formatCell = row.isSeparator
+        ? `<select class="row-format-select" data-row-id="${row.id}" style="height:36px;padding:6px 10px;font-size:13px;">
+            ${ALL_FORMATS.map(f => `<option value="${f}" ${f === row.billedFormat ? "selected" : ""}>${escapeHtml(formatLabel(f))}</option>`).join("")}
+           </select>`
+        : escapeHtml(row.billedFormat || "—");
+
       return `
         <tr data-row-id="${row.id}">
           <td>
@@ -1394,8 +1411,8 @@
             <div class="cell-label">${escapeHtml(row.tariffLabel || "—")}</div>
             ${downloadBtn}
           </td>
-          <td>${escapeHtml(row.fileName || row.billedFormat || "—")}</td>
           <td class="cell-size">${escapeHtml(row.actualLabel || "—")}</td>
+          <td>${formatCell}</td>
           <td class="center">
             <input type="number" class="row-qty-input row-qty-editor" data-row-id="${row.id}"
                    value="${row.qty}" min="1" step="1">
@@ -1453,6 +1470,33 @@
         });
       });
 
+      // Format select change
+      bodyEl.querySelectorAll(".row-format-select").forEach(sel => {
+        sel.addEventListener("change", () => {
+          const row = calculatedRows.find(r => r.id === sel.dataset.rowId);
+          if (!row) return;
+          row.billedFormat = sel.value;
+          if (!row.priceLocked) {
+            const newPrice = getSepPrice(row.billedFormat, row.colorMode, row.qty);
+            row.unitPrice = newPrice.price;
+            row.tariffCode = newPrice.code;
+            row.tariffLabel = newPrice.label;
+            // update tariff cell
+            const tr = sel.closest("tr");
+            if (tr) {
+              tr.querySelector(".cell-code").textContent = row.tariffCode || "—";
+              tr.querySelector(".cell-label").textContent = row.tariffLabel || "—";
+              const priceInput = tr.querySelector(".row-price-editor");
+              if (priceInput) priceInput.value = row.unitPrice.toFixed(2);
+            }
+          }
+          updateRowSum(row.id);
+          updateSubtotal(id);
+          syncStateFromRows(id);
+          updateTotal();
+        });
+      });
+
       // Qty edit
       bodyEl.querySelectorAll(".row-qty-editor").forEach(inp => {
         inp.addEventListener("input", () => {
@@ -1467,9 +1511,13 @@
             row.tariffCode = newPrice.code;
             row.tariffLabel = newPrice.label;
 
-            // Update price input display
-            const priceInput = inp.closest("tbody")?.querySelector(`.row-price-editor[data-row-id="${row.id}"]`);
-            if (priceInput) priceInput.value = row.unitPrice.toFixed(2);
+            const tr = inp.closest("tr");
+            if (tr) {
+              tr.querySelector(".cell-code").textContent = row.tariffCode || "—";
+              tr.querySelector(".cell-label").textContent = row.tariffLabel || "—";
+              const priceInput = tr.querySelector(".row-price-editor");
+              if (priceInput) priceInput.value = row.unitPrice.toFixed(2);
+            }
           }
 
           updateRowSum(row.id);
@@ -1695,6 +1743,17 @@
 
     // ── UTILS ──────────────────────────────────────────────────────
     function ptToMm(pt) { return pt * 25.4 / 72; }
+
+    function formatLabel(key) {
+      if (FORMATS[key]) return `${key} (${FORMATS[key].w}×${FORMATS[key].h} мм)`;
+      const m = /^([A][234])x(\d+)$/i.exec(key);
+      if (m) {
+        const base = m[1].toUpperCase();
+        const n = Number(m[2]);
+        return `${base}×${n} (${FORMATS[base].w * n}×${FORMATS[base].h} мм)`;
+      }
+      return key;
+    }
 
     function money(v) {
       return `${Number(v).toFixed(2).replace(".", ",")} ₽`;
