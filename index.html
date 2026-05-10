@@ -637,11 +637,25 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-  <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
-    const { PDFDocument } = PDFLib;
+  <script>
+    let PDFDocument;
+
+    window.addEventListener("load", () => {
+      if (typeof pdfjsLib === "undefined") {
+        document.getElementById("servicesContainer").innerHTML =
+          '<div class="empty-state"><div class="empty-state-icon">⚠️</div>' +
+          '<div class="empty-state-title">Не удалось загрузить библиотеки PDF</div>' +
+          '<div class="empty-state-sub">Проверьте подключение к интернету и обновите страницу</div></div>';
+        return;
+      }
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      PDFDocument = PDFLib.PDFDocument;
+      addBlock("separator");
+      addBlock("folding");
+    });
 
     // ── CONSTANTS ──────────────────────────────────────────────────
     const TOLERANCE_MM = 8;
@@ -656,23 +670,6 @@
       A2: { w: 420, h: 594 },
       A1: { w: 594, h: 841 },
       A0: { w: 841, h: 1189 }
-    };
-
-    // Базовые тарифы фальцовки из прайса (целые листы)
-    // Ключ: "исходный-под"
-    const FOLD_BASE_PRICES = {
-      "A3-A4": { price: 8,  code: "1110", label: "Фальцевание А3 → А4" },
-      "A2-A4": { price: 18, code: "1111", label: "Фальцевание А2 → А4" },
-      "A1-A4": { price: 26, code: "1112", label: "Фальцевание А1 → А4" },
-      "A2-A3": { price: 18, code: "1113", label: "Фальцевание А2 → А3" },
-      "A1-A3": { price: 26, code: "1114", label: "Фальцевание А1 → А3" },
-      "custom-A4": { price: 5, code: "1115", label: "Фальцевание нестандарт из расчёта А4" }
-    };
-
-    // Площади в условных единицах (A4 = 1)
-    const FORMAT_AREA = {
-      A4: 1, A3: 2, A2: 4, A1: 8, A0: 16,
-      A5: 0.5, A6: 0.25
     };
 
     // Цены на печать для разделителя
@@ -731,10 +728,6 @@
     document.getElementById("calculateAllBtn").addEventListener("click", calcAll);
     document.getElementById("clearBtn").addEventListener("click", clearAll);
 
-    // Initial blocks
-    addBlock("separator");
-    addBlock("folding");
-
     // ── ADD BLOCK ──────────────────────────────────────────────────
     function addBlock(type) {
       const id = blockCounter++;
@@ -768,6 +761,7 @@
         <div class="card-body">
           ${type === "separator" ? renderSeparatorBody(id) : renderFoldingBody(id)}
         </div>
+        ${type === "separator" ? `
         <div class="card-footer">
           <button type="button" class="btn-primary calc-btn">Рассчитать</button>
           <div class="progress-bar-wrap" id="progress-wrap-${id}">
@@ -784,6 +778,7 @@
           </div>
           <div class="result-body" id="result-body-${id}"></div>
         </div>
+        ` : ""}
       `;
 
       container.appendChild(card);
@@ -796,10 +791,10 @@
           <div class="field col-span-full">
             <label>PDF-файлы (можно несколько)</label>
             <div class="file-upload-area" id="upload-area-${id}">
-              <input type="file" id="sep-files-${id}" accept="application/pdf" multiple>
+              <input type="file" id="sep-files-${id}" accept="application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple>
               <div class="file-upload-icon">📂</div>
-              <div class="file-upload-label">Нажмите или перетащите PDF-файлы</div>
-              <div class="file-upload-hint">Поддерживается несколько файлов</div>
+              <div class="file-upload-label">Нажмите или перетащите файлы</div>
+              <div class="file-upload-hint">PDF и Word (.docx)</div>
             </div>
             <div class="file-list" id="file-list-${id}"></div>
           </div>
@@ -819,103 +814,228 @@
       `;
     }
 
-    // Fold direction options
-    const FOLD_DIRECTIONS = [
-      { key: "A3-A4", label: "А3 → А4" },
-      { key: "A2-A4", label: "А2 → А4" },
-      { key: "A1-A4", label: "А1 → А4" },
-      { key: "A2-A3", label: "А2 → А3" },
-      { key: "A1-A3", label: "А1 → А3" },
-      { key: "custom-A4", label: "Нестандарт → А4" }
+    // ── FOLD PRICE DATA ────────────────────────────────────────────
+    // Base prices from pricelist (per sheet of that exact format)
+    const FOLD_PRICES = {
+      "A3-A4": { price: 8,  code: "1110", label: "Фальцевание А3 → А4" },
+      "A2-A4": { price: 18, code: "1111", label: "Фальцевание А2 → А4" },
+      "A1-A4": { price: 26, code: "1112", label: "Фальцевание А1 → А4" },
+      "A2-A3": { price: 18, code: "1113", label: "Фальцевание А2 → А3" },
+      "A1-A3": { price: 26, code: "1114", label: "Фальцевание А1 → А3" },
+      "custom-A4": { price: 5, code: "1115", label: "Фальцевание нестандарт → А4" }
+    };
+
+    // Area in A4 units: A4=1, A3=2, A2=4, A1=8, A0=16
+    const FMT_AREA = { A4:1, A3:2, A2:4, A1:8, A0:16, A5:0.5, A6:0.25 };
+
+    const FOLD_DIRECTION_OPTS = [
+      { key: "A3-A4",     label: "А3 → А4",          baseArea: 2 },
+      { key: "A2-A4",     label: "А2 → А4",          baseArea: 4 },
+      { key: "A1-A4",     label: "А1 → А4",          baseArea: 8 },
+      { key: "A2-A3",     label: "А2 → А3",          baseArea: 4 },
+      { key: "A1-A3",     label: "А1 → А3",          baseArea: 8 },
+      { key: "custom-A4", label: "Нестандарт → А4",  baseArea: 1 }
     ];
 
-    // Formats that can be folded (source sheet formats)
-    const FOLD_SOURCE_FORMATS = ["A4","A3","A2","A1","A0",
+    const FOLD_FORMAT_OPTS = [
+      "A3","A2","A1","A0",
       "A4x3","A4x4","A4x5","A4x6","A4x7","A4x8",
       "A3x3","A3x4","A3x5","A3x6","A3x7","A3x8",
-      "A2x3","A2x4","A2x5","A2x6"];
+      "A2x3","A2x4","A2x5","A2x6"
+    ];
+
+    function foldFormatArea(fmt) {
+      if (FMT_AREA[fmt]) return FMT_AREA[fmt];
+      const m = /^([A][234])x(\d+)$/i.exec(fmt);
+      if (m) return (FMT_AREA[m[1].toUpperCase()] || 1) * Number(m[2]);
+      return 1;
+    }
+
+    function foldFormatLabel(fmt) {
+      if (FORMATS[fmt]) return `${fmt} (${FORMATS[fmt].w}×${FORMATS[fmt].h} мм)`;
+      const m = /^([A][234])x(\d+)$/i.exec(fmt);
+      if (m) {
+        const base = m[1].toUpperCase(), n = Number(m[2]);
+        return `${base}×${n} (${FORMATS[base].w * n}×${FORMATS[base].h} мм)`;
+      }
+      return fmt;
+    }
+
+    function calcLineFoldPrice(dirKey, fmt) {
+      const t = FOLD_PRICES[dirKey];
+      if (!t) return { price: 0, priceLabel: "—" };
+      if (dirKey === "custom-A4") return { price: t.price, priceLabel: `${t.price} ₽` };
+      const dir = FOLD_DIRECTION_OPTS.find(d => d.key === dirKey);
+      const baseArea = dir ? dir.baseArea : 1;
+      const sheetArea = foldFormatArea(fmt);
+      const ratio = sheetArea / baseArea;
+      const price = Math.round(t.price * ratio * 100) / 100;
+      return { price, priceLabel: `${price} ₽` };
+    }
 
     function renderFoldingBody(id) {
-      return `
-        <div id="fold-lines-${id}"></div>
-        <div style="margin-top:14px;">
-          <button type="button" class="btn-ghost btn-sm add-fold-line-btn" data-id="${id}">+ Добавить строку</button>
-        </div>
-      `;
+      // Rendered after DOM insert, so just a container
+      return `<div id="fold-ui-${id}"></div>`;
     }
 
     function initFoldingLines(card, id) {
       const state = serviceStates[id];
-      if (!state.foldLines) state.foldLines = [];
-      renderFoldLines(card, id);
+      if (!state.foldLines || !state.foldLines.length) {
+        state.foldLines = [{ direction: "A2-A4", format: "A2", qty: 1 }];
+      }
+      buildFoldUI(card, id);
+    }
 
-      card.querySelector(".add-fold-line-btn").addEventListener("click", () => {
+    function buildFoldUI(card, id) {
+      const state = serviceStates[id];
+      const root = document.getElementById(`fold-ui-${id}`);
+      if (!root) return;
+
+      // Build header row + data rows
+      const dirOpts = FOLD_DIRECTION_OPTS.map(d =>
+        `<option value="${d.key}">${d.label}</option>`
+      ).join("");
+
+      const fmtOpts = FOLD_FORMAT_OPTS.map(f =>
+        `<option value="${f}">${foldFormatLabel(f)}</option>`
+      ).join("");
+
+      root.innerHTML = `
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;min-width:500px;">
+            <thead>
+              <tr>
+                <th style="text-align:left;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;background:#f7f7f5;border-bottom:1px solid var(--line);">Направление</th>
+                <th style="text-align:left;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;background:#f7f7f5;border-bottom:1px solid var(--line);">Формат листа</th>
+                <th style="text-align:center;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;background:#f7f7f5;border-bottom:1px solid var(--line);">Кол-во</th>
+                <th style="text-align:right;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;background:#f7f7f5;border-bottom:1px solid var(--line);">Цена/лист</th>
+                <th style="text-align:right;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;background:#f7f7f5;border-bottom:1px solid var(--line);">Сумма</th>
+                <th style="background:#f7f7f5;border-bottom:1px solid var(--line);width:40px;"></th>
+              </tr>
+            </thead>
+            <tbody id="fold-tbody-${id}">
+              ${state.foldLines.map((line, idx) => buildFoldRow(id, line, idx, dirOpts, fmtOpts)).join("")}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" style="padding:10px;border-top:2px solid var(--line);font-size:13px;font-weight:700;">Итого</td>
+                <td style="padding:10px;border-top:2px solid var(--line);text-align:right;font-size:18px;font-weight:800;" id="fold-total-${id}">${calcFoldTotal(state.foldLines)}</td>
+                <td style="border-top:2px solid var(--line);"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div style="margin-top:12px;">
+          <button type="button" class="btn-ghost btn-sm add-fold-line-btn">+ Добавить строку</button>
+        </div>
+      `;
+
+      bindFoldUI(card, id);
+    }
+
+    function buildFoldRow(id, line, idx, dirOpts, fmtOpts) {
+      const { price } = calcLineFoldPrice(line.direction, line.format);
+      const sum = price * (line.qty || 1);
+      return `
+        <tr data-fold-idx="${idx}" style="border-bottom:1px solid var(--line-soft);">
+          <td style="padding:8px 10px;">
+            <select class="fold-dir" data-idx="${idx}"
+              style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;height:38px;">
+              ${FOLD_DIRECTION_OPTS.map(d =>
+                `<option value="${d.key}" ${d.key === line.direction ? "selected" : ""}>${d.label}</option>`
+              ).join("")}
+            </select>
+          </td>
+          <td style="padding:8px 10px;">
+            <select class="fold-fmt" data-idx="${idx}"
+              style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;height:38px;">
+              ${FOLD_FORMAT_OPTS.map(f =>
+                `<option value="${f}" ${f === line.format ? "selected" : ""}>${foldFormatLabel(f)}</option>`
+              ).join("")}
+            </select>
+          </td>
+          <td style="padding:8px 10px;text-align:center;">
+            <input type="number" class="fold-qty" data-idx="${idx}" min="1" step="1" value="${line.qty}"
+              style="width:80px;text-align:center;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;height:38px;">
+          </td>
+          <td style="padding:8px 10px;text-align:right;font-size:14px;font-weight:600;" class="fold-unit-${id}-${idx}">${price.toFixed(2).replace(".",",")} ₽</td>
+          <td style="padding:8px 10px;text-align:right;font-size:15px;font-weight:800;" class="fold-sum-${id}-${idx}">${money(sum)}</td>
+          <td style="padding:8px 10px;">
+            <button type="button" class="fold-del icon-btn" data-idx="${idx}"
+              style="color:var(--danger);border-color:#f5c6c2;background:var(--danger-soft);">✕</button>
+          </td>
+        </tr>
+      `;
+    }
+
+    function calcFoldTotal(lines) {
+      const total = (lines || []).reduce((s, line) => {
+        const { price } = calcLineFoldPrice(line.direction, line.format);
+        return s + price * (line.qty || 1);
+      }, 0);
+      return money(total);
+    }
+
+    function bindFoldUI(card, id) {
+      const state = serviceStates[id];
+      const root = document.getElementById(`fold-ui-${id}`);
+
+      function updateRow(idx) {
+        const line = state.foldLines[idx];
+        const { price } = calcLineFoldPrice(line.direction, line.format);
+        const sum = price * (line.qty || 1);
+        const unitEl = root.querySelector(`.fold-unit-${id}-${idx}`);
+        const sumEl = root.querySelector(`.fold-sum-${id}-${idx}`);
+        if (unitEl) unitEl.textContent = price.toFixed(2).replace(".",",") + " ₽";
+        if (sumEl) sumEl.textContent = money(sum);
+        updateFoldTotal(id, state);
+        updateTotal();
+      }
+
+      root.querySelectorAll(".fold-dir").forEach(sel => {
+        sel.addEventListener("change", () => {
+          const idx = Number(sel.dataset.idx);
+          state.foldLines[idx].direction = sel.value;
+          updateRow(idx);
+        });
+      });
+
+      root.querySelectorAll(".fold-fmt").forEach(sel => {
+        sel.addEventListener("change", () => {
+          const idx = Number(sel.dataset.idx);
+          state.foldLines[idx].format = sel.value;
+          updateRow(idx);
+        });
+      });
+
+      root.querySelectorAll(".fold-qty").forEach(inp => {
+        inp.addEventListener("input", () => {
+          const idx = Number(inp.dataset.idx);
+          state.foldLines[idx].qty = Math.max(1, parseInt(inp.value) || 1);
+          updateRow(idx);
+        });
+      });
+
+      root.querySelectorAll(".fold-del").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.foldLines.splice(Number(btn.dataset.idx), 1);
+          buildFoldUI(card, id);
+          updateTotal();
+        });
+      });
+
+      root.querySelector(".add-fold-line-btn").addEventListener("click", () => {
         state.foldLines.push({ direction: "A2-A4", format: "A2", qty: 1 });
-        renderFoldLines(card, id);
+        buildFoldUI(card, id);
       });
     }
 
-    function renderFoldLines(card, id) {
-      const state = serviceStates[id];
-      const container = document.getElementById(`fold-lines-${id}`);
-      if (!container) return;
-
-      if (!state.foldLines.length) {
-        // Add one default line
-        state.foldLines.push({ direction: "A2-A4", format: "A2", qty: 1 });
-      }
-
-      container.innerHTML = state.foldLines.map((line, idx) => `
-        <div class="fold-line" data-idx="${idx}" style="display:grid;grid-template-columns:1fr 1fr 120px 36px;gap:10px;align-items:end;margin-bottom:10px;">
-          <div class="field">
-            ${idx === 0 ? '<label>Направление фальцовки</label>' : ''}
-            <select class="fold-direction-sel" data-idx="${idx}">
-              ${FOLD_DIRECTIONS.map(d => `<option value="${d.key}" ${d.key === line.direction ? "selected" : ""}>${escapeHtml(d.label)}</option>`).join("")}
-            </select>
-          </div>
-          <div class="field">
-            ${idx === 0 ? '<label>Формат листа</label>' : ''}
-            <select class="fold-format-sel" data-idx="${idx}">
-              ${FOLD_SOURCE_FORMATS.map(f => `<option value="${f}" ${f === line.format ? "selected" : ""}>${escapeHtml(formatLabel(f))}</option>`).join("")}
-            </select>
-          </div>
-          <div class="field">
-            ${idx === 0 ? '<label>Количество</label>' : ''}
-            <input type="number" class="fold-qty-inp" data-idx="${idx}" min="1" step="1" value="${line.qty}">
-          </div>
-          <div style="${idx === 0 ? 'padding-top:22px' : ''}">
-            <button type="button" class="icon-btn remove-fold-line-btn" data-idx="${idx}" title="Удалить строку"
-              style="color:var(--danger);border-color:#f5c6c2;background:var(--danger-soft);">✕</button>
-          </div>
-        </div>
-      `).join("");
-
-      // Bind changes
-      container.querySelectorAll(".fold-direction-sel").forEach(sel => {
-        sel.addEventListener("change", () => {
-          state.foldLines[Number(sel.dataset.idx)].direction = sel.value;
-        });
-      });
-      container.querySelectorAll(".fold-format-sel").forEach(sel => {
-        sel.addEventListener("change", () => {
-          state.foldLines[Number(sel.dataset.idx)].format = sel.value;
-        });
-      });
-      container.querySelectorAll(".fold-qty-inp").forEach(inp => {
-        inp.addEventListener("input", () => {
-          state.foldLines[Number(inp.dataset.idx)].qty = Math.max(1, parseInt(inp.value) || 1);
-        });
-      });
-      container.querySelectorAll(".remove-fold-line-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.foldLines.splice(Number(btn.dataset.idx), 1);
-          renderFoldLines(card, id);
-        });
-      });
+    function updateFoldTotal(id, state) {
+      const el = document.getElementById(`fold-total-${id}`);
+      if (el) el.textContent = calcFoldTotal(state.foldLines);
     }
 
     function bindCard(card, id, type) {
-      // Remove
       card.querySelector(".remove-card-btn").addEventListener("click", () => {
         delete serviceStates[id];
         card.remove();
@@ -923,19 +1043,15 @@
         updateTotal();
       });
 
-      // Calc
-      card.querySelector(".calc-btn").addEventListener("click", () => calcBlock(card, id));
-
-      // Result toggle
-      const rHeader = document.getElementById(`result-header-${id}`);
-      rHeader.addEventListener("click", () => {
-        const state = serviceStates[id];
-        state.collapsed = !state.collapsed;
-        document.getElementById(`result-body-${id}`).classList.toggle("collapsed", state.collapsed);
-        document.getElementById(`result-chevron-${id}`).classList.toggle("open", !state.collapsed);
-      });
-
       if (type === "separator") {
+        card.querySelector(".calc-btn").addEventListener("click", () => calcBlock(card, id));
+        const rHeader = document.getElementById(`result-header-${id}`);
+        rHeader.addEventListener("click", () => {
+          const state = serviceStates[id];
+          state.collapsed = !state.collapsed;
+          document.getElementById(`result-body-${id}`).classList.toggle("collapsed", state.collapsed);
+          document.getElementById(`result-chevron-${id}`).classList.toggle("open", !state.collapsed);
+        });
         bindSeparatorFileInput(card, id);
       } else {
         initFoldingLines(card, id);
@@ -966,7 +1082,12 @@
     function addFilesToState(id, fileList) {
       const state = serviceStates[id];
       if (!state) return;
-      const files = [...fileList].filter(f => f.type === "application/pdf" || f.name.endsWith(".pdf"));
+      const files = [...fileList].filter(f =>
+        f.type === "application/pdf" ||
+        f.name.endsWith(".pdf") ||
+        f.name.endsWith(".docx") ||
+        f.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      );
       files.forEach(f => {
         if (!state.files.find(sf => sf.name === f.name)) {
           state.files.push({ name: f.name, fileRef: f, bytes: null });
@@ -1001,23 +1122,20 @@
     async function calcAll() {
       const cards = [...document.querySelectorAll(".service-card")];
       for (const card of cards) {
-        await calcBlock(card, Number(card.dataset.id));
+        if (card.dataset.type === "separator") {
+          await calcBlock(card, Number(card.dataset.id));
+        }
       }
     }
 
     async function calcBlock(card, id) {
       const state = serviceStates[id];
-      if (!state) return;
+      if (!state || state.type !== "separator") return;
 
       setStatus("Идёт анализ...");
 
       try {
-        if (state.type === "separator") {
-          await calcSeparator(card, id);
-        } else {
-          await calcFolding(card, id);
-        }
-
+        await calcSeparator(card, id);
         renderResult(card, id);
         rebuildRows();
         updateTotal();
@@ -1032,28 +1150,71 @@
     async function calcSeparator(card, id) {
       const state = serviceStates[id];
 
-      if (!state.files.length) throw new Error("Добавьте хотя бы один PDF-файл.");
+      if (!state.files.length) throw new Error("Добавьте хотя бы один файл.");
 
       const printMode = document.getElementById(`sep-mode-${id}`).value;
       const copies = Math.max(1, parseInt(document.getElementById(`sep-copies-${id}`).value) || 1);
 
       const allRows = [];
-      const notes = [];
 
       for (const fileEntry of state.files) {
-        // Load bytes if needed
         if (!fileEntry.bytes) {
           fileEntry.bytes = new Uint8Array(await fileEntry.fileRef.arrayBuffer());
         }
 
-        const rows = await analyzeSeparatorPdf(fileEntry, printMode, copies, id, state.files.length);
-        allRows.push(...rows);
+        const isWord = /\.(docx)$/i.test(fileEntry.name);
+
+        if (isWord) {
+          const rows = await analyzeWordFile(fileEntry, printMode, copies, id);
+          allRows.push(...rows);
+        } else {
+          const rows = await analyzeSeparatorPdf(fileEntry, printMode, copies, id, state.files.length);
+          allRows.push(...rows);
+        }
       }
 
-      // Preserve extra rows
       const extraRows = (state.rows || []).filter(r => r.isExtra);
       state.rows = [...allRows, ...extraRows];
-      state.notes = notes;
+      state.notes = [];
+    }
+
+    async function analyzeWordFile(fileEntry, printMode, copies, blockId) {
+      setStatus(`Анализ ${fileEntry.name}...`);
+
+      // Use mammoth to extract page count via page breaks
+      const result = await mammoth.extractRawText({ arrayBuffer: fileEntry.bytes.buffer });
+      const text = result.value || "";
+
+      // Count form-feed characters (\f) as page breaks + 1
+      const pageBreaks = (text.match(/\f/g) || []).length;
+      const pageCount = Math.max(1, pageBreaks + 1);
+
+      // Word docs are assumed A4
+      const fmt = "A4";
+      const colorMode = printMode === "auto" ? "bw" : printMode; // Word: default bw for auto
+      const qty = pageCount * copies;
+      const price = getSepPrice(fmt, colorMode, qty);
+
+      return [{
+        id: makeId(),
+        blockId,
+        fileName: fileEntry.name,
+        fileBytes: null, // Word files can't be split by page here
+        actualLabel: `Word, ~${pageCount} стр.`,
+        colorMode,
+        billedFormat: fmt,
+        pages: Array.from({ length: pageCount }, (_, i) => i + 1),
+        qty,
+        copies,
+        unitPrice: price.price,
+        tariffCode: price.code,
+        tariffLabel: price.label,
+        priceLocked: false,
+        isExtra: false,
+        isSeparator: true,
+        isWord: true,
+        priceSyncKey: `${colorMode}:${fmt}`
+      }];
     }
 
     async function analyzeSeparatorPdf(fileEntry, printMode, copies, blockId, totalFiles) {
@@ -1127,72 +1288,6 @@
       });
     }
 
-    // ── FOLDING CALC ───────────────────────────────────────────────
-    async function calcFolding(card, id) {
-      const state = serviceStates[id];
-      const rows = [];
-
-      if (!state.foldLines || !state.foldLines.length) {
-        throw new Error("Добавьте хотя бы одну строку фальцовки.");
-      }
-
-      state.foldLines.forEach(line => {
-        const { direction, format, qty } = line;
-        const tariff = FOLD_BASE_PRICES[direction];
-        if (!tariff || qty < 1) return;
-
-        const calc = calcFoldPrice(format, direction);
-
-        rows.push({
-          id: makeId(),
-          blockId: id,
-          actualLabel: formatLabel(format),
-          colorMode: null,
-          billedFormat: format,
-          qty,
-          unitPrice: calc.price,
-          tariffCode: tariff.code,
-          tariffLabel: `${tariff.label} · ${formatLabel(format)}${calc.ratio !== 1 ? ` (×${calc.ratio.toFixed(2)})` : ""}`,
-          priceLocked: false,
-          isExtra: false,
-          isSeparator: false,
-          foldKey: direction
-        });
-      });
-
-      if (!rows.length) throw new Error("Заполните строки фальцовки корректно.");
-
-      const extraRows = (state.rows || []).filter(r => r.isExtra);
-      state.rows = [...rows, ...extraRows];
-      state.notes = [];
-    }
-
-    // Calculates fold price proportionally based on sheet area relative to A2
-    // A2→A4 = 18₽, A3→A4 = 18×(A3/A2) = 18×0.5 = 9₽
-    // The base price comes from FOLD_BASE_PRICES for the target fold key
-    function calcFoldPrice(fromFmt, foldKey) {
-      const tariff = FOLD_BASE_PRICES[foldKey];
-      if (!tariff) return { price: 5, ratio: 1 };
-
-      // Find the base format for this fold key (e.g. A2-A4 → base = A2)
-      const baseFmt = foldKey.split("-")[0];
-      if (baseFmt === "custom") return { price: tariff.price, ratio: 1 };
-
-      const baseArea = FORMAT_AREA[baseFmt] || 1;
-      const fromArea = FORMAT_AREA[fromFmt] || 1;
-      const ratio = fromArea / baseArea;
-      const price = tariff.price * ratio;
-
-      return { price: Math.round(price * 100) / 100, ratio };
-    }
-
-    function findFoldKey(fmt, selectedFolds) {
-      if (!selectedFolds.length) return null;
-      // Try to find matching fold key by source format
-      const match = selectedFolds.find(sf => sf.key.startsWith(fmt + "-"));
-      return match ? match.key : selectedFolds[0]?.key || null;
-    }
-
     // ── GET SEPARATOR PRICE ────────────────────────────────────────
     function getSepPrice(fmt, colorMode, qty) {
       // BW tiered pricing for A4/A3
@@ -1260,19 +1355,20 @@
       if (sepRows.length) {
         html += `<div class="download-actions">
           <button type="button" class="btn-secondary btn-sm download-all-btn" data-id="${id}">⬇ Скачать всё (ZIP)</button>
+          <button type="button" class="btn-secondary btn-sm merge-rows-btn" data-id="${id}" title="Объединить строки с одинаковым форматом печати — количество суммируется">⊞ Объединить строки</button>
         </div>`;
       }
 
       html += `<div class="table-wrap"><table>
         <thead>
           <tr>
-            <th style="min-width:160px">Тариф</th>
-            <th>Размер в файле</th>
-            <th style="min-width:140px">Формат печати</th>
-            <th>Кол-во</th>
-            <th>Цена / ед.</th>
-            <th style="text-align:right">Сумма</th>
-            <th></th>
+            <th style="min-width:180px;text-align:center">Тариф</th>
+            <th style="text-align:center">Размер в файле</th>
+            <th style="min-width:140px;text-align:center">Формат печати</th>
+            <th style="text-align:center">Кол-во</th>
+            <th style="text-align:center">Цена / ед.</th>
+            <th style="text-align:center">Сумма</th>
+            <th style="text-align:center"></th>
           </tr>
         </thead>
         <tbody>
@@ -1311,7 +1407,7 @@
         ? `<button type="button" class="icon-btn remove-extra" data-row-id="${row.id}" title="Удалить">✕</button>`
         : "";
 
-      const downloadBtn = row.isSeparator
+      const downloadBtn = row.isSeparator && !row.isWord && row.fileBytes
         ? `<button type="button" class="btn-secondary btn-xs dl-row-btn" data-row-id="${row.id}">⬇ PDF</button>`
         : "";
 
@@ -1324,20 +1420,20 @@
 
       return `
         <tr data-row-id="${row.id}">
-          <td>
+          <td style="word-break:keep-all;overflow-wrap:normal;hyphens:none;text-align:left;min-width:180px">
             <div class="cell-code">${escapeHtml(row.tariffCode || "—")}</div>
-            <div class="cell-label">${escapeHtml(row.tariffLabel || "—")}</div>
+            <div class="cell-label" style="word-break:keep-all;overflow-wrap:normal;hyphens:none;white-space:normal">${escapeHtml(row.tariffLabel || "—")}</div>
             ${downloadBtn}
           </td>
-          <td class="cell-size">${escapeHtml(row.actualLabel || "—")}</td>
-          <td>${formatCell}</td>
-          <td class="center">
+          <td style="text-align:center" class="cell-size">${escapeHtml(row.actualLabel || "—")}</td>
+          <td style="text-align:center">${formatCell}</td>
+          <td style="text-align:center">
             <input type="number" class="row-qty-input row-qty-editor" data-row-id="${row.id}"
                    value="${row.qty}" min="1" step="1">
           </td>
-          <td>${priceCell}</td>
-          <td class="right sum-cell" data-row-id="${row.id}">${money(sum)}</td>
-          <td>${removeBtn}</td>
+          <td style="text-align:center">${priceCell}</td>
+          <td class="right sum-cell" data-row-id="${row.id}" style="text-align:right">${money(sum)}</td>
+          <td style="text-align:center">${removeBtn}</td>
         </tr>`;
     }
 
@@ -1346,6 +1442,11 @@
 
       // Download all
       bodyEl.querySelector(".download-all-btn")?.addEventListener("click", () => downloadAll(id));
+
+      // Merge rows
+      bodyEl.querySelector(".merge-rows-btn")?.addEventListener("click", () => {
+        mergeRowsByFormat(state, card, id);
+      });
 
       // Download row
       bodyEl.querySelectorAll(".dl-row-btn").forEach(btn => {
@@ -1466,6 +1567,53 @@
       state.rows = state.rows.map(r => calculatedRows.find(cr => cr.id === r.id) || r);
     }
 
+    // Merge rows that share the same billedFormat + colorMode — sum their qty,
+    // merge their page arrays, recalc price for new total qty
+    function mergeRowsByFormat(state, card, id) {
+      const sepRows = state.rows.filter(r => r.isSeparator);
+      const otherRows = state.rows.filter(r => !r.isSeparator);
+
+      // Group by billedFormat + colorMode
+      const groups = new Map();
+      for (const row of sepRows) {
+        const key = `${row.billedFormat}||${row.colorMode || ""}`;
+        if (!groups.has(key)) {
+          groups.set(key, []);
+        }
+        groups.get(key).push(row);
+      }
+
+      const merged = [];
+      for (const [, rows] of groups) {
+        if (rows.length === 1) {
+          merged.push(rows[0]);
+          continue;
+        }
+
+        // Merge: sum qty, combine pages, use first row as base
+        const base = { ...rows[0] };
+        base.id = makeId(); // new id for merged row
+        base.qty = rows.reduce((s, r) => s + r.qty, 0);
+        base.pages = rows.flatMap(r => r.pages || []).sort((a, b) => a - b);
+        base.actualLabel = rows.map(r => r.actualLabel).join(", ");
+
+        // Recalc price for merged qty
+        if (!base.priceLocked) {
+          const p = getSepPrice(base.billedFormat, base.colorMode, base.qty);
+          base.unitPrice = p.price;
+          base.tariffCode = p.code;
+          base.tariffLabel = p.label;
+        }
+
+        merged.push(base);
+      }
+
+      state.rows = [...merged, ...otherRows];
+      rebuildRows();
+      renderResult(card, id);
+      updateTotal();
+    }
+
     // ── DOWNLOAD ───────────────────────────────────────────────────
     async function downloadRowPdf(row) {
       if (!row.fileBytes || !row.pages?.length) {
@@ -1543,8 +1691,22 @@
     }
 
     function updateTotal() {
-      const total = calculatedRows.reduce((s, r) => s + r.qty * r.unitPrice, 0);
-      if (calculatedRows.length) {
+      let total = calculatedRows.reduce((s, r) => s + r.qty * r.unitPrice, 0);
+
+      // Add folding totals (live, not in calculatedRows)
+      Object.values(serviceStates).forEach(state => {
+        if (state.type === "folding" && state.foldLines) {
+          state.foldLines.forEach(line => {
+            const { price } = calcLineFoldPrice(line.direction, line.format);
+            total += price * (line.qty || 1);
+          });
+        }
+      });
+
+      const hasAnything = calculatedRows.length > 0 ||
+        Object.values(serviceStates).some(s => s.type === "folding" && s.foldLines?.length);
+
+      if (hasAnything) {
         totalBlock.classList.add("visible");
         totalAmount.textContent = money(total);
       } else {
@@ -1702,6 +1864,10 @@
       ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
       return ranges.join(",");
     }
+
+    // ── INIT ───────────────────────────────────────────────────────
+    addBlock("separator");
+    addBlock("folding");
   </script>
 
 </body>
