@@ -653,8 +653,7 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc =
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
       PDFDocument = PDFLib.PDFDocument;
-      addBlock("separator");
-      addBlock("folding");
+      addBlock("separator"); // start with one separator only
     });
 
     // ── CONSTANTS ──────────────────────────────────────────────────
@@ -1235,7 +1234,9 @@
         let colorMode = printMode === "auto" ? await detectColor(page) : printMode;
 
         const detected = detectFormat(wMm, hMm);
-        const billed = detected !== "CUSTOM" ? detected : findSmallestFitting(wMm, hMm) || findNearest(wMm, hMm);
+        const billed = detected !== "CUSTOM"
+          ? detected
+          : detectWideFormat(wMm, hMm) || findSmallestFitting(wMm, hMm) || findNearest(wMm, hMm);
 
         // Exact size label (not rounded to standard)
         const actualLabel = buildExactSizeLabel(wMm, hMm, detected);
@@ -1615,27 +1616,48 @@
     }
 
     // ── DOWNLOAD ───────────────────────────────────────────────────
+
+    // Human-readable color label
+    function colorLabel(mode) {
+      return mode === "color" ? "цвет" : "чб";
+    }
+
+    // Build a clean filename: "Формат_цвет_стр1-5.pdf"
+    function buildFileName(billedFormat, colorMode, pages, sourceFileName) {
+      const fmt = sanitize(billedFormat || "формат");
+      const clr = colorLabel(colorMode);
+      const pages_str = compressRanges(pages).replace(/,\s*/g, "_");
+      const base = sourceFileName
+        ? "_" + sanitize(sourceFileName.replace(/\.(pdf|docx)$/i, ""))
+        : "";
+      return `${fmt}_${clr}${base}_стр${pages_str}.pdf`;
+    }
+
+    // Single-row download — pages strictly from this row
     async function downloadRowPdf(row) {
       if (!row.fileBytes || !row.pages?.length) {
         setStatus("Нет данных для скачивания.", true);
         return;
       }
-
       try {
+        setStatus("Создаётся PDF...");
         const bytes = await buildPdf(row.fileBytes, row.pages);
-        const name = `${sanitize(row.billedFormat)}_${sanitize(row.colorMode || "")}_стр${compressRanges(row.pages)}.pdf`;
+        const name = buildFileName(row.billedFormat, row.colorMode, row.pages, row.fileName);
         downloadBytes(bytes, name, "application/pdf");
         setStatus("Файл скачан.");
       } catch (e) {
+        console.error(e);
         setStatus("Ошибка при создании PDF.", true);
       }
     }
 
+    // ZIP download — re-group all separator rows by billedFormat+colorMode+sourceFile,
+    // collect their page lists, build one PDF per group, name clearly
     async function downloadAll(id) {
       const state = serviceStates[id];
       if (!state) return;
 
-      const sepRows = state.rows.filter(r => r.isSeparator && r.fileBytes && r.pages?.length);
+      const sepRows = state.rows.filter(r => r.isSeparator && !r.isWord && r.fileBytes && r.pages?.length);
       if (!sepRows.length) {
         setStatus("Нет файлов для скачивания.", true);
         return;
@@ -1646,15 +1668,51 @@
       try {
         const zip = new JSZip();
 
+        // Group by sourceFile + billedFormat + colorMode
+        // This respects whatever the user has set in the "Формат печати" column
+        const groups = new Map();
         for (const row of sepRows) {
-          const bytes = await buildPdf(row.fileBytes, row.pages);
-          const fname = `${sanitize(row.fileName || "file")}_${sanitize(row.billedFormat)}_${sanitize(row.colorMode || "bw")}_стр${compressRanges(row.pages)}.pdf`;
+          const key = `${row.fileName || ""}||${row.billedFormat}||${row.colorMode || "bw"}`;
+          if (!groups.has(key)) {
+            groups.set(key, {
+              billedFormat: row.billedFormat,
+              colorMode: row.colorMode || "bw",
+              fileName: row.fileName,
+              fileBytes: row.fileBytes,
+              pages: []
+            });
+          }
+          const g = groups.get(key);
+          // Merge pages (in case multiple rows share same key after user edits)
+          g.pages.push(...row.pages);
+        }
+
+        const usedNames = new Set();
+
+        for (const g of groups.values()) {
+          // Deduplicate and sort pages
+          const pages = [...new Set(g.pages)].sort((a, b) => a - b);
+          const bytes = await buildPdf(g.fileBytes, pages);
+
+          let fname = buildFileName(g.billedFormat, g.colorMode, pages, g.fileName);
+
+          // Avoid duplicate filenames in archive
+          if (usedNames.has(fname)) {
+            fname = fname.replace(".pdf", `_${makeId().slice(0, 4)}.pdf`);
+          }
+          usedNames.add(fname);
+
           zip.file(fname, bytes);
         }
 
         const blob = await zip.generateAsync({ type: "blob" });
-        downloadBytes(blob, `разделитель_${id}.zip`, "application/zip");
-        setStatus("Архив скачан.");
+
+        // Name the ZIP after the service block
+        const card = document.querySelector(`.service-card[data-id="${id}"]`);
+        const serviceName = card?.querySelector(".card-name-input")?.value?.trim() || `разделитель_${id}`;
+        downloadBytes(blob, `${sanitize(serviceName)}.zip`, "application/zip");
+
+        setStatus(`Архив скачан: ${groups.size} файл(ов).`);
       } catch (e) {
         console.error(e);
         setStatus("Ошибка при создании архива.", true);
@@ -1748,7 +1806,6 @@
       totalBlock.classList.remove("visible");
       setStatus("");
       addBlock("separator");
-      addBlock("folding");
     }
 
     // ── PDF ANALYSIS ───────────────────────────────────────────────
@@ -1794,6 +1851,43 @@
         if (short <= fs + TOLERANCE_MM && long <= fl + TOLERANCE_MM) return name;
       }
       return null;
+    }
+
+    // Detect wide/roll formats like A4x3, A3x4, A2x3 etc.
+    // Logic: one side matches base format short side, other side ≈ base_long × N
+    function detectWideFormat(w, h) {
+      const short = Math.min(w, h);
+      const long  = Math.max(w, h);
+
+      // Bases that have wide variants in the pricelist
+      const bases = ["A4", "A3", "A2"];
+      let best = null;
+      let bestDiff = TOLERANCE_MM * 3; // must be within tolerance to match
+
+      for (const base of bases) {
+        const s = FORMATS[base];
+        const baseShort = Math.min(s.w, s.h); // shorter side (e.g. A4: 210)
+        const baseStep  = Math.max(s.w, s.h); // longer side used as step (e.g. A4: 297)
+
+        // Short side must match
+        const shortDiff = Math.abs(short - baseShort);
+        if (shortDiff > TOLERANCE_MM) continue;
+
+        // Find the multiplier: how many base steps fit the long side
+        const rawN = long / baseStep;
+        // Try rounding to nearest integer ≥ 2
+        for (const n of [Math.round(rawN), Math.floor(rawN), Math.ceil(rawN)]) {
+          if (n < 2) continue;
+          const expectedLong = baseStep * n;
+          const diff = Math.abs(long - expectedLong) + shortDiff;
+          if (diff < bestDiff) {
+            bestDiff = diff;
+            best = `${base}x${n}`;
+          }
+        }
+      }
+
+      return best; // e.g. "A4x4", "A3x3", or null
     }
 
     function findNearest(w, h) {
@@ -1865,9 +1959,6 @@
       return ranges.join(",");
     }
 
-    // ── INIT ───────────────────────────────────────────────────────
-    addBlock("separator");
-    addBlock("folding");
   </script>
 
 </body>
