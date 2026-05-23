@@ -828,492 +828,358 @@
 
       root.innerHTML = `
         <div style="display:flex;flex-direction:column;gap:20px;">
-
-          <!-- Лист -->
           <div>
             <div class="g-section-title">Лист</div>
             <div class="grid-3">
-              <div class="field">
-                <label>Ширина листа, мм</label>
-                <input type="number" class="g-input" id="g-sheet-w-${id}" value="320" min="1">
-              </div>
-              <div class="field">
-                <label>Высота листа, мм</label>
-                <input type="number" class="g-input" id="g-sheet-h-${id}" value="450" min="1">
-              </div>
+              <div class="field"><label>Ширина листа, мм</label><input type="number" class="g-input" id="g-sheet-w-${id}" value="320" min="1"></div>
+              <div class="field"><label>Высота листа, мм</label><input type="number" class="g-input" id="g-sheet-h-${id}" value="450" min="1"></div>
               <div></div>
             </div>
           </div>
-
-          <!-- Макет -->
           <div>
-            <div class="g-section-title">Макет (размер одного изделия до обрезки)</div>
+            <div class="g-section-title">Макет (размер до обрезки, включая вылеты)</div>
             <div class="grid-3">
-              <div class="field">
-                <label>Ширина макета, мм</label>
-                <input type="number" class="g-input" id="g-item-w-${id}" value="94" min="1">
-              </div>
-              <div class="field">
-                <label>Высота макета, мм</label>
-                <input type="number" class="g-input" id="g-item-h-${id}" value="54" min="1">
-              </div>
+              <div class="field"><label>Ширина макета, мм</label><input type="number" class="g-input" id="g-item-w-${id}" value="94" min="1"></div>
+              <div class="field"><label>Высота макета, мм</label><input type="number" class="g-input" id="g-item-h-${id}" value="54" min="1"></div>
               <div></div>
             </div>
           </div>
-
-          <!-- Финальный размер -->
           <div>
-            <div class="g-section-title">Финальный размер после обрезки</div>
+            <div class="g-section-title">Финальный размер изделия</div>
             <div class="grid-3">
-              <div class="field">
-                <label>Ширина, мм</label>
-                <input type="number" class="g-input" id="g-final-w-${id}" value="90" min="1">
-              </div>
-              <div class="field">
-                <label>Высота, мм</label>
-                <input type="number" class="g-input" id="g-final-h-${id}" value="50" min="1">
-              </div>
+              <div class="field"><label>Ширина, мм</label><input type="number" class="g-input" id="g-final-w-${id}" value="90" min="1"></div>
+              <div class="field"><label>Высота, мм</label><input type="number" class="g-input" id="g-final-h-${id}" value="50" min="1"></div>
               <div></div>
             </div>
           </div>
-
-          <!-- Поля и зазоры -->
           <div>
-            <div class="g-section-title">Поля и зазоры</div>
+            <div class="g-section-title">Поля от края листа до первого макета</div>
             <div class="grid-3">
-              <div class="field">
-                <label>Поле слева, мм</label>
-                <input type="number" class="g-input" id="g-margin-left-${id}" value="19" min="0" step="0.1">
-              </div>
-              <div class="field">
-                <label>Поле справа, мм</label>
-                <input type="number" class="g-input" id="g-margin-right-${id}" value="19" min="0" step="0.1">
-              </div>
-              <div class="field">
-                <label>Зазор по X между макетами, мм</label>
-                <input type="number" class="g-input" id="g-gap-x-${id}" value="0" min="0" step="0.1">
-              </div>
-              <div class="field">
-                <label>Поле сверху, мм</label>
-                <input type="number" class="g-input" id="g-margin-top-${id}" value="9" min="0" step="0.1">
-              </div>
-              <div class="field">
-                <label>Поле снизу, мм</label>
-                <input type="number" class="g-input" id="g-margin-bottom-${id}" value="9" min="0" step="0.1">
-              </div>
-              <div class="field">
-                <label>Зазор по Y между макетами, мм</label>
-                <input type="number" class="g-input" id="g-gap-y-${id}" value="0" min="0" step="0.1">
-              </div>
+              <div class="field"><label>Слева, мм</label><input type="number" class="g-input" id="g-margin-left-${id}" value="19" min="0" step="0.1"></div>
+              <div class="field"><label>Справа, мм</label><input type="number" class="g-input" id="g-margin-right-${id}" value="19" min="0" step="0.1"></div>
+              <div class="field"><label>Зазор X между макетами, мм</label><input type="number" class="g-input" id="g-gap-x-${id}" value="0" min="0" step="0.1"></div>
+              <div class="field"><label>Сверху, мм</label><input type="number" class="g-input" id="g-margin-top-${id}" value="9" min="0" step="0.1"></div>
+              <div class="field"><label>Снизу, мм</label><input type="number" class="g-input" id="g-margin-bottom-${id}" value="9" min="0" step="0.1"></div>
+              <div class="field"><label>Зазор Y между макетами, мм</label><input type="number" class="g-input" id="g-gap-y-${id}" value="0" min="0" step="0.1"></div>
             </div>
           </div>
-
-          <!-- Сетка -->
           <div>
-            <div class="g-section-title">Сетка макетов</div>
+            <div class="g-section-title">Сетка</div>
             <div class="grid-3">
-              <div class="field">
-                <label>Колонок</label>
-                <input type="number" class="g-input" id="g-cols-${id}" value="3" min="1">
-              </div>
-              <div class="field">
-                <label>Строк</label>
-                <input type="number" class="g-input" id="g-rows-${id}" value="8" min="1">
-              </div>
+              <div class="field"><label>Колонок</label><input type="number" class="g-input" id="g-cols-${id}" value="3" min="1"></div>
+              <div class="field"><label>Строк</label><input type="number" class="g-input" id="g-rows-${id}" value="8" min="1"></div>
               <div></div>
             </div>
           </div>
-
-          <!-- Гильотина -->
           <div>
             <div class="g-section-title">Гильотина</div>
             <div class="grid-3">
-              <div class="field">
-                <label>Минимальный рез, мм</label>
-                <input type="number" class="g-input" id="g-min-cut-${id}" value="50" min="0" step="0.1">
-              </div>
-              <div class="field">
-                <label>Брусок на упоре, мм (0 = нет)</label>
-                <input type="number" class="g-input" id="g-block-${id}" value="6.5" min="0" step="0.1">
-              </div>
+              <div class="field"><label>Минимальный рез, мм</label><input type="number" class="g-input" id="g-min-cut-${id}" value="50" min="0" step="0.1"></div>
+              <div class="field"><label>Брусок на упоре, мм (0 = нет)</label><input type="number" class="g-input" id="g-block-${id}" value="6.5" min="0" step="0.1"></div>
               <div></div>
             </div>
           </div>
-
           <div>
-            <button type="button" class="btn-primary g-calc-btn" data-id="${id}">
-              Рассчитать инструкцию
-            </button>
+            <button type="button" class="btn-primary" id="g-calc-btn-${id}">Рассчитать инструкцию</button>
           </div>
-
           <div id="g-result-${id}"></div>
         </div>
       `;
 
-      // Section titles style injected once
       if (!document.getElementById("g-styles")) {
         const s = document.createElement("style");
         s.id = "g-styles";
         s.textContent = `
-          .g-section-title {
-            font-size: 12px; font-weight: 700; color: var(--muted);
-            text-transform: uppercase; letter-spacing: 0.4px;
-            margin-bottom: 10px; padding-bottom: 6px;
-            border-bottom: 1px solid var(--line-soft);
-          }
-          .g-step {
-            display: flex; gap: 14px; align-items: flex-start;
-            padding: 14px 16px; border-radius: 10px;
-            border: 1px solid var(--line); margin-bottom: 8px;
-            background: #fff;
-          }
-          .g-step-num {
-            width: 28px; min-width: 28px; height: 28px;
-            border-radius: 50%; background: var(--accent); color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 13px; font-weight: 800;
-          }
-          .g-step-body { flex: 1; }
-          .g-step-action {
-            font-size: 14px; font-weight: 700; margin-bottom: 4px;
-          }
-          .g-step-detail {
-            font-size: 13px; color: var(--muted); line-height: 1.5;
-          }
-          .g-step-values {
-            display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;
-          }
-          .g-val-chip {
-            background: #f0f0ed; border: 1px solid var(--line);
-            border-radius: 8px; padding: 5px 12px;
-            font-size: 13px; font-weight: 600;
-          }
-          .g-val-chip span { color: var(--muted); font-weight: 400; font-size: 12px; }
-          .g-section-label {
-            font-size: 13px; font-weight: 700; color: var(--muted);
-            text-transform: uppercase; letter-spacing: 0.3px;
-            margin: 18px 0 8px;
-          }
-          .g-warn {
-            background: #fffbee; border: 1px solid #f0e0a0;
-            border-radius: 10px; padding: 12px 16px;
-            font-size: 13px; color: #5a4a00; margin-bottom: 12px;
-          }
-          .g-summary {
-            background: var(--green-soft); border: 1px solid #b8e4cc;
-            border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;
-            font-size: 14px; line-height: 1.6;
-          }
+          .g-section-title { font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line-soft); }
+          .g-step { display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-radius:10px;border:1px solid var(--line);margin-bottom:8px;background:#fff; }
+          .g-step-num { width:28px;min-width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800; }
+          .g-step-body { flex:1; }
+          .g-step-action { font-size:14px;font-weight:700;margin-bottom:4px; }
+          .g-step-detail { font-size:13px;color:#444;line-height:1.6; }
+          .g-step-values { display:flex;gap:10px;margin-top:8px;flex-wrap:wrap; }
+          .g-val-chip { background:#f0f0ed;border:1px solid var(--line);border-radius:8px;padding:5px 12px;font-size:13px;font-weight:600; }
+          .g-val-chip span { color:var(--muted);font-weight:400;font-size:12px; }
+          .g-phase-label { font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;margin:18px 0 8px; }
+          .g-warn { background:#fffbee;border:1px solid #f0e0a0;border-radius:10px;padding:12px 16px;font-size:13px;color:#5a4a00;margin-bottom:12px; }
+          .g-error { background:var(--danger-soft);border:1px solid #f5c6c2;border-radius:10px;padding:12px 16px;font-size:13px;color:var(--danger);margin-bottom:12px; }
+          .g-summary { background:var(--green-soft);border:1px solid #b8e4cc;border-radius:12px;padding:16px 20px;margin-bottom:16px;font-size:14px;line-height:1.6; }
+          .g-note { font-size:12px;color:var(--muted);margin-top:5px; }
         `;
         document.head.appendChild(s);
       }
 
-      root.querySelector(".g-calc-btn").addEventListener("click", () => calcGuillotine(id));
+      document.getElementById(`g-calc-btn-${id}`).addEventListener("click", () => calcGuillotine(id));
     }
 
     function gVal(id, field) {
       return parseFloat(document.getElementById(`g-${field}-${id}`)?.value || "0") || 0;
     }
 
+    function fmt(n) {
+      const r = Math.round(n * 10) / 10;
+      return r % 1 === 0 ? String(r) : r.toFixed(1);
+    }
+
+    // Core idea:
+    // - A cut value = distance from blade to stop = the piece that STAYS against the stop (the smaller piece)
+    // - "From large to small" means: we always position so the CUT-OFF piece is the larger one,
+    //   and the piece staying at the stop is the smaller one — BUT that smaller piece must be >= minCut
+    // - If the piece to keep at stop < minCut: we flip — keep the large piece at stop, cut off the small margin
+    //   But then the measurement = large piece size, which must be >= minCut. Usually it is.
+    // - After each cut the current piece size decreases — all subsequent measurements use the new size
+
     function calcGuillotine(id) {
-      const sheetW    = gVal(id, "sheet-w");
-      const sheetH    = gVal(id, "sheet-h");
-      const itemW     = gVal(id, "item-w");
-      const itemH     = gVal(id, "item-h");
-      const finalW    = gVal(id, "final-w");
-      const finalH    = gVal(id, "final-h");
-      const marginL   = gVal(id, "margin-left");
-      const marginR   = gVal(id, "margin-right");
-      const marginT   = gVal(id, "margin-top");
-      const marginB   = gVal(id, "margin-bottom");
-      const gapX      = gVal(id, "gap-x");
-      const gapY      = gVal(id, "gap-y");
-      const cols      = Math.max(1, Math.round(gVal(id, "cols")));
-      const rows      = Math.max(1, Math.round(gVal(id, "rows")));
-      const minCut    = gVal(id, "min-cut");
-      const block     = gVal(id, "block"); // brusk size
+      const sheetW = gVal(id,"sheet-w"), sheetH = gVal(id,"sheet-h");
+      const itemW  = gVal(id,"item-w"),  itemH  = gVal(id,"item-h");
+      const finalW = gVal(id,"final-w"), finalH = gVal(id,"final-h");
+      const mL = gVal(id,"margin-left"), mR = gVal(id,"margin-right");
+      const mT = gVal(id,"margin-top"),  mB = gVal(id,"margin-bottom");
+      const gapX = gVal(id,"gap-x"), gapY = gVal(id,"gap-y");
+      const cols = Math.max(1,Math.round(gVal(id,"cols")));
+      const rows = Math.max(1,Math.round(gVal(id,"rows")));
+      const minCut = gVal(id,"min-cut");
+      const block  = gVal(id,"block");
+      const resultEl = document.getElementById(`g-result-${id}`);
 
-      const resultEl  = document.getElementById(`g-result-${id}`);
-
-      // ── Validate ───────────────────────────────────────────────
+      // Geometry check
       const warnings = [];
+      const expW = mL + cols*itemW + (cols-1)*gapX + mR;
+      const expH = mT + rows*itemH + (rows-1)*gapY + mB;
+      if (Math.abs(expW-sheetW)>0.5) warnings.push(`Ширина: поля+макеты = ${fmt(expW)} мм, лист = ${fmt(sheetW)} мм.`);
+      if (Math.abs(expH-sheetH)>0.5) warnings.push(`Высота: поля+макеты = ${fmt(expH)} мм, лист = ${fmt(sheetH)} мм.`);
 
-      const expectedW = marginL + cols * itemW + (cols - 1) * gapX + marginR;
-      const expectedH = marginT + rows * itemH + (rows - 1) * gapY + marginB;
+      const bleedH = (itemH - finalH) / 2;
+      const bleedW = (itemW - finalW) / 2;
+      const steps  = [];
 
-      if (Math.abs(expectedW - sheetW) > 1) {
-        warnings.push(`Проверьте ширину: поля + макеты + зазоры = ${fmt(expectedW)} мм, но лист ${fmt(sheetW)} мм. Разница ${fmt(sheetW - expectedW)} мм.`);
-      }
-      if (Math.abs(expectedH - sheetH) > 1) {
-        warnings.push(`Проверьте высоту: поля + макеты + зазоры = ${fmt(expectedH)} мм, но лист ${fmt(sheetH)} мм. Разница ${fmt(sheetH - expectedH)} мм.`);
-      }
-
-      // ── Build cut plan ─────────────────────────────────────────
-      // Strategy: first cut all horizontal strips (rows), then cut columns within each strip.
-      // This minimises total steps because you work with fewer, uniform pieces at each stage.
+      // ── Core logic ────────────────────────────────────────────
+      // Rules:
+      //   1. Upor (stop) holds the BIG piece. Scale value = size of big piece.
+      //   2. Scale value must be >= minCut.
+      //   3. Scale value <= current piece size (obvious).
+      //   4. To avoid sheet swinging: cut-off must be <= stop piece.
+      //      i.e. cut-off <= pieceSize/2, i.e. stop >= pieceSize/2. 
+      //      This means we always cut off the SMALLER half.
+      //   5. Cut off the smaller margin first (smallest cut-off = easiest first step).
+      //      Then cut strips of itemSize from the same direction.
+      //      When the remaining big piece minus itemSize would be < minCut,
+      //      flip the piece and approach from the other end for remaining strips.
       //
-      // After each cut the remaining piece changes size, so the stop-to-blade distance changes.
-      // We track current piece dimensions and compute each measurement from scratch.
+      // For each axis we build steps with:
+      //   stopVal = value to set on the machine (size of big piece kept at stop)
+      //   pieceSize = current piece size before this cut
+      //   cutOff = pieceSize - stopVal (small piece that falls off)
 
-      const steps = [];
+      function axisSteps(total, mNear, mFar, count, item, gap, isH) {
+        const S = [];
+        const farLabel  = isH ? "нижнего" : "правого";
+        const nearLabel = isH ? "верхнего" : "левого";
+        const edgeFar   = isH ? "нижним краем" : "правым краем";
+        const edgeNear  = isH ? "верхним краем" : "левым краем";
+        const stripWord = isH ? "полоса" : "колонка";
+        const layWord   = isH ? "горизонтально" : "вертикально";
 
-      // ─ Phase 1: Horizontal cuts (separate rows) ────────────────
-      // We make (rows+1) cuts to isolate each row:
-      //   - trim top margin
-      //   - (rows-1) cuts between rows
-      //   - trim bottom (left-over = marginB + bleed)
-      //
-      // Then within each row strip, make (cols+1) cuts:
-      //   - trim left margin
-      //   - (cols-1) cuts between cols
-      //   - trim right
+        // Choose which margin to trim first: the SMALLER one
+        // (smaller cut-off = safer/easier first cut)
+        const trimFarFirst = mFar <= mNear;
 
-      // Compute horizontal cut positions from top of original sheet
-      // Cut positions are measured from the BOTTOM when using the stop (standard practice).
-      // We'll generate instructions referencing from the piece currently on the table.
+        let cur = total;
+        let nearTrimmed = false;
+        let farTrimmed  = false;
 
-      // ─ Phase 1: cut strips (horizontal, separate rows) ─────────
-      steps.push({ phase: "Фаза 1 — Горизонтальные резы: отделяем строки" });
-
-      // Current remaining height as we peel strips from the bottom
-      // Orientation: feed sheet with long side toward blade.
-      // Each strip height = itemH (after we trim margins). But we cut including margins first.
-
-      // Positions from bottom of sheet for each horizontal cut:
-      // From bottom: marginB, marginB+itemH, marginB+itemH+gapY, marginB+2*itemH+gapY, ...
-      // We'll cut from bottom upward, which means we set stop to distance from blade.
-
-      // Build list of Y positions (from bottom of sheet) where we place the blade:
-      // Bottom margin cut, then between each row, then top margin removed last (or first from top).
-      //
-      // Most practical approach: lay sheet, trim one edge first, then flip and do measured cuts.
-
-      // Step 1a: Trim bottom margin (if exists)
-      let curH = sheetH; // current piece height
-
-      if (marginB > 0.5) {
-        const dist = marginB;
-        steps.push(buildCutStep(
-          steps.filter(s=>s.action).length + 1,
-          "Горизонтальный рез — обрезка нижнего поля",
-          `Положите лист горизонтально (лицом вверх). Установите упор на ${fmt(dist)} мм — это нижнее поле.`,
-          dist, block, minCut,
-          `Отрезаемый край: ${fmt(dist)} мм. Оставшийся лист: ${fmt(curH - dist)} мм`
-        ));
-        curH -= dist;
-      }
-
-      // Step 1b: Cut rows from bottom up
-      // After trimming bottom margin, each strip from the bottom is: itemH (first strip), then gapY+itemH for subsequent
-      for (let r = 0; r < rows - 1; r++) {
-        const dist = itemH + (r === 0 ? 0 : 0); // first cut = itemH from new bottom
-        // Actually: cut at itemH from bottom of current piece (already trimmed)
-        // For subsequent rows, same: itemH from bottom of what remains after last cut
-        // Because we already removed margin and each row is equal height
-        const cutDist = itemH; // distance from bottom of current piece
-        steps.push(buildCutStep(
-          steps.filter(s=>s.action).length + 1,
-          `Горизонтальный рез — строка ${r + 1} (снизу)`,
-          `Отрежьте полосу снизу. Упор = ${fmt(cutDist)} мм. Получаете полосу строки ${r + 1}.`,
-          cutDist, block, minCut,
-          `Отрезается полоса ${fmt(itemH)} мм. Отложите её. Оставшийся кусок: ${fmt(curH - cutDist)} мм`
-        ));
-        curH -= cutDist;
-        // If there's a gap, trim it
-        if (gapY > 0.5 && r < rows - 2) {
-          steps.push(buildCutStep(
-            steps.filter(s=>s.action).length + 1,
-            `Горизонтальный рез — зазор между строками ${r + 1} и ${r + 2}`,
-            `Обрежьте зазор ${fmt(gapY)} мм снизу оставшегося куска.`,
-            gapY, block, minCut,
-            `Убрать зазор. Оставшийся кусок: ${fmt(curH - gapY)} мм`
-          ));
-          curH -= gapY;
+        // Step 1: trim the smaller margin
+        if (trimFarFirst && mFar > 0.001) {
+          // Feed far edge to stop. stop = total - mFar. cut-off = mFar.
+          S.push(step(`Обрезка ${farLabel} поля`,
+            `Положите лист ${layWord}. Подайте ${edgeFar} к упору. Обрежьте поле ${fmt(mFar)} мм — в отход.`,
+            cur - mFar, cur));
+          cur -= mFar;
+          farTrimmed = true;
+        } else if (!trimFarFirst && mNear > 0.001) {
+          // Feed near edge to stop. stop = total - mNear. cut-off = mNear.
+          S.push(step(`Обрезка ${nearLabel} поля`,
+            `Положите лист ${layWord}. Подайте ${edgeNear} к упору. Обрежьте поле ${fmt(mNear)} мм — в отход.`,
+            cur - mNear, cur));
+          cur -= mNear;
+          nearTrimmed = true;
         }
-      }
 
-      // Last strip = remaining piece (which is itemH + marginT)
-      if (marginT > 0.5) {
-        const dist = marginT;
-        steps.push(buildCutStep(
-          steps.filter(s=>s.action).length + 1,
-          "Горизонтальный рез — обрезка верхнего поля с последней полосы",
-          `На последней полосе (строка ${rows}) обрежьте верхнее поле.`,
-          dist, block, minCut,
-          `Верхнее поле ${fmt(dist)} мм. Осталась полоса ${fmt(curH - dist)} мм`
-        ));
-        curH -= dist;
-      }
+        // Step 2: cut strips.
+        // We work from the trimmed edge (clean reference edge).
+        // Feed that trimmed edge to stop. Stop = cur - item. cut-off = item (the strip).
+        // This continues until: cur - item - gap < minCut (next cut would be impossible).
+        // At that point we flip and work from the other end.
 
-      // ─ Phase 2: trim bleed from each strip (make final height) ─
-      const bleedPerSide = (itemH - finalH) / 2;
-      if (bleedPerSide > 0.05) {
-        steps.push({ phase: `Фаза 2 — Обрезка вылета по высоте (для каждой полосы)` });
-        // Do this for each strip identically
-        let stripH = itemH;
-        steps.push(buildCutStep(
-          steps.filter(s=>s.action).length + 1,
-          "Обрезка нижнего вылета полосы",
-          `Возьмите каждую полосу. Обрежьте снизу вылет ${fmt(bleedPerSide)} мм.`,
-          bleedPerSide, block, minCut,
-          `Отрезать по ${fmt(bleedPerSide)} мм снизу каждой полосы. Осталось ${fmt(stripH - bleedPerSide)} мм`
-        ));
-        stripH -= bleedPerSide;
-        steps.push(buildCutStep(
-          steps.filter(s=>s.action).length + 1,
-          "Обрезка верхнего вылета полосы",
-          `Переверните полосу. Обрежьте оставшийся вылет.`,
-          bleedPerSide, block, minCut,
-          `Финальная высота полосы: ${fmt(finalH)} мм`
-        ));
-      }
+        const feedEdge = (trimFarFirst || !nearTrimmed) ? edgeFar : edgeNear;
+        const otherEdge = feedEdge === edgeFar ? edgeNear : edgeFar;
+        const otherMarginLabel = feedEdge === edgeFar ? nearLabel : farLabel;
+        const otherMargin = feedEdge === edgeFar ? mNear : mFar;
 
-      // ─ Phase 3: vertical cuts within each strip ─────────────────
-      steps.push({ phase: `Фаза 3 — Вертикальные резы: отделяем колонки (для каждой полосы)` });
+        let stripsLeft = count;
+        let fromFarSide = trimFarFirst;
 
-      let curW = sheetW;
-      const bleedPerSideW = (itemW - finalW) / 2;
+        for (let i = 0; i < count; i++) {
+          const isLast = stripsLeft === 1;
 
-      // Trim left margin
-      if (marginL > 0.5) {
-        steps.push(buildCutStep(
-          steps.filter(s=>s.action).length + 1,
-          "Вертикальный рез — обрезка левого поля",
-          `Поверните полосу вертикально. Обрежьте левое поле ${fmt(marginL)} мм.`,
-          marginL, block, minCut,
-          `Оставшаяся ширина: ${fmt(curW - marginL)} мм`
-        ));
-        curW -= marginL;
-      }
+          if (isLast) {
+            // Last strip: cur = item + (untrimmed margin)
+            const untrimmed = fromFarSide ? (nearTrimmed ? 0 : mNear) : (farTrimmed ? 0 : mFar);
+            const ue = fromFarSide ? (nearTrimmed ? null : edgeNear) : (farTrimmed ? null : edgeFar);
+            const ul = fromFarSide ? nearLabel : farLabel;
 
-      // Cut columns from left
-      for (let c = 0; c < cols - 1; c++) {
-        // Cut at itemW from left (which is now the bottom-edge after rotation)
-        const cutDist = itemW;
-        steps.push(buildCutStep(
-          steps.filter(s=>s.action).length + 1,
-          `Вертикальный рез — колонка ${c + 1}`,
-          `Отрежьте полосу шириной ${fmt(itemW)} мм слева.`,
-          cutDist, block, minCut,
-          `Получаете столбец ${c + 1}. Оставшаяся ширина: ${fmt(curW - cutDist)} мм`
-        ));
-        curW -= cutDist;
-        if (gapX > 0.5 && c < cols - 2) {
-          steps.push(buildCutStep(
-            steps.filter(s=>s.action).length + 1,
-            `Вертикальный рез — зазор между колонками ${c + 1} и ${c + 2}`,
-            `Обрежьте зазор ${fmt(gapX)} мм.`,
-            gapX, block, minCut,
-            `Оставшаяся ширина: ${fmt(curW - gapX)} мм`
-          ));
-          curW -= gapX;
+            if (untrimmed > 0.001) {
+              // Flip to cut the remaining margin off the last strip
+              const flipEdge = fromFarSide ? edgeNear : edgeFar;
+              S.push(step(`Обрезка ${ul} поля (последний кусок)`,
+                `Переверните кусок. Подайте ${flipEdge} к упору. Обрежьте поле ${fmt(untrimmed)} мм — в отход.`,
+                item, cur)); // stop = item (the strip size)
+            }
+            // Last strip is what remains — no cut needed
+            break;
+          }
+
+          // Check if next cut after this would violate minCut
+          // After this cut: cur becomes cur - item.
+          // After gap (if any): cur becomes cur - item - gap.
+          // The NEXT strip cut would require stop = (cur-item-gap) - item. Must be >= minCut.
+          const afterThisAndGap = cur - item - (gap > 0.001 ? gap : 0);
+
+          if (stripsLeft > 2 && afterThisAndGap - item < minCut - 0.05) {
+            // Cutting one more after this would be impossible. Switch to other side.
+            // Don't cut this strip from current direction. Flip now.
+            break;
+          }
+
+          // Normal strip cut
+          const stopV = cur - item;
+          const currentEdge = fromFarSide ? edgeFar : edgeNear;
+          S.push(step(`${stripWord.charAt(0).toUpperCase()+stripWord.slice(1)} ${count - stripsLeft + 1} из ${count}`,
+            `Подайте ${currentEdge} к упору. Отрезается ${stripWord} (${fmt(item)} мм). Отложите.`,
+            stopV, cur));
+          cur = stopV;
+          stripsLeft--;
+
+          if (gap > 0.001) {
+            S.push(step(`Зазор`,
+              `Подайте ${currentEdge} к упору. Срежьте зазор ${fmt(gap)} мм — в отход.`,
+              cur - gap, cur));
+            cur -= gap;
+          }
         }
+
+        // Remaining strips (if we broke early)
+        if (stripsLeft > 1) {
+          const untrMargin = fromFarSide ? (nearTrimmed ? 0 : mNear) : (farTrimmed ? 0 : mFar);
+          const untrLabel  = fromFarSide ? nearLabel : farLabel;
+          const flipEdge   = fromFarSide ? edgeNear : edgeFar;
+          const newFromFar = !fromFarSide;
+
+          if (untrMargin > 0.001) {
+            S.push(step(`Обрезка ${untrLabel} поля (переворот)`,
+              `Переверните оставшийся блок. Подайте ${flipEdge} к упору. Обрежьте поле ${fmt(untrMargin)} мм — в отход.`,
+              cur - untrMargin, cur));
+            cur -= untrMargin;
+            if (fromFarSide) nearTrimmed = true; else farTrimmed = true;
+          }
+
+          const newFeedEdge = newFromFar ? edgeFar : edgeNear;
+
+          for (let j = 0; j < stripsLeft; j++) {
+            const isLast = (j === stripsLeft - 1);
+            if (isLast) break; // last strip just remains
+
+            S.push(step(`${stripWord.charAt(0).toUpperCase()+stripWord.slice(1)} (другая сторона)`,
+              `Подайте ${newFeedEdge} к упору. Отрезается ${stripWord} (${fmt(item)} мм). Отложите.`,
+              cur - item, cur));
+            cur -= item;
+
+            if (gap > 0.001 && j < stripsLeft - 2) {
+              S.push(step(`Зазор`,
+                `Подайте ${newFeedEdge} к упору. Срежьте зазор ${fmt(gap)} мм — в отход.`,
+                cur - gap, cur));
+              cur -= gap;
+            }
+          }
+        }
+
+        return S;
       }
 
-      // Last col = remaining, trim right margin
-      if (marginR > 0.5) {
-        steps.push(buildCutStep(
-          steps.filter(s=>s.action).length + 1,
-          "Вертикальный рез — обрезка правого поля с последней колонки",
-          `На последней колонке обрежьте правое поле ${fmt(marginR)} мм.`,
-          marginR, block, minCut,
-          `Оставшаяся ширина: ${fmt(curW - marginR)} мм`
-        ));
-        curW -= marginR;
+      function step(action, detail, stopVal, pieceSize) {
+        const tooSmall = stopVal < minCut - 0.05;
+        const withBlock = block > 0 ? Math.max(0, stopVal - block) : null;
+        return { action, detail, stopVal, pieceSize, withBlock, tooSmall };
       }
 
-      // ─ Phase 4: trim bleed horizontally from each column strip ──
-      if (bleedPerSideW > 0.05) {
-        steps.push({ phase: `Фаза 4 — Обрезка вылета по ширине (для каждой колонки)` });
-        let colW = itemW;
-        steps.push(buildCutStep(
-          steps.filter(s=>s.action).length + 1,
-          "Обрезка левого вылета колонки",
-          `На каждой колонке обрежьте вылет ${fmt(bleedPerSideW)} мм слева.`,
-          bleedPerSideW, block, minCut,
-          `Осталось ${fmt(colW - bleedPerSideW)} мм`
-        ));
-        colW -= bleedPerSideW;
-        steps.push(buildCutStep(
-          steps.filter(s=>s.action).length + 1,
-          "Обрезка правого вылета колонки",
-          `Переверните. Обрежьте оставшийся вылет.`,
-          bleedPerSideW, block, minCut,
-          `Финальная ширина: ${fmt(finalW)} мм`
-        ));
+      // Phase 1: horizontal cuts (rows)
+      steps.push({ phase: "ФАЗА 1 — Горизонтальные резы: выделяем строки" });
+      for (const s of axisSteps(sheetH, mT, mB, rows, itemH, gapY, true)) steps.push(s);
+
+      // Phase 2: bleed trim (height)
+      if (bleedH > 0.05) {
+        steps.push({ phase: `ФАЗА 2 — Вылет по высоте ${fmt(bleedH)} мм (каждую полосу)` });
+        steps.push(step("Вылет — первая сторона",
+          `Каждую полосу (${fmt(itemH)} мм) подайте к упору. Обрежьте вылет ${fmt(bleedH)} мм.`,
+          itemH - bleedH, itemH));
+        steps.push(step("Вылет — вторая сторона",
+          `Переверните. Подайте другим краем. Обрежьте вылет ${fmt(bleedH)} мм → финал ${fmt(finalH)} мм.`,
+          finalH, itemH - bleedH));
       }
 
-      // ─ Render ──────────────────────────────────────────────────
-      const totalSteps = steps.filter(s => s.action).length;
-      const totalItems = cols * rows;
+      // Phase 3: vertical cuts (columns)
+      steps.push({ phase: "ФАЗА 3 — Вертикальные резы: выделяем колонки (для каждой полосы)" });
+      for (const s of axisSteps(sheetW, mL, mR, cols, itemW, gapX, false)) steps.push(s);
 
-      let html = `
-        <div style="margin-top:20px;">
-          <div class="g-summary">
-            <strong>Итог:</strong> ${totalItems} изделий ${fmt(finalW)}×${fmt(finalH)} мм
-            из листа ${fmt(sheetW)}×${fmt(sheetH)} мм — 
-            сетка ${cols}×${rows}, всего <strong>${totalSteps} резов</strong>.
-          </div>
-      `;
+      // Phase 4: bleed trim (width)
+      if (bleedW > 0.05) {
+        steps.push({ phase: `ФАЗА 4 — Вылет по ширине ${fmt(bleedW)} мм (каждую колонку)` });
+        steps.push(step("Вылет — первая сторона",
+          `Каждую колонку (${fmt(itemW)} мм) подайте к упору. Обрежьте вылет ${fmt(bleedW)} мм.`,
+          itemW - bleedW, itemW));
+        steps.push(step("Вылет — вторая сторона",
+          `Переверните. Подайте другим краем. Обрежьте вылет ${fmt(bleedW)} мм → финал ${fmt(finalW)} мм.`,
+          finalW, itemW - bleedW));
+      }
 
-      if (warnings.length) {
+      // ── Render ────────────────────────────────────────────────
+      const actionSteps = steps.filter(s => s.stopVal !== undefined);
+      const totalItems  = cols * rows;
+
+      let html = `<div style="margin-top:20px;">
+        <div class="g-summary">
+          <strong>${totalItems} изделий</strong> ${fmt(finalW)}×${fmt(finalH)} мм
+          из листа ${fmt(sheetW)}×${fmt(sheetH)} мм, сетка ${cols}×${rows} —
+          итого <strong>${actionSteps.length} резов</strong>.
+        </div>`;
+
+      if (warnings.length)
         html += warnings.map(w => `<div class="g-warn">⚠️ ${escapeHtml(w)}</div>`).join("");
-      }
 
       let stepNum = 0;
-      for (const step of steps) {
-        if (step.phase) {
-          html += `<div class="g-section-label">✂️ ${escapeHtml(step.phase)}</div>`;
+      for (const s of steps) {
+        if (s.phase) {
+          html += `<div class="g-phase-label">✂️ ${escapeHtml(s.phase)}</div>`;
         } else {
           stepNum++;
-          html += renderGStep(stepNum, step);
+          html += `<div class="g-step">
+            <div class="g-step-num">${stepNum}</div>
+            <div class="g-step-body">
+              <div class="g-step-action">${escapeHtml(s.action)}</div>
+              <div class="g-step-detail">${escapeHtml(s.detail)}</div>
+              <div class="g-step-values">
+                <div class="g-val-chip">Без бруска: <span>${fmt(s.stopVal)} мм</span></div>
+                ${block > 0 ? `<div class="g-val-chip">С бруском ${fmt(block)} мм: <span>${fmt(Math.max(0, s.stopVal - block))} мм</span></div>` : ""}
+                <div class="g-val-chip" style="font-size:11px;color:var(--muted)">отрезается: ${fmt(s.pieceSize - s.stopVal)} мм</div>
+              </div>
+              ${s.tooSmall ? `<div style="margin-top:6px;padding:8px 12px;background:var(--danger-soft);border:1px solid #f5c6c2;border-radius:8px;font-size:12px;color:var(--danger);">🚫 Упор ${fmt(s.stopVal)} мм < минимального реза (${fmt(minCut)} мм). Пересмотрите раскладку.</div>` : ""}
+            </div>
+          </div>`;
         }
       }
 
       html += `</div>`;
       resultEl.innerHTML = html;
     }
-
-    function buildCutStep(num, action, detail, dist, block, minCut, note) {
-      const withoutBlock = dist;
-      const withBlock    = Math.max(0, dist - block);
-      const tooSmall     = withoutBlock < minCut || (block > 0 && withBlock < minCut);
-      return { action, detail, dist, withoutBlock, withBlock, block, minCut, tooSmall, note };
-    }
-
-    function renderGStep(num, step) {
-      const blockNote = step.block > 0
-        ? `<div class="g-val-chip">С бруском (${fmt(step.block)} мм): <span>${fmt(step.withBlock)} мм</span></div>`
-        : "";
-
-      const warn = step.tooSmall
-        ? `<div style="margin-top:6px;font-size:12px;color:var(--danger);">
-             ⚠️ Значение меньше минимального реза (${fmt(step.minCut)} мм). Используйте подкладку или переориентируйте лист.
-           </div>`
-        : "";
-
-      return `
-        <div class="g-step">
-          <div class="g-step-num">${num}</div>
-          <div class="g-step-body">
-            <div class="g-step-action">${escapeHtml(step.action)}</div>
-            <div class="g-step-detail">${escapeHtml(step.detail)}</div>
-            <div class="g-step-values">
-              <div class="g-val-chip">Без бруска: <span>${fmt(step.withoutBlock)} мм</span></div>
-              ${blockNote}
-            </div>
-            ${step.note ? `<div style="margin-top:6px;font-size:12px;color:var(--muted);">${escapeHtml(step.note)}</div>` : ""}
-            ${warn}
-          </div>
-        </div>
-      `;
-    }
-
-    function fmt(n) {
-      const rounded = Math.round(n * 10) / 10;
-      return rounded % 1 === 0 ? String(rounded) : rounded.toFixed(1);
-    }
-
     // ── FOLD PRICE DATA ────────────────────────────────────────────
     // Base prices from pricelist (per sheet of that exact format)
     const FOLD_PRICES = {
