@@ -1143,8 +1143,8 @@
               <div class="g-step-action">${escapeHtml(s.action)}</div>
               <div class="g-step-detail">${escapeHtml(s.detail)}</div>
               <div class="g-step-values">
-                <div class="g-val-chip">На шкале: <span>${fmt(s.stopVal)} мм</span></div>
-                ${block > 0 ? `<div class="g-val-chip" style="background:#edf7f2;border-color:#b8e4cc;">С бруском: <span>${fmt(Math.max(0, s.stopVal - block))} мм</span></div>` : ""}
+                <div class="g-val-chip">Без бруска: <span>${fmt(s.stopVal)} мм</span></div>
+                ${block > 0 ? `<div class="g-val-chip" style="background:#edf7f2;border-color:#b8e4cc;">С бруском ${fmt(block)} мм: <span>${fmt(s.stopVal + block)} мм</span></div>` : ""}
                 ${s.pieceSize !== null && s.pieceSize !== undefined ? `<div class="g-val-chip" style="font-size:11px;color:var(--muted)">отрезается: ${fmt(s.pieceSize - s.stopVal)} мм</div>` : ""}
               </div>
               ${s.tooSmall ? `<div style="margin-top:6px;padding:8px 12px;background:var(--danger-soft);border:1px solid #f5c6c2;border-radius:8px;font-size:12px;color:var(--danger);">🚫 Упор ${fmt(s.stopVal)} мм < минимального реза (${fmt(minCut)} мм). Пересмотрите раскладку.</div>` : ""}
