@@ -970,136 +970,104 @@
       //   pieceSize = current piece size before this cut
       //   cutOff = pieceSize - stopVal (small piece that falls off)
 
+      // axisSteps: simple and correct guillotine sequence
+      // ─────────────────────────────────────────────────────────
+      // Concept (as user described):
+      //   1. Trim the near margin (upor = total - mNear, big piece at stop, margin falls off)
+      //   2. Repeat N-1 times: upor = item (constant), each time one strip falls off the feed side
+      //   3. Last piece = item + mFar. Flip, trim far margin: upor = item, margin falls off.
+      //
+      // The upor value for strip cuts = item (constant, same every time).
+      // For the margin cuts: upor = total - margin (large value, always >= minCut).
+      // If item < minCut → warn. Otherwise all steps are valid.
+      //
+      // "Near" = the side we feed first (the side whose margin we trim first).
+      // We choose near = the side with the SMALLER margin, so first cut-off is smallest.
+      // If both margins equal, near = "top" for H, "left" for V.
+      //
+      // Upor = size of the piece that stays at the stop (the big piece).
+      // For margin trim: big piece = total - margin (rest of sheet). Upor = total - margin.
+      // For strip cuts:  big piece = remaining block (total - margin - strips_cut_so_far).
+      //                  Upor = remaining - item  (the strip falls off the front).
+      //                  BUT after first strip: upor changes each time (remaining shrinks).
+      //
+      // WAIT — re-reading user's description more carefully:
+      // "Отрезаю поле, затем визитки по строкам" with the same stop value each time.
+      // This is ONLY possible if after trimming the margin the remaining = count * item (+ gaps),
+      // and each strip cut uses upor = (count-k) * item where k = strips already cut.
+      // These values DECREASE: count*item → (count-1)*item → ... → item.
+      // 
+      // So the sequence of upor values is DESCENDING for strip cuts.
+      // That is physically fine — each time you just move the stop closer.
+      // The user's "-4, -50, -4, -50" was describing the CUT-OFF sizes alternating (margin, strip, margin, strip...),
+      // not the upor values.
+      //
+      // FINAL CORRECT SEQUENCE:
+      //   Step 1: Trim near margin. Upor = total - mNear. (Large, set once.)
+      //   Steps 2..N: Cut strips 1..(count-1). Upor decreases by item each time.
+      //               Upor_k = total - mNear - k*item - k_gaps  for k=1..count-1
+      //               Equivalently: upor starts at (total-mNear-item) and decreases by (item+gap) each step.
+      //   Step N+1: Last piece = item + mFar. Flip. Trim far margin. Upor = item.
+      //
+      // All upor values >= minCut as long as item >= minCut (warn if not).
+
       function axisSteps(total, mNear, mFar, count, item, gap, isH) {
         const S = [];
         const farLabel  = isH ? "нижнего" : "правого";
         const nearLabel = isH ? "верхнего" : "левого";
-        const edgeFar   = isH ? "нижним краем" : "правым краем";
         const edgeNear  = isH ? "верхним краем" : "левым краем";
+        const edgeFar   = isH ? "нижним краем" : "правым краем";
         const stripWord = isH ? "полоса" : "колонка";
         const layWord   = isH ? "горизонтально" : "вертикально";
 
-        // Choose which margin to trim first: the SMALLER one
-        // (smaller cut-off = safer/easier first cut)
-        const trimFarFirst = mFar <= mNear;
+        // Pick start side: trim the SMALLER margin first
+        const startFromFar = mFar < mNear;
+        const firstMargin  = startFromFar ? mFar : mNear;
+        const lastMargin   = startFromFar ? mNear : mFar;
+        const firstEdge    = startFromFar ? edgeFar : edgeNear;
+        const lastEdge     = startFromFar ? edgeNear : edgeFar;
+        const firstLabel   = startFromFar ? farLabel : nearLabel;
+        const lastLabel    = startFromFar ? nearLabel : farLabel;
 
-        let cur = total;
-        let nearTrimmed = false;
-        let farTrimmed  = false;
-
-        // Step 1: trim the smaller margin
-        if (trimFarFirst && mFar > 0.001) {
-          // Feed far edge to stop. stop = total - mFar. cut-off = mFar.
-          S.push(step(`Обрезка ${farLabel} поля`,
-            `Положите лист ${layWord}. Подайте ${edgeFar} к упору. Обрежьте поле ${fmt(mFar)} мм — в отход.`,
-            cur - mFar, cur));
-          cur -= mFar;
-          farTrimmed = true;
-        } else if (!trimFarFirst && mNear > 0.001) {
-          // Feed near edge to stop. stop = total - mNear. cut-off = mNear.
-          S.push(step(`Обрезка ${nearLabel} поля`,
-            `Положите лист ${layWord}. Подайте ${edgeNear} к упору. Обрежьте поле ${fmt(mNear)} мм — в отход.`,
-            cur - mNear, cur));
-          cur -= mNear;
-          nearTrimmed = true;
+        // ── Шаг 1: обрезать первое (меньшее) поле ────────────────
+        // Упор = total - firstMargin (большой кусок у упора, поле падает)
+        if (firstMargin > 0.001) {
+          S.push(step(
+            `Обрезка ${firstLabel} поля`,
+            `Положите лист ${layWord}. Подайте ${firstEdge} к упору. Поле ${fmt(firstMargin)} мм отрезается и падает.`,
+            total - firstMargin, total
+          ));
         }
 
-        // Step 2: cut strips.
-        // We work from the trimmed edge (clean reference edge).
-        // Feed that trimmed edge to stop. Stop = cur - item. cut-off = item (the strip).
-        // This continues until: cur - item - gap < minCut (next cut would be impossible).
-        // At that point we flip and work from the other end.
-
-        const feedEdge = (trimFarFirst || !nearTrimmed) ? edgeFar : edgeNear;
-        const otherEdge = feedEdge === edgeFar ? edgeNear : edgeFar;
-        const otherMarginLabel = feedEdge === edgeFar ? nearLabel : farLabel;
-        const otherMargin = feedEdge === edgeFar ? mNear : mFar;
-
-        let stripsLeft = count;
-        let fromFarSide = trimFarFirst;
-
-        for (let i = 0; i < count; i++) {
-          const isLast = stripsLeft === 1;
-
-          if (isLast) {
-            // Last strip: cur = item + (untrimmed margin)
-            const untrimmed = fromFarSide ? (nearTrimmed ? 0 : mNear) : (farTrimmed ? 0 : mFar);
-            const ue = fromFarSide ? (nearTrimmed ? null : edgeNear) : (farTrimmed ? null : edgeFar);
-            const ul = fromFarSide ? nearLabel : farLabel;
-
-            if (untrimmed > 0.001) {
-              // Flip to cut the remaining margin off the last strip
-              const flipEdge = fromFarSide ? edgeNear : edgeFar;
-              S.push(step(`Обрезка ${ul} поля (последний кусок)`,
-                `Переверните кусок. Подайте ${flipEdge} к упору. Обрежьте поле ${fmt(untrimmed)} мм — в отход.`,
-                item, cur)); // stop = item (the strip size)
-            }
-            // Last strip is what remains — no cut needed
-            break;
-          }
-
-          // Check if next cut after this would violate minCut
-          // After this cut: cur becomes cur - item.
-          // After gap (if any): cur becomes cur - item - gap.
-          // The NEXT strip cut would require stop = (cur-item-gap) - item. Must be >= minCut.
-          const afterThisAndGap = cur - item - (gap > 0.001 ? gap : 0);
-
-          if (stripsLeft > 2 && afterThisAndGap - item < minCut - 0.05) {
-            // Cutting one more after this would be impossible. Switch to other side.
-            // Don't cut this strip from current direction. Flip now.
-            break;
-          }
-
-          // Normal strip cut
-          const stopV = cur - item;
-          const currentEdge = fromFarSide ? edgeFar : edgeNear;
-          S.push(step(`${stripWord.charAt(0).toUpperCase()+stripWord.slice(1)} ${count - stripsLeft + 1} из ${count}`,
-            `Подайте ${currentEdge} к упору. Отрезается ${stripWord} (${fmt(item)} мм). Отложите.`,
-            stopV, cur));
-          cur = stopV;
-          stripsLeft--;
+        // ── Шаги 2..N: резать полосы с ПОСТОЯННЫМ упором = item ──
+        // После обрезки поля подаём тот же край к упору.
+        // Упор = item (размер одной полосы).
+        // Большой кусок (оставшиеся полосы) у упора, одна полоса падает с другой стороны.
+        // Упор одинаковый для КАЖДОЙ полосы — не меняется.
+        for (let i = 1; i <= count - 1; i++) {
+          S.push(step(
+            `${stripWord.charAt(0).toUpperCase() + stripWord.slice(1)} ${i} из ${count}`,
+            `Тот же край к упору. Упор не меняем — ${fmt(item)} мм. Отрезается ${stripWord} ${i} — отложите.`,
+            item, null  // pieceSize = null — упор фиксирован, не зависит от остатка
+          ));
 
           if (gap > 0.001) {
-            S.push(step(`Зазор`,
-              `Подайте ${currentEdge} к упору. Срежьте зазор ${fmt(gap)} мм — в отход.`,
-              cur - gap, cur));
-            cur -= gap;
+            S.push(step(
+              `Зазор`,
+              `Тот же край к упору. Упор = ${fmt(gap)} мм. Зазор отрезается — в отход.`,
+              gap, null
+            ));
           }
         }
 
-        // Remaining strips (if we broke early)
-        if (stripsLeft > 1) {
-          const untrMargin = fromFarSide ? (nearTrimmed ? 0 : mNear) : (farTrimmed ? 0 : mFar);
-          const untrLabel  = fromFarSide ? nearLabel : farLabel;
-          const flipEdge   = fromFarSide ? edgeNear : edgeFar;
-          const newFromFar = !fromFarSide;
-
-          if (untrMargin > 0.001) {
-            S.push(step(`Обрезка ${untrLabel} поля (переворот)`,
-              `Переверните оставшийся блок. Подайте ${flipEdge} к упору. Обрежьте поле ${fmt(untrMargin)} мм — в отход.`,
-              cur - untrMargin, cur));
-            cur -= untrMargin;
-            if (fromFarSide) nearTrimmed = true; else farTrimmed = true;
-          }
-
-          const newFeedEdge = newFromFar ? edgeFar : edgeNear;
-
-          for (let j = 0; j < stripsLeft; j++) {
-            const isLast = (j === stripsLeft - 1);
-            if (isLast) break; // last strip just remains
-
-            S.push(step(`${stripWord.charAt(0).toUpperCase()+stripWord.slice(1)} (другая сторона)`,
-              `Подайте ${newFeedEdge} к упору. Отрезается ${stripWord} (${fmt(item)} мм). Отложите.`,
-              cur - item, cur));
-            cur -= item;
-
-            if (gap > 0.001 && j < stripsLeft - 2) {
-              S.push(step(`Зазор`,
-                `Подайте ${newFeedEdge} к упору. Срежьте зазор ${fmt(gap)} мм — в отход.`,
-                cur - gap, cur));
-              cur -= gap;
-            }
-          }
+        // ── Последний кусок: полоса + второе поле ────────────────
+        // Переворачиваем, отрезаем второе поле. Упор = item.
+        if (lastMargin > 0.001) {
+          S.push(step(
+            `${stripWord.charAt(0).toUpperCase() + stripWord.slice(1)} ${count} из ${count} — обрезка ${lastLabel} поля`,
+            `Последний кусок (${fmt(item + lastMargin)} мм). Переверните — подайте ${lastEdge} к упору. Упор = ${fmt(item)} мм. Поле ${fmt(lastMargin)} мм падает.`,
+            item, item + lastMargin
+          ));
         }
 
         return S;
@@ -1107,8 +1075,7 @@
 
       function step(action, detail, stopVal, pieceSize) {
         const tooSmall = stopVal < minCut - 0.05;
-        const withBlock = block > 0 ? Math.max(0, stopVal - block) : null;
-        return { action, detail, stopVal, pieceSize, withBlock, tooSmall };
+        return { action, detail, stopVal, pieceSize, tooSmall };
       }
 
       // Phase 1: horizontal cuts (rows)
@@ -1169,7 +1136,7 @@
               <div class="g-step-values">
                 <div class="g-val-chip">Без бруска: <span>${fmt(s.stopVal)} мм</span></div>
                 ${block > 0 ? `<div class="g-val-chip">С бруском ${fmt(block)} мм: <span>${fmt(Math.max(0, s.stopVal - block))} мм</span></div>` : ""}
-                <div class="g-val-chip" style="font-size:11px;color:var(--muted)">отрезается: ${fmt(s.pieceSize - s.stopVal)} мм</div>
+                ${s.pieceSize !== null && s.pieceSize !== undefined ? `<div class="g-val-chip" style="font-size:11px;color:var(--muted)">отрезается: ${fmt(s.pieceSize - s.stopVal)} мм</div>` : ""}
               </div>
               ${s.tooSmall ? `<div style="margin-top:6px;padding:8px 12px;background:var(--danger-soft);border:1px solid #f5c6c2;border-radius:8px;font-size:12px;color:var(--danger);">🚫 Упор ${fmt(s.stopVal)} мм < минимального реза (${fmt(minCut)} мм). Пересмотрите раскладку.</div>` : ""}
             </div>
