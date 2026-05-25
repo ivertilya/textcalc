@@ -902,7 +902,18 @@
           .g-phase-label { font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;margin:18px 0 8px; }
           .g-warn { background:#fffbee;border:1px solid #f0e0a0;border-radius:10px;padding:12px 16px;font-size:13px;color:#5a4a00;margin-bottom:12px; }
           .g-error { background:var(--danger-soft);border:1px solid #f5c6c2;border-radius:10px;padding:12px 16px;font-size:13px;color:var(--danger);margin-bottom:12px; }
-          .g-summary { background:var(--green-soft);border:1px solid #b8e4cc;border-radius:12px;padding:16px 20px;margin-bottom:16px;font-size:14px;line-height:1.6; }
+          .g-step-check { cursor: pointer; }
+          .g-step-check:hover .g-step-num { background: var(--green); }
+          .g-step-done {
+            opacity: 0.45;
+          }
+          .g-step-done .g-step-num {
+            background: var(--green) !important;
+          }
+          .g-step-done .g-step-action {
+            text-decoration: line-through;
+            color: var(--muted);
+          } background:var(--green-soft);border:1px solid #b8e4cc;border-radius:12px;padding:16px 20px;margin-bottom:16px;font-size:14px;line-height:1.6; }
           .g-note { font-size:12px;color:var(--muted);margin-top:5px; }
         `;
         document.head.appendChild(s);
@@ -1012,67 +1023,93 @@
       // All upor values >= minCut as long as item >= minCut (warn if not).
 
       function axisSteps(total, mNear, mFar, count, item, gap, isH) {
-        // isH = true  → горизонтальные резы (вдоль высоты листа 450 мм)
-        //   "near" = верх листа (mT), "far" = низ листа (mB)
-        //   лист стоит вертикально (портрет), подаём короткой стороной к лезвию
-        // isH = false → вертикальные резы (вдоль ширины листа 320 мм)
-        //   "near" = левый край (mL), "far" = правый край (mR)
+        // Физика гильотины:
+        //   Упор сзади, нож спереди. Лист кладём и толкаем ДАЛЬНИМ краем к упору.
+        //   Нож отрезает то, что выступает СПЕРЕДИ (со стороны оператора).
+        //
+        //   Чтобы отрезать нижние N мм:
+        //     → нижний край выступает перед ножом (спереди)
+        //     → к упору подаём ВЕРХНИЙ край
+        //     → упор = total - N (расстояние от упора до ножа = размер куска у упора)
+        //
+        //   Чтобы отрезать верхние N мм:
+        //     → к упору подаём НИЖНИЙ край
+        //     → упор = total - N
+        //
+        //   "near" = верх (mT), "far" = низ (mB) для isH
+        //   "near" = лево (mL), "far" = право (mR) для !isH
 
         const S = [];
-        const farLabel  = isH ? "нижнего" : "правого";
-        const nearLabel = isH ? "верхнего" : "левого";
-        const edgeNear  = isH ? "верхний край" : "левый край";
-        const edgeFar   = isH ? "нижний край" : "правый край";
+
+        // Метки сторон
+        const cutFarLabel  = isH ? "нижнего" : "правого";   // отрезаем со стороны "far"
+        const cutNearLabel = isH ? "верхнего" : "левого";    // отрезаем со стороны "near"
+
+        // Чтобы отрезать со стороны "far": к упору подаём "near" край
+        const edgeToStopForFarCut  = isH ? "верхним краем к упору" : "левым краем к упору";
+        // Чтобы отрезать со стороны "near": к упору подаём "far" край
+        const edgeToStopForNearCut = isH ? "нижним краем к упору" : "правым краем к упору";
+
         const stripWord = isH ? "полоса" : "колонка";
 
-        // Всегда начинаем с МЕНЬШЕГО поля — оно отрезается первым
-        const startFromFar = mFar <= mNear;
-        const firstMargin  = startFromFar ? mFar : mNear;
-        const lastMargin   = startFromFar ? mNear : mFar;
-        const firstEdge    = startFromFar ? edgeFar : edgeNear;
-        const lastEdge     = startFromFar ? edgeNear : edgeFar;
-        const firstLabel   = startFromFar ? farLabel : nearLabel;
-        const lastLabel    = startFromFar ? nearLabel : farLabel;
+        // Начинаем с МЕНЬШЕГО поля (меньше мусора, легче первый рез)
+        const cutFarFirst = mFar <= mNear;   // сначала отрезаем "far" сторону?
+        const firstMarginCutLabel = cutFarFirst ? cutFarLabel : cutNearLabel;
+        const lastMarginCutLabel  = cutFarFirst ? cutNearLabel : cutFarLabel;
+        const firstEdgeToStop     = cutFarFirst ? edgeToStopForFarCut : edgeToStopForNearCut;
+        const lastEdgeToStop      = cutFarFirst ? edgeToStopForNearCut : edgeToStopForFarCut;
+        const firstMargin         = cutFarFirst ? mFar : mNear;
+        const lastMargin          = cutFarFirst ? mNear : mFar;
 
         // ── Шаг 1: отрезать меньшее поле ─────────────────────────
-        // Подаём firstEdge к упору. Упор = total − firstMargin.
-        // Маленькое поле (firstMargin) падает с другой стороны.
         if (firstMargin > 0.001) {
-          const sv = total - firstMargin;
+          const cutSide = cutFarFirst
+            ? (isH ? "снизу" : "справа")
+            : (isH ? "сверху" : "слева");
           S.push(step(
-            `Обрезка ${firstLabel} поля`,
-            `Подайте ${firstEdge} к упору. Отрезается поле ${fmt(firstMargin)} мм — в отход.`,
-            sv, total
+            `Обрезка поля ${cutSide} (${fmt(firstMargin)} мм)`,
+            `${firstEdgeToStop.charAt(0).toUpperCase() + firstEdgeToStop.slice(1)}. ` +
+            `Нож окажется у ${cutFarFirst ? (isH ? "нижнего" : "правого") : (isH ? "верхнего" : "левого")} края — отрезается поле ${fmt(firstMargin)} мм ${cutSide}. В отход. ` +
+            `Упор = ${fmt(total)} − ${fmt(firstMargin)} = ${fmt(total - firstMargin)} мм.`,
+            total - firstMargin, total
           ));
         }
 
-        // ── Шаги: резать полосы с ПОСТОЯННЫМ упором = item ───────
-        // Тот же край у упора. Упор не меняем — каждый раз item мм.
-        // Отрезанная полоса падает с противоположной стороны — откладываем.
+        // ── Шаги: полосы с ПОСТОЯННЫМ упором = item ───────────────
         for (let i = 1; i <= count - 1; i++) {
+          const cutSide = cutFarFirst
+            ? (isH ? "снизу" : "справа")
+            : (isH ? "сверху" : "слева");
           S.push(step(
             `${isH ? "Полоса" : "Колонка"} ${i} из ${count}`,
-            `${firstEdge.charAt(0).toUpperCase() + firstEdge.slice(1)} к упору, упор ${fmt(item)} мм. Отрезается ${stripWord} ${i} — отложите.`,
+            `${firstEdgeToStop.charAt(0).toUpperCase() + firstEdgeToStop.slice(1)}, упор = ${fmt(item)} мм (не меняем). ` +
+            `Отрезается ${stripWord} ${i} ${cutSide} — отложите.`,
             item, null
           ));
 
           if (gap > 0.001) {
             S.push(step(
               `Зазор`,
-              `Тот же край к упору, упор ${fmt(gap)} мм. Зазор — в отход.`,
+              `${firstEdgeToStop.charAt(0).toUpperCase() + firstEdgeToStop.slice(1)}, упор = ${fmt(gap)} мм. Зазор — в отход.`,
               gap, null
             ));
           }
         }
 
-        // ── Последний кусок: полоса + второе (большее) поле ──────
-        // Кусок = item + lastMargin. Переворачиваем — подаём lastEdge к упору.
-        // Упор = item. Поле (lastMargin) отрезается и падает.
+        // ── Последний кусок: полоса + второе поле ─────────────────
         if (lastMargin > 0.001) {
           const pieceSize = item + lastMargin;
+          const cutSideLast = cutFarFirst
+            ? (isH ? "сверху" : "слева")
+            : (isH ? "снизу" : "справа");
+          const cutEdgeLast = cutFarFirst
+            ? (isH ? "нижнего" : "правого")
+            : (isH ? "верхнего" : "левого");
           S.push(step(
-            `${isH ? "Полоса" : "Колонка"} ${count} из ${count} — обрезка ${lastLabel} поля`,
-            `Последний кусок ${fmt(pieceSize)} мм. Переверните — ${lastEdge} к упору, упор ${fmt(item)} мм. Поле ${fmt(lastMargin)} мм — в отход.`,
+            `${isH ? "Полоса" : "Колонка"} ${count} из ${count} — обрезка поля ${cutSideLast} (${fmt(lastMargin)} мм)`,
+            `Последний кусок = ${fmt(pieceSize)} мм. Переверните — ${lastEdgeToStop}. ` +
+            `Нож окажется у ${cutEdgeLast} края — отрезается поле ${fmt(lastMargin)} мм ${cutSideLast}. В отход. ` +
+            `Упор = ${fmt(item)} мм.`,
             item, pieceSize
           ));
         }
@@ -1081,7 +1118,7 @@
       }
 
       // stopVal = значение на шкале гильотины (без бруска)
-      // pieceSize = текущий размер куска (null = упор константный, не зависит от остатка)
+      // pieceSize = размер куска до реза (null = упор фиксирован)
       function step(action, detail, stopVal, pieceSize) {
         const tooSmall = stopVal < minCut - 0.05;
         return { action, detail, stopVal, pieceSize, tooSmall };
@@ -1137,8 +1174,12 @@
           html += `<div class="g-phase-label">✂️ ${escapeHtml(s.phase)}</div>`;
         } else {
           stepNum++;
-          html += `<div class="g-step">
-            <div class="g-step-num">${stepNum}</div>
+          const stepId = `gstep-${id}-${stepNum}`;
+          html += `<div class="g-step" id="${stepId}">
+            <label class="g-step-check" title="Отметить выполнено">
+              <input type="checkbox" class="g-checkbox" data-step="${stepId}" style="display:none">
+              <div class="g-step-num">${stepNum}</div>
+            </label>
             <div class="g-step-body">
               <div class="g-step-action">${escapeHtml(s.action)}</div>
               <div class="g-step-detail">${escapeHtml(s.detail)}</div>
@@ -1155,6 +1196,20 @@
 
       html += `</div>`;
       resultEl.innerHTML = html;
+
+      // Bind checkboxes — click the number to toggle done state
+      resultEl.querySelectorAll(".g-step-check").forEach(label => {
+        label.addEventListener("click", () => {
+          const cb   = label.querySelector(".g-checkbox");
+          cb.checked = !cb.checked;
+          const step = document.getElementById(cb.dataset.step);
+          if (step) step.classList.toggle("g-step-done", cb.checked);
+          const num  = label.querySelector(".g-step-num");
+          if (num) num.textContent = cb.checked ? "✓" : label.closest(".g-step").dataset.num || "";
+        });
+      });
+      // Store step numbers as data attr for toggle restore
+      resultEl.querySelectorAll(".g-step").forEach((el, i) => { el.dataset.num = i + 1; });
     }
     // ── FOLD PRICE DATA ────────────────────────────────────────────
     // Base prices from pricelist (per sheet of that exact format)
