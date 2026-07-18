@@ -226,6 +226,8 @@
     .card-type-badge.separator { color: #1a5fa0; border-color: #c3daf5; background: #eff6fd; }
     .card-type-badge.folding { color: #7a4a1a; border-color: #f5dfc3; background: #fdf6ef; }
     .card-type-badge.guillotine { color: #1a7a4a; border-color: #b8e4cc; background: #edf7f2; }
+    .card-type-badge.binding { color: #6a1a7a; border-color: #ddb8e4; background: #f7edfb; }
+    .card-type-badge.converter { color: #1a4a7a; border-color: #b8cce4; background: #edf2fb; }
 
     .card-name-input {
       flex: 1;
@@ -614,6 +616,8 @@
       <button class="btn-primary" id="addSeparatorBtn">+ Разделитель</button>
       <button class="btn-secondary" id="addFoldingBtn">+ Фальцовка</button>
       <button class="btn-secondary" id="addGuillotineBtn">+ Гильотина</button>
+      <button class="btn-secondary" id="addBindingBtn">+ Брошюровка</button>
+      <button class="btn-secondary" id="addConverterBtn">+ Конвертер</button>
       <div id="status" class="status-pill" style="display:none;"></div>
     </div>
 
@@ -719,6 +723,8 @@
     document.getElementById("addSeparatorBtn").addEventListener("click", () => addBlock("separator"));
     document.getElementById("addFoldingBtn").addEventListener("click", () => addBlock("folding"));
     document.getElementById("addGuillotineBtn").addEventListener("click", () => addBlock("guillotine"));
+    document.getElementById("addBindingBtn").addEventListener("click", () => addBlock("binding"));
+    document.getElementById("addConverterBtn").addEventListener("click", () => addBlock("converter"));
     document.getElementById("calculateAllBtn").addEventListener("click", calcAll);
     document.getElementById("clearBtn").addEventListener("click", clearAll);
 
@@ -744,11 +750,17 @@
         ? `<span class="card-type-badge separator">📄 Разделитель</span>`
         : type === "folding"
         ? `<span class="card-type-badge folding">📐 Фальцовка</span>`
-        : `<span class="card-type-badge guillotine">✂️ Гильотина</span>`;
+        : type === "guillotine"
+        ? `<span class="card-type-badge guillotine">✂️ Гильотина</span>`
+        : type === "binding"
+        ? `<span class="card-type-badge binding">📚 Брошюровка</span>`
+        : `<span class="card-type-badge converter">🔄 Конвертер</span>`;
 
       const defaultName = type === "separator" ? `Разделитель #${id}`
         : type === "folding" ? `Фальцовка #${id}`
-        : `Гильотина #${id}`;
+        : type === "guillotine" ? `Гильотина #${id}`
+        : type === "binding" ? `Брошюровка #${id}`
+        : `Конвертер #${id}`;
 
       card.innerHTML = `
         <div class="card-header">
@@ -759,7 +771,9 @@
         <div class="card-body">
           ${type === "separator" ? renderSeparatorBody(id)
           : type === "folding" ? renderFoldingBody(id)
-          : renderGuillotineBody(id)}
+          : type === "guillotine" ? renderGuillotineBody(id)
+          : type === "binding" ? renderBindingBody(id)
+          : renderConverterBody(id)}
         </div>
         ${type === "separator" ? `
         <div class="card-footer">
@@ -827,56 +841,38 @@
       if (!root) return;
 
       root.innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:20px;">
-          <div>
-            <div class="g-section-title">Лист</div>
-            <div class="grid-3">
-              <div class="field"><label>Ширина листа, мм</label><input type="number" class="g-input" id="g-sheet-w-${id}" value="320" min="1"></div>
-              <div class="field"><label>Высота листа, мм</label><input type="number" class="g-input" id="g-sheet-h-${id}" value="450" min="1"></div>
-              <div></div>
-            </div>
+        <div style="display:flex;flex-direction:column;gap:18px;">
+          <div class="grid-3">
+            <div class="field"><label>Ширина листа, мм</label><input type="number" class="g-input" id="g-sheet-w-${id}" value="320" min="1"></div>
+            <div class="field"><label>Высота листа, мм</label><input type="number" class="g-input" id="g-sheet-h-${id}" value="450" min="1"></div>
+            <div></div>
+            <div class="field"><label>Ширина макета, мм</label><input type="number" class="g-input" id="g-item-w-${id}" value="94" min="1"></div>
+            <div class="field"><label>Высота макета, мм</label><input type="number" class="g-input" id="g-item-h-${id}" value="54" min="1"></div>
+            <div></div>
+            <div class="field"><label>Финальная ширина, мм</label><input type="number" class="g-input" id="g-final-w-${id}" value="90" min="1"></div>
+            <div class="field"><label>Финальная высота, мм</label><input type="number" class="g-input" id="g-final-h-${id}" value="50" min="1"></div>
+            <div></div>
+            <div class="field"><label>Поле сверху, мм</label><input type="number" class="g-input" id="g-margin-top-${id}" value="11" min="0" step="0.1"></div>
+            <div class="field"><label>Поле снизу, мм</label><input type="number" class="g-input" id="g-margin-bottom-${id}" value="7" min="0" step="0.1"></div>
+            <div></div>
+            <div class="field"><label>Поле слева, мм</label><input type="number" class="g-input" id="g-margin-left-${id}" value="18" min="0" step="0.1"></div>
+            <div class="field"><label>Поле справа, мм</label><input type="number" class="g-input" id="g-margin-right-${id}" value="19.5" min="0" step="0.1"></div>
+            <div></div>
+            <div class="field"><label>Колонок</label><input type="number" class="g-input" id="g-cols-${id}" value="3" min="1"></div>
+            <div class="field"><label>Строк</label><input type="number" class="g-input" id="g-rows-${id}" value="8" min="1"></div>
+            <div></div>
           </div>
           <div>
-            <div class="g-section-title">Макет (размер до обрезки, включая вылеты)</div>
-            <div class="grid-3">
-              <div class="field"><label>Ширина макета, мм</label><input type="number" class="g-input" id="g-item-w-${id}" value="94" min="1"></div>
-              <div class="field"><label>Высота макета, мм</label><input type="number" class="g-input" id="g-item-h-${id}" value="54" min="1"></div>
-              <div></div>
-            </div>
-          </div>
-          <div>
-            <div class="g-section-title">Финальный размер изделия</div>
-            <div class="grid-3">
-              <div class="field"><label>Ширина, мм</label><input type="number" class="g-input" id="g-final-w-${id}" value="90" min="1"></div>
-              <div class="field"><label>Высота, мм</label><input type="number" class="g-input" id="g-final-h-${id}" value="50" min="1"></div>
-              <div></div>
-            </div>
-          </div>
-          <div>
-            <div class="g-section-title">Поля от края листа до первого макета</div>
-            <div class="grid-3">
-              <div class="field"><label>Слева, мм</label><input type="number" class="g-input" id="g-margin-left-${id}" value="19" min="0" step="0.1"></div>
-              <div class="field"><label>Справа, мм</label><input type="number" class="g-input" id="g-margin-right-${id}" value="19" min="0" step="0.1"></div>
-              <div class="field"><label>Зазор X между макетами, мм</label><input type="number" class="g-input" id="g-gap-x-${id}" value="0" min="0" step="0.1"></div>
-              <div class="field"><label>Сверху, мм</label><input type="number" class="g-input" id="g-margin-top-${id}" value="9" min="0" step="0.1"></div>
-              <div class="field"><label>Снизу, мм</label><input type="number" class="g-input" id="g-margin-bottom-${id}" value="9" min="0" step="0.1"></div>
-              <div class="field"><label>Зазор Y между макетами, мм</label><input type="number" class="g-input" id="g-gap-y-${id}" value="0" min="0" step="0.1"></div>
-            </div>
-          </div>
-          <div>
-            <div class="g-section-title">Сетка</div>
-            <div class="grid-3">
-              <div class="field"><label>Колонок</label><input type="number" class="g-input" id="g-cols-${id}" value="3" min="1"></div>
-              <div class="field"><label>Строк</label><input type="number" class="g-input" id="g-rows-${id}" value="8" min="1"></div>
-              <div></div>
-            </div>
-          </div>
-          <div>
-            <div class="g-section-title">Гильотина</div>
-            <div class="grid-3">
-              <div class="field"><label>Минимальный рез, мм</label><input type="number" class="g-input" id="g-min-cut-${id}" value="50" min="0" step="0.1"></div>
-              <div class="field"><label>Брусок на упоре, мм (0 = нет)</label><input type="number" class="g-input" id="g-block-${id}" value="6.5" min="0" step="0.1"></div>
-              <div></div>
+            <button type="button" class="g-advanced-toggle" id="g-adv-btn-${id}">▸ Дополнительные параметры</button>
+            <div id="g-advanced-${id}" style="display:none;margin-top:14px;">
+              <div class="grid-3">
+                <div class="field"><label>Зазор X между макетами, мм</label><input type="number" class="g-input" id="g-gap-x-${id}" value="0" min="0" step="0.1"></div>
+                <div class="field"><label>Зазор Y между макетами, мм</label><input type="number" class="g-input" id="g-gap-y-${id}" value="0" min="0" step="0.1"></div>
+                <div></div>
+                <div class="field"><label>Минимальный рез, мм</label><input type="number" class="g-input" id="g-min-cut-${id}" value="50" min="0" step="0.1"></div>
+                <div class="field"><label>Брусок на упоре, мм (0 = нет)</label><input type="number" class="g-input" id="g-block-${id}" value="6.5" min="0" step="0.1"></div>
+                <div></div>
+              </div>
             </div>
           </div>
           <div>
@@ -910,16 +906,25 @@
           .g-step-done .g-step-num {
             background: var(--green) !important;
           }
-          .g-step-done .g-step-action {
-            text-decoration: line-through;
-            color: var(--muted);
-          } background:var(--green-soft);border:1px solid #b8e4cc;border-radius:12px;padding:16px 20px;margin-bottom:16px;font-size:14px;line-height:1.6; }
+          .g-step-done .g-step-action { text-decoration:line-through;color:var(--muted); }
+          .g-summary { background:var(--green-soft);border:1px solid #b8e4cc;border-radius:12px;padding:16px 20px;margin-bottom:16px;font-size:14px;line-height:1.6; }
           .g-note { font-size:12px;color:var(--muted);margin-top:5px; }
+          .g-advanced-toggle { background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:4px 0;font-family:inherit;text-decoration:underline; }
+          .g-advanced-toggle:hover { color:var(--text); }
         `;
         document.head.appendChild(s);
       }
 
       document.getElementById(`g-calc-btn-${id}`).addEventListener("click", () => calcGuillotine(id));
+
+      // Advanced toggle
+      document.getElementById(`g-adv-btn-${id}`).addEventListener("click", () => {
+        const adv = document.getElementById(`g-advanced-${id}`);
+        const btn = document.getElementById(`g-adv-btn-${id}`);
+        const open = adv.style.display === "none";
+        adv.style.display = open ? "block" : "none";
+        btn.textContent = (open ? "▾ " : "▸ ") + "Дополнительные параметры";
+      });
     }
 
     function gVal(id, field) {
@@ -1454,6 +1459,10 @@
         initFoldingLines(card, id);
       } else if (type === "guillotine") {
         initGuillotine(card, id);
+      } else if (type === "binding") {
+        initBinding(card, id);
+      } else if (type === "converter") {
+        initConverter(card, id);
       }
     }
 
@@ -2256,38 +2265,43 @@
     // Detect wide/roll formats like A4x3, A3x4, A2x3 etc.
     // Logic: one side matches base format short side, other side ≈ base_long × N
     function detectWideFormat(w, h) {
-      const short = Math.min(w, h);
-      const long  = Math.max(w, h);
+      // Try both orientations
+      const candidates = [
+        { short: Math.min(w, h), long: Math.max(w, h) }
+      ];
 
-      // Bases that have wide variants in the pricelist
-      const bases = ["A4", "A3", "A2"];
+      const bases = ["A4", "A3", "A2", "A1"];
       let best = null;
-      let bestDiff = TOLERANCE_MM * 3; // must be within tolerance to match
+      let bestScore = Infinity;
 
-      for (const base of bases) {
-        const s = FORMATS[base];
-        const baseShort = Math.min(s.w, s.h); // shorter side (e.g. A4: 210)
-        const baseStep  = Math.max(s.w, s.h); // longer side used as step (e.g. A4: 297)
+      for (const { short, long } of candidates) {
+        for (const base of bases) {
+          const s = FORMATS[base];
+          const baseShort = Math.min(s.w, s.h);
+          const baseStep  = Math.max(s.w, s.h);
 
-        // Short side must match
-        const shortDiff = Math.abs(short - baseShort);
-        if (shortDiff > TOLERANCE_MM) continue;
+          const shortDiff = Math.abs(short - baseShort);
+          // Allow up to 15mm tolerance on short side (print bleed/variation)
+          if (shortDiff > 15) continue;
 
-        // Find the multiplier: how many base steps fit the long side
-        const rawN = long / baseStep;
-        // Try rounding to nearest integer ≥ 2
-        for (const n of [Math.round(rawN), Math.floor(rawN), Math.ceil(rawN)]) {
-          if (n < 2) continue;
-          const expectedLong = baseStep * n;
-          const diff = Math.abs(long - expectedLong) + shortDiff;
-          if (diff < bestDiff) {
-            bestDiff = diff;
-            best = `${base}x${n}`;
+          // Long side: find best integer multiplier ≥ 2
+          const rawN = long / baseStep;
+          for (const n of [Math.floor(rawN), Math.round(rawN), Math.ceil(rawN)]) {
+            if (n < 2 || n > 20) continue;
+            const expectedLong = baseStep * n;
+            const longDiff = Math.abs(long - expectedLong);
+            // Allow up to 20mm on long side (scales with length)
+            if (longDiff > 20) continue;
+            const score = shortDiff * 2 + longDiff; // weight short side accuracy more
+            if (score < bestScore) {
+              bestScore = score;
+              best = `${base}x${n}`;
+            }
           }
         }
       }
 
-      return best; // e.g. "A4x4", "A3x3", or null
+      return best;
     }
 
     function findNearest(w, h) {
