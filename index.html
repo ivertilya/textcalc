@@ -669,6 +669,54 @@
       A0: { w: 841, h: 1189 }
     };
 
+    // ── BINDING OPTIONS (prices from pricelist 01.12.2024) ────────
+    const BINDING_OPTIONS = [
+      {
+        key: "plastic_a4", label: "Пластиковая пружина А4",
+        tiers: [
+          { max: 40,  price: 110, code: "1085", label: "до 40 л, 8 мм"   },
+          { max: 80,  price: 140, code: "1086", label: "до 80 л, 12 мм"  },
+          { max: 120, price: 170, code: "1087", label: "до 120 л, 16 мм" },
+          { max: 180, price: 200, code: "1088", label: "до 180 л, 22 мм" },
+          { max: 240, price: 230, code: "1089", label: "до 240 л, 28 мм" },
+          { max: 340, price: 260, code: "1090", label: "до 340 л, 38 мм" },
+          { max: 500, price: 290, code: "1091", label: "до 500 л, 51 мм" }
+        ]
+      },
+      {
+        key: "plastic_a3", label: "Пластиковая пружина А3",
+        tiers: [
+          { max: 40,  price: 135, code: "1092", label: "до 40 л, 8 мм"   },
+          { max: 80,  price: 165, code: "1093", label: "до 80 л, 12 мм"  },
+          { max: 120, price: 195, code: "1094", label: "до 120 л, 16 мм" },
+          { max: 180, price: 225, code: "1095", label: "до 180 л, 22 мм" },
+          { max: 240, price: 255, code: "1096", label: "до 240 л, 28 мм" },
+          { max: 340, price: 285, code: "1097", label: "до 340 л, 38 мм" },
+          { max: 500, price: 315, code: "1098", label: "до 500 л, 51 мм" }
+        ]
+      },
+      {
+        key: "metal_a4", label: "Металлическая пружина А4",
+        tiers: [
+          { max: 35,  price: 125, code: "1099", label: "до 35 л, 6 мм"   },
+          { max: 50,  price: 140, code: "1100", label: "до 50 л, 8 мм"   },
+          { max: 80,  price: 155, code: "1101", label: "до 80 л, 10 мм"  },
+          { max: 100, price: 170, code: "1102", label: "до 100 л, 12 мм" },
+          { max: 120, price: 185, code: "1103", label: "до 120 л, 14 мм" }
+        ]
+      },
+      {
+        key: "metal_a3", label: "Металлическая пружина А3",
+        tiers: [
+          { max: 35,  price: 150, code: "1104", label: "до 35 л, 6 мм"   },
+          { max: 50,  price: 165, code: "1105", label: "до 50 л, 8 мм"   },
+          { max: 80,  price: 180, code: "1106", label: "до 80 л, 10 мм"  },
+          { max: 100, price: 195, code: "1107", label: "до 100 л, 12 мм" },
+          { max: 120, price: 210, code: "1108", label: "до 120 л, 14 мм" }
+        ]
+      }
+    ];
+
     // Цены на печать для разделителя
     const PRICES = {
       documentsBW: {
@@ -1216,6 +1264,320 @@
       // Store step numbers as data attr for toggle restore
       resultEl.querySelectorAll(".g-step").forEach((el, i) => { el.dataset.num = i + 1; });
     }
+
+    // ── БРОШЮРОВКА ─────────────────────────────────────────────────
+    function renderBindingBody(id) {
+      return `<div id="binding-ui-${id}"></div>`;
+    }
+
+    function initBinding(card, id) {
+      const root = document.getElementById(`binding-ui-${id}`);
+      if (!root) return;
+
+      root.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="grid-2">
+            <div class="field">
+              <label>Вид брошюровки</label>
+              <select id="b-type-${id}" style="height:42px;">
+                ${BINDING_OPTIONS.map(o => `<option value="${o.key}">${escapeHtml(o.label)}</option>`).join("")}
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество листов в экземпляре</label>
+              <input type="number" id="b-sheets-${id}" min="1" step="1" value="40">
+            </div>
+            <div class="field">
+              <label>Количество экземпляров</label>
+              <input type="number" id="b-copies-${id}" min="1" step="1" value="1">
+            </div>
+            <div></div>
+          </div>
+          <div>
+            <button type="button" class="btn-primary" id="b-calc-btn-${id}">Рассчитать</button>
+          </div>
+          <div id="b-result-${id}"></div>
+        </div>
+      `;
+
+      const recalc = () => {
+        const typeKey = document.getElementById(`b-type-${id}`).value;
+        const sheets  = Math.max(1, parseInt(document.getElementById(`b-sheets-${id}`).value) || 1);
+        const copies  = Math.max(1, parseInt(document.getElementById(`b-copies-${id}`).value) || 1);
+        const opt     = BINDING_OPTIONS.find(o => o.key === typeKey);
+        if (!opt) return;
+
+        let price, code, tierLabel;
+        if (opt.tiers) {
+          const tier = opt.tiers.find(t => sheets <= t.max) || opt.tiers[opt.tiers.length - 1];
+          price = tier.price; code = tier.code; tierLabel = tier.label;
+        } else {
+          price = opt.price; code = opt.code; tierLabel = opt.desc || "";
+        }
+
+        const total = price * copies;
+        const res = document.getElementById(`b-result-${id}`);
+        res.innerHTML = `
+          <div style="border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:4px;">
+            <table style="width:100%;border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding:10px 14px;background:#f7f7f5;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;">Тариф</th>
+                  <th style="text-align:center;padding:10px 14px;background:#f7f7f5;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;">Листов</th>
+                  <th style="text-align:center;padding:10px 14px;background:#f7f7f5;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;">Экз.</th>
+                  <th style="text-align:center;padding:10px 14px;background:#f7f7f5;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;">Цена/экз.</th>
+                  <th style="text-align:right;padding:10px 14px;background:#f7f7f5;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;">Сумма</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:12px 14px;">
+                    <div style="font-size:12px;color:var(--muted);">${escapeHtml(code)}</div>
+                    <div style="font-size:13px;font-weight:600;">${escapeHtml(opt.label)}</div>
+                    ${tierLabel ? `<div style="font-size:12px;color:var(--muted);">${escapeHtml(tierLabel)}</div>` : ""}
+                  </td>
+                  <td style="text-align:center;padding:12px 14px;">${sheets}</td>
+                  <td style="text-align:center;padding:12px 14px;">${copies}</td>
+                  <td style="text-align:center;padding:12px 14px;font-weight:600;">${money(price)}</td>
+                  <td style="text-align:right;padding:12px 14px;font-size:18px;font-weight:800;">${money(total)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>`;
+
+        // Update total
+        updateTotal();
+      };
+
+      document.getElementById(`b-calc-btn-${id}`).addEventListener("click", recalc);
+      document.getElementById(`b-type-${id}`).addEventListener("change", recalc);
+      document.getElementById(`b-sheets-${id}`).addEventListener("input", recalc);
+      document.getElementById(`b-copies-${id}`).addEventListener("input", recalc);
+      recalc(); // show default result immediately
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // ── КОНВЕРТЕР ФОРМАТОВ ─────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════
+
+    function renderConverterBody(id) {
+      return `<div id="converter-ui-${id}"></div>`;
+    }
+
+    function initConverter(card, id) {
+      const root = document.getElementById(`converter-ui-${id}`);
+      if (!root) return;
+
+      root.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="field">
+            <label>Файлы для конвертации (PDF, DOCX, JPG, PNG, WEBP, HEIC, HEIF, BMP, TIFF)</label>
+            <div class="file-upload-area" id="conv-area-${id}">
+              <input type="file" id="conv-files-${id}"
+                accept=".pdf,.docx,.jpg,.jpeg,.png,.webp,.heic,.heif,.bmp,.tiff,.tif,application/pdf,image/*"
+                multiple>
+              <div class="file-upload-icon">🔄</div>
+              <div class="file-upload-label">Нажмите или перетащите файлы</div>
+              <div class="file-upload-hint">PDF, DOCX, JPG, PNG, WEBP, HEIC и другие</div>
+            </div>
+            <div id="conv-filelist-${id}" class="file-list"></div>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label>Конвертировать в</label>
+              <select id="conv-target-${id}" style="height:42px;">
+                <option value="pdf">PDF</option>
+                <option value="jpg">JPG</option>
+                <option value="png">PNG</option>
+                <option value="webp">WEBP</option>
+              </select>
+            </div>
+            <div class="field" id="conv-quality-wrap-${id}">
+              <label>Качество (для JPG/WEBP, 0–1)</label>
+              <input type="number" id="conv-quality-${id}" min="0.1" max="1" step="0.05" value="0.92">
+            </div>
+          </div>
+          <div>
+            <button type="button" class="btn-primary" id="conv-btn-${id}">Конвертировать</button>
+          </div>
+          <div id="conv-result-${id}" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+          <div id="conv-status-${id}" style="font-size:13px;color:var(--muted);"></div>
+        </div>
+      `;
+
+      const convFiles = [];
+
+      const input   = document.getElementById(`conv-files-${id}`);
+      const area    = document.getElementById(`conv-area-${id}`);
+      const listEl  = document.getElementById(`conv-filelist-${id}`);
+      const target  = document.getElementById(`conv-target-${id}`);
+      const qualWrap = document.getElementById(`conv-quality-wrap-${id}`);
+      const statusEl = document.getElementById(`conv-status-${id}`);
+
+      const updateQualVis = () => {
+        qualWrap.style.display = ["jpg","webp"].includes(target.value) ? "" : "none";
+      };
+      target.addEventListener("change", updateQualVis);
+      updateQualVis();
+
+      const addFiles = (files) => {
+        [...files].forEach(f => {
+          if (!convFiles.find(cf => cf.name === f.name)) convFiles.push(f);
+        });
+        renderConvList();
+      };
+
+      const renderConvList = () => {
+        listEl.innerHTML = convFiles.map((f, i) => `
+          <div class="file-chip">
+            <span>${getFileIcon(f.name)}</span>
+            <span class="file-chip-name">${escapeHtml(f.name)}</span>
+            <button class="file-chip-remove" data-i="${i}">×</button>
+          </div>`).join("");
+        listEl.querySelectorAll(".file-chip-remove").forEach(btn => {
+          btn.addEventListener("click", () => {
+            convFiles.splice(Number(btn.dataset.i), 1);
+            renderConvList();
+          });
+        });
+      };
+
+      input.addEventListener("change", () => { addFiles(input.files); input.value = ""; });
+      area.addEventListener("dragover", e => { e.preventDefault(); area.classList.add("dragover"); });
+      area.addEventListener("dragleave", () => area.classList.remove("dragover"));
+      area.addEventListener("drop", e => { e.preventDefault(); area.classList.remove("dragover"); addFiles(e.dataTransfer.files); });
+
+      document.getElementById(`conv-btn-${id}`).addEventListener("click", async () => {
+        if (!convFiles.length) { statusEl.textContent = "Добавьте файлы."; return; }
+        const fmt  = target.value;
+        const qual = parseFloat(document.getElementById(`conv-quality-${id}`).value) || 0.92;
+        const resEl = document.getElementById(`conv-result-${id}`);
+        resEl.innerHTML = "";
+        statusEl.textContent = "Конвертирую...";
+
+        for (const f of convFiles) {
+          try {
+            statusEl.textContent = `Конвертирую ${f.name}...`;
+            const result = await convertFile(f, fmt, qual);
+            if (result) {
+              const a = document.createElement("a");
+              a.href = result.url;
+              a.download = result.name;
+              a.className = "btn-secondary btn-sm";
+              a.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:600;text-decoration:none;color:var(--text);";
+              a.innerHTML = `⬇ ${escapeHtml(result.name)}`;
+              resEl.appendChild(a);
+            }
+          } catch(e) {
+            console.error(e);
+            statusEl.textContent = `Ошибка: ${f.name} — ${e.message}`;
+          }
+        }
+        statusEl.textContent = convFiles.length > 1 ? `Готово: ${convFiles.length} файлов.` : "Готово.";
+      });
+    }
+
+    function getFileIcon(name) {
+      const ext = name.split(".").pop().toLowerCase();
+      const map = { pdf:"📄", docx:"📝", jpg:"🖼", jpeg:"🖼", png:"🖼", webp:"🖼", heic:"🖼", heif:"🖼", bmp:"🖼", tiff:"🖼", tif:"🖼" };
+      return map[ext] || "📎";
+    }
+
+    async function convertFile(file, targetFmt, quality) {
+      const name = file.name;
+      const ext  = name.split(".").pop().toLowerCase();
+      const stem = name.slice(0, name.lastIndexOf("."));
+      const isImg = ["jpg","jpeg","png","webp","heic","heif","bmp","tiff","tif"].includes(ext);
+
+      // Helper: canvas → Blob
+      function canvasToBlob(canvas, mime, q) {
+        return new Promise((res, rej) => {
+          canvas.toBlob(b => b ? res(b) : rej(new Error("toBlob failed")), mime, q);
+        });
+      }
+
+      if (isImg) {
+        const img = await loadImage(file);
+        const canvas = document.createElement("canvas");
+        canvas.width  = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+
+        if (targetFmt === "pdf") {
+          if (!PDFDocument) throw new Error("PDF-lib ещё не загружен, попробуйте позже.");
+          const pdfDoc = await PDFDocument.create();
+          const pngBlob  = await canvasToBlob(canvas, "image/png", 1);
+          const pngBytes = new Uint8Array(await pngBlob.arrayBuffer());
+          const imgEmbed = await pdfDoc.embedPng(pngBytes);
+          const page = pdfDoc.addPage([imgEmbed.width, imgEmbed.height]);
+          page.drawImage(imgEmbed, { x:0, y:0, width: imgEmbed.width, height: imgEmbed.height });
+          const bytes = await pdfDoc.save();
+          return { url: URL.createObjectURL(new Blob([bytes], { type:"application/pdf" })), name: `${stem}.pdf` };
+        }
+
+        const mimeMap = { jpg:"image/jpeg", jpeg:"image/jpeg", png:"image/png", webp:"image/webp" };
+        const mime = mimeMap[targetFmt] || "image/png";
+        const blob = await canvasToBlob(canvas, mime, quality);
+        return { url: URL.createObjectURL(blob), name: `${stem}.${targetFmt === "jpg" ? "jpg" : targetFmt}` };
+      }
+
+      if (ext === "pdf" && targetFmt !== "pdf") {
+        if (typeof pdfjsLib === "undefined") throw new Error("PDF.js не загружен.");
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const pdf   = await pdfjsLib.getDocument({ data: bytes }).promise;
+        const mimeMap = { jpg:"image/jpeg", png:"image/png", webp:"image/webp" };
+        const mime = mimeMap[targetFmt] || "image/png";
+
+        if (pdf.numPages === 1) {
+          const page = await pdf.getPage(1);
+          const vp   = page.getViewport({ scale: 2 });
+          const canvas = document.createElement("canvas");
+          canvas.width = vp.width; canvas.height = vp.height;
+          await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+          const blob = await canvasToBlob(canvas, mime, quality);
+          return { url: URL.createObjectURL(blob), name: `${stem}.${targetFmt}` };
+        }
+
+        const zip = new JSZip();
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const vp   = page.getViewport({ scale: 2 });
+          const canvas = document.createElement("canvas");
+          canvas.width = vp.width; canvas.height = vp.height;
+          await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+          const blob = await canvasToBlob(canvas, mime, quality);
+          const buf  = await blob.arrayBuffer();
+          zip.file(`${stem}_стр${i}.${targetFmt}`, buf);
+        }
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        return { url: URL.createObjectURL(zipBlob), name: `${stem}_страницы.zip` };
+      }
+
+      if (ext === "docx" && targetFmt === "pdf") {
+        if (typeof mammoth === "undefined") throw new Error("Mammoth не загружен.");
+        const result = await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() });
+        const html   = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif;margin:40px;line-height:1.6;max-width:800px;}</style></head><body>${result.value}</body></html>`;
+        const blob   = new Blob([html], { type: "text/html" });
+        return { url: URL.createObjectURL(blob), name: `${stem}.html` };
+      }
+
+      if (ext === "docx" && targetFmt !== "pdf") {
+        throw new Error("DOCX можно конвертировать только в PDF/HTML.");
+      }
+
+      throw new Error(`Конвертация ${ext.toUpperCase()} → ${targetFmt.toUpperCase()} не поддерживается.`);
+    }
+
+    function loadImage(file) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Не удалось загрузить изображение")); };
+        img.src = url;
+      });
+    }
+
     // ── FOLD PRICE DATA ────────────────────────────────────────────
     // Base prices from pricelist (per sheet of that exact format)
     const FOLD_PRICES = {
