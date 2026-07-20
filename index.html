@@ -1368,18 +1368,28 @@
       const root = document.getElementById(`converter-ui-${id}`);
       if (!root) return;
 
+      // Load heic2any if not already loaded
+      if (!window._heic2anyLoaded) {
+        window._heic2anyLoaded = true;
+        const s = document.createElement("script");
+        s.src = "https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js";
+        document.head.appendChild(s);
+      }
+
+      const convFiles = [];
+
       root.innerHTML = `
         <div style="display:flex;flex-direction:column;gap:16px;">
           <div class="field">
-            <label>Файлы для конвертации (PDF, DOCX, JPG, PNG, WEBP, HEIC, HEIF, BMP, TIFF)</label>
-            <div class="file-upload-area" id="conv-area-${id}">
-              <input type="file" id="conv-files-${id}"
-                accept=".pdf,.docx,.jpg,.jpeg,.png,.webp,.heic,.heif,.bmp,.tiff,.tif,application/pdf,image/*"
-                multiple>
+            <label>Файлы (PDF, JPG, PNG, WEBP, HEIC, BMP, TIFF, DOCX)</label>
+            <div class="file-upload-area" id="conv-area-${id}" style="cursor:pointer;">
               <div class="file-upload-icon">🔄</div>
               <div class="file-upload-label">Нажмите или перетащите файлы</div>
-              <div class="file-upload-hint">PDF, DOCX, JPG, PNG, WEBP, HEIC и другие</div>
+              <div class="file-upload-hint">PDF, JPG, PNG, WEBP, HEIC, BMP, TIFF, DOCX</div>
             </div>
+            <input type="file" id="conv-input-${id}"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.bmp,.tiff,.tif,.docx"
+              multiple style="display:none">
             <div id="conv-filelist-${id}" class="file-list"></div>
           </div>
           <div class="grid-2">
@@ -1392,190 +1402,219 @@
                 <option value="webp">WEBP</option>
               </select>
             </div>
-            <div class="field" id="conv-quality-wrap-${id}">
-              <label>Качество (для JPG/WEBP, 0–1)</label>
+            <div class="field" id="conv-qwrap-${id}">
+              <label>Качество JPG/WEBP (0.1–1.0)</label>
               <input type="number" id="conv-quality-${id}" min="0.1" max="1" step="0.05" value="0.92">
             </div>
           </div>
           <div>
-            <button type="button" class="btn-primary" id="conv-btn-${id}">Конвертировать</button>
+            <button type="button" class="btn-primary" id="conv-go-${id}">Конвертировать</button>
           </div>
-          <div id="conv-result-${id}" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
-          <div id="conv-status-${id}" style="font-size:13px;color:var(--muted);"></div>
+          <div id="conv-links-${id}" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;"></div>
+          <div id="conv-log-${id}" style="font-size:13px;color:var(--muted);min-height:20px;"></div>
         </div>
       `;
 
-      const convFiles = [];
+      const area     = document.getElementById(`conv-area-${id}`);
+      const input    = document.getElementById(`conv-input-${id}`);
+      const listEl   = document.getElementById(`conv-filelist-${id}`);
+      const targetSel= document.getElementById(`conv-target-${id}`);
+      const qWrap    = document.getElementById(`conv-qwrap-${id}`);
+      const goBtn    = document.getElementById(`conv-go-${id}`);
+      const linksEl  = document.getElementById(`conv-links-${id}`);
+      const logEl    = document.getElementById(`conv-log-${id}`);
 
-      const input   = document.getElementById(`conv-files-${id}`);
-      const area    = document.getElementById(`conv-area-${id}`);
-      const listEl  = document.getElementById(`conv-filelist-${id}`);
-      const target  = document.getElementById(`conv-target-${id}`);
-      const qualWrap = document.getElementById(`conv-quality-wrap-${id}`);
-      const statusEl = document.getElementById(`conv-status-${id}`);
-
-      const updateQualVis = () => {
-        qualWrap.style.display = ["jpg","webp"].includes(target.value) ? "" : "none";
+      const showQual = () => {
+        qWrap.style.display = ["jpg","webp"].includes(targetSel.value) ? "" : "none";
       };
-      target.addEventListener("change", updateQualVis);
-      updateQualVis();
+      targetSel.addEventListener("change", showQual);
+      showQual();
 
-      const addFiles = (files) => {
-        [...files].forEach(f => {
-          if (!convFiles.find(cf => cf.name === f.name)) convFiles.push(f);
+      // Click area → open file dialog
+      area.addEventListener("click", () => input.click());
+      area.addEventListener("dragover", e => { e.preventDefault(); area.classList.add("dragover"); });
+      area.addEventListener("dragleave", () => area.classList.remove("dragover"));
+      area.addEventListener("drop", e => {
+        e.preventDefault();
+        area.classList.remove("dragover");
+        pushFiles([...e.dataTransfer.files]);
+      });
+
+      input.addEventListener("change", () => {
+        pushFiles([...input.files]);
+        input.value = "";
+      });
+
+      function pushFiles(files) {
+        files.forEach(f => {
+          if (!convFiles.find(x => x.name === f.name)) convFiles.push(f);
         });
-        renderConvList();
-      };
+        renderList();
+      }
 
-      const renderConvList = () => {
+      function renderList() {
         listEl.innerHTML = convFiles.map((f, i) => `
           <div class="file-chip">
             <span>${getFileIcon(f.name)}</span>
             <span class="file-chip-name">${escapeHtml(f.name)}</span>
-            <button class="file-chip-remove" data-i="${i}">×</button>
+            <button class="file-chip-remove" data-i="${i}" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:0 2px;">×</button>
           </div>`).join("");
         listEl.querySelectorAll(".file-chip-remove").forEach(btn => {
           btn.addEventListener("click", () => {
             convFiles.splice(Number(btn.dataset.i), 1);
-            renderConvList();
+            renderList();
           });
         });
-      };
+      }
 
-      input.addEventListener("change", () => { addFiles(input.files); input.value = ""; });
-      area.addEventListener("dragover", e => { e.preventDefault(); area.classList.add("dragover"); });
-      area.addEventListener("dragleave", () => area.classList.remove("dragover"));
-      area.addEventListener("drop", e => { e.preventDefault(); area.classList.remove("dragover"); addFiles(e.dataTransfer.files); });
-
-      document.getElementById(`conv-btn-${id}`).addEventListener("click", async () => {
-        if (!convFiles.length) { statusEl.textContent = "Добавьте файлы."; return; }
-        const fmt  = target.value;
-        const qual = parseFloat(document.getElementById(`conv-quality-${id}`).value) || 0.92;
-        const resEl = document.getElementById(`conv-result-${id}`);
-        resEl.innerHTML = "";
-        statusEl.textContent = "Конвертирую...";
+      goBtn.addEventListener("click", async () => {
+        if (!convFiles.length) { logEl.textContent = "Сначала добавьте файлы."; return; }
+        const fmt  = targetSel.value;
+        const qual = Math.min(1, Math.max(0.1, parseFloat(document.getElementById(`conv-quality-${id}`).value) || 0.92));
+        linksEl.innerHTML = "";
+        logEl.textContent = "";
+        goBtn.disabled = true;
 
         for (const f of convFiles) {
+          logEl.textContent = `Обрабатываю: ${f.name}…`;
           try {
-            statusEl.textContent = `Конвертирую ${f.name}...`;
-            const result = await convertFile(f, fmt, qual);
-            if (result) {
-              const a = document.createElement("a");
-              a.href = result.url;
-              a.download = result.name;
-              a.className = "btn-secondary btn-sm";
-              a.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:600;text-decoration:none;color:var(--text);";
-              a.innerHTML = `⬇ ${escapeHtml(result.name)}`;
-              resEl.appendChild(a);
-            }
-          } catch(e) {
-            console.error(e);
-            statusEl.textContent = `Ошибка: ${f.name} — ${e.message}`;
+            const res = await convertFile(f, fmt, qual);
+            const a = document.createElement("a");
+            a.href = res.url;
+            a.download = res.name;
+            a.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:600;text-decoration:none;color:var(--text);cursor:pointer;";
+            a.innerHTML = `⬇ ${escapeHtml(res.name)}`;
+            linksEl.appendChild(a);
+          } catch(err) {
+            const errDiv = document.createElement("div");
+            errDiv.style.cssText = "padding:8px 12px;background:var(--danger-soft);border:1px solid #f5c6c2;border-radius:8px;font-size:13px;color:var(--danger);";
+            errDiv.textContent = `${f.name}: ${err.message}`;
+            linksEl.appendChild(errDiv);
+            console.error(err);
           }
         }
-        statusEl.textContent = convFiles.length > 1 ? `Готово: ${convFiles.length} файлов.` : "Готово.";
+
+        logEl.textContent = "Готово.";
+        goBtn.disabled = false;
       });
     }
 
     function getFileIcon(name) {
-      const ext = name.split(".").pop().toLowerCase();
-      const map = { pdf:"📄", docx:"📝", jpg:"🖼", jpeg:"🖼", png:"🖼", webp:"🖼", heic:"🖼", heif:"🖼", bmp:"🖼", tiff:"🖼", tif:"🖼" };
-      return map[ext] || "📎";
+      const ext = (name.split(".").pop() || "").toLowerCase();
+      return { pdf:"📄", docx:"📝", jpg:"🖼", jpeg:"🖼", png:"🖼", webp:"🖼", heic:"🖼", heif:"🖼", bmp:"🖼", tiff:"🖼", tif:"🖼" }[ext] || "📎";
     }
 
-    async function convertFile(file, targetFmt, quality) {
-      const name = file.name;
-      const ext  = name.split(".").pop().toLowerCase();
-      const stem = name.slice(0, name.lastIndexOf("."));
-      const isImg = ["jpg","jpeg","png","webp","heic","heif","bmp","tiff","tif"].includes(ext);
-
-      // Helper: canvas → Blob
-      function canvasToBlob(canvas, mime, q) {
-        return new Promise((res, rej) => {
-          canvas.toBlob(b => b ? res(b) : rej(new Error("toBlob failed")), mime, q);
-        });
-      }
-
-      if (isImg) {
-        const img = await loadImage(file);
-        const canvas = document.createElement("canvas");
-        canvas.width  = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        canvas.getContext("2d").drawImage(img, 0, 0);
-
-        if (targetFmt === "pdf") {
-          if (!PDFDocument) throw new Error("PDF-lib ещё не загружен, попробуйте позже.");
-          const pdfDoc = await PDFDocument.create();
-          const pngBlob  = await canvasToBlob(canvas, "image/png", 1);
-          const pngBytes = new Uint8Array(await pngBlob.arrayBuffer());
-          const imgEmbed = await pdfDoc.embedPng(pngBytes);
-          const page = pdfDoc.addPage([imgEmbed.width, imgEmbed.height]);
-          page.drawImage(imgEmbed, { x:0, y:0, width: imgEmbed.width, height: imgEmbed.height });
-          const bytes = await pdfDoc.save();
-          return { url: URL.createObjectURL(new Blob([bytes], { type:"application/pdf" })), name: `${stem}.pdf` };
-        }
-
-        const mimeMap = { jpg:"image/jpeg", jpeg:"image/jpeg", png:"image/png", webp:"image/webp" };
-        const mime = mimeMap[targetFmt] || "image/png";
-        const blob = await canvasToBlob(canvas, mime, quality);
-        return { url: URL.createObjectURL(blob), name: `${stem}.${targetFmt === "jpg" ? "jpg" : targetFmt}` };
-      }
-
-      if (ext === "pdf" && targetFmt !== "pdf") {
-        if (typeof pdfjsLib === "undefined") throw new Error("PDF.js не загружен.");
-        const bytes = new Uint8Array(await file.arrayBuffer());
-        const pdf   = await pdfjsLib.getDocument({ data: bytes }).promise;
-        const mimeMap = { jpg:"image/jpeg", png:"image/png", webp:"image/webp" };
-        const mime = mimeMap[targetFmt] || "image/png";
-
-        if (pdf.numPages === 1) {
-          const page = await pdf.getPage(1);
-          const vp   = page.getViewport({ scale: 2 });
-          const canvas = document.createElement("canvas");
-          canvas.width = vp.width; canvas.height = vp.height;
-          await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
-          const blob = await canvasToBlob(canvas, mime, quality);
-          return { url: URL.createObjectURL(blob), name: `${stem}.${targetFmt}` };
-        }
-
-        const zip = new JSZip();
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const vp   = page.getViewport({ scale: 2 });
-          const canvas = document.createElement("canvas");
-          canvas.width = vp.width; canvas.height = vp.height;
-          await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
-          const blob = await canvasToBlob(canvas, mime, quality);
-          const buf  = await blob.arrayBuffer();
-          zip.file(`${stem}_стр${i}.${targetFmt}`, buf);
-        }
-        const zipBlob = await zip.generateAsync({ type: "blob" });
-        return { url: URL.createObjectURL(zipBlob), name: `${stem}_страницы.zip` };
-      }
-
-      if (ext === "docx" && targetFmt === "pdf") {
-        if (typeof mammoth === "undefined") throw new Error("Mammoth не загружен.");
-        const result = await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() });
-        const html   = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif;margin:40px;line-height:1.6;max-width:800px;}</style></head><body>${result.value}</body></html>`;
-        const blob   = new Blob([html], { type: "text/html" });
-        return { url: URL.createObjectURL(blob), name: `${stem}.html` };
-      }
-
-      if (ext === "docx" && targetFmt !== "pdf") {
-        throw new Error("DOCX можно конвертировать только в PDF/HTML.");
-      }
-
-      throw new Error(`Конвертация ${ext.toUpperCase()} → ${targetFmt.toUpperCase()} не поддерживается.`);
+    function canvasToBlob(canvas, mime, quality) {
+      return new Promise((res, rej) => {
+        canvas.toBlob(b => b ? res(b) : rej(new Error("Не удалось создать изображение")), mime, quality);
+      });
     }
 
     function loadImage(file) {
       return new Promise((resolve, reject) => {
         const url = URL.createObjectURL(file);
         const img = new Image();
-        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Не удалось загрузить изображение")); };
+        img.onload  = () => { URL.revokeObjectURL(url); resolve(img); };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Не удалось открыть изображение (формат не поддерживается браузером)")); };
         img.src = url;
       });
+    }
+
+    async function fileToCanvas(file) {
+      const ext = (file.name.split(".").pop() || "").toLowerCase();
+
+      // HEIC/HEIF — convert via heic2any first
+      if (["heic","heif"].includes(ext)) {
+        if (typeof heic2any === "undefined")
+          throw new Error("Библиотека heic2any ещё загружается, подождите секунду и повторите.");
+        const blob = await heic2any({ blob: file, toType: "image/png" });
+        const pngFile = new File([blob], file.name.replace(/\.[^.]+$/, ".png"), { type: "image/png" });
+        return loadImage(pngFile).then(img => {
+          const c = document.createElement("canvas");
+          c.width = img.naturalWidth; c.height = img.naturalHeight;
+          c.getContext("2d").drawImage(img, 0, 0);
+          return c;
+        });
+      }
+
+      const img = await loadImage(file);
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext("2d").drawImage(img, 0, 0);
+      return c;
+    }
+
+    async function convertFile(file, targetFmt, quality) {
+      const ext  = (file.name.split(".").pop() || "").toLowerCase();
+      const stem = file.name.slice(0, file.name.lastIndexOf("."));
+      const imgExts = ["jpg","jpeg","png","webp","heic","heif","bmp","tiff","tif"];
+
+      // ── Image → any ───────────────────────────────────────────────
+      if (imgExts.includes(ext)) {
+        const canvas = await fileToCanvas(file);
+
+        if (targetFmt === "pdf") {
+          if (!PDFDocument) throw new Error("PDF-lib не загружен, обновите страницу.");
+          const pngBlob  = await canvasToBlob(canvas, "image/png", 1);
+          const pngBytes = new Uint8Array(await pngBlob.arrayBuffer());
+          const doc  = await PDFDocument.create();
+          const img  = await doc.embedPng(pngBytes);
+          const page = doc.addPage([img.width, img.height]);
+          page.drawImage(img, { x:0, y:0, width:img.width, height:img.height });
+          const bytes = await doc.save();
+          const blob  = new Blob([bytes], { type:"application/pdf" });
+          return { url: URL.createObjectURL(blob), name: `${stem}.pdf` };
+        }
+
+        const mimes = { jpg:"image/jpeg", jpeg:"image/jpeg", png:"image/png", webp:"image/webp" };
+        const mime  = mimes[targetFmt] || "image/png";
+        const blob  = await canvasToBlob(canvas, mime, quality);
+        return { url: URL.createObjectURL(blob), name: `${stem}.${targetFmt === "jpeg" ? "jpg" : targetFmt}` };
+      }
+
+      // ── PDF → image(s) ────────────────────────────────────────────
+      if (ext === "pdf" && targetFmt !== "pdf") {
+        if (typeof pdfjsLib === "undefined") throw new Error("PDF.js не загружен.");
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const pdf   = await pdfjsLib.getDocument({ data: bytes }).promise;
+        const mimes = { jpg:"image/jpeg", png:"image/png", webp:"image/webp" };
+        const mime  = mimes[targetFmt] || "image/png";
+
+        const renderPage = async (pageNum) => {
+          const page = await pdf.getPage(pageNum);
+          const vp   = page.getViewport({ scale: 2 });
+          const canvas = document.createElement("canvas");
+          canvas.width = vp.width; canvas.height = vp.height;
+          await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+          return canvasToBlob(canvas, mime, quality);
+        };
+
+        if (pdf.numPages === 1) {
+          const blob = await renderPage(1);
+          return { url: URL.createObjectURL(blob), name: `${stem}.${targetFmt}` };
+        }
+
+        const zip = new JSZip();
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const blob = await renderPage(i);
+          zip.file(`${stem}_стр${i}.${targetFmt}`, await blob.arrayBuffer());
+        }
+        const zipBlob = await zip.generateAsync({ type:"blob" });
+        return { url: URL.createObjectURL(zipBlob), name: `${stem}_страницы.zip` };
+      }
+
+      // ── DOCX → HTML (best possible in browser) ───────────────────
+      if (ext === "docx") {
+        if (typeof mammoth === "undefined") throw new Error("Mammoth не загружен.");
+        const res  = await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() });
+        const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+          <style>body{font-family:Arial,sans-serif;margin:40px;line-height:1.6;max-width:800px;}</style>
+          </head><body>${res.value}</body></html>`;
+        const blob = new Blob([html], { type:"text/html" });
+        return { url: URL.createObjectURL(blob), name: `${stem}.html` };
+      }
+
+      throw new Error(`Конвертация .${ext} → ${targetFmt.toUpperCase()} не поддерживается.`);
     }
 
     // ── FOLD PRICE DATA ────────────────────────────────────────────
