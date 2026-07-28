@@ -1,2779 +1,1598 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Калькулятор печати</title>
-  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-
-    :root {
-      --bg: #f0f0ed;
-      --card: #ffffff;
-      --card2: #f7f7f5;
-      --line: #e2e2de;
-      --line-soft: #eeeeea;
-      --text: #1a1a18;
-      --muted: #6b6b66;
-      --accent: #1a1a18;
-      --accent-fg: #ffffff;
-      --danger: #c0392b;
-      --danger-soft: #fdf0ef;
-      --green: #1a7a4a;
-      --green-soft: #edf7f2;
-      --radius: 16px;
-      --radius-sm: 10px;
-      --shadow: 0 2px 12px rgba(0,0,0,0.07);
-      --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
-    }
-
-    body {
-      margin: 0;
-      font-family: 'Geologica', Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    /* ── HEADER ── */
-    .app-header {
-      background: var(--accent);
-      color: var(--accent-fg);
-      padding: 20px 32px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .app-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .app-logo-icon {
-      width: 36px;
-      height: 36px;
-      background: #fff;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-    }
-
-    .app-title {
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      margin: 0;
-    }
-
-    .app-subtitle {
-      font-size: 12px;
-      opacity: 0.55;
-      font-weight: 400;
-      margin: 0;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    /* ── WRAP ── */
-    .wrap {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 28px 24px 48px;
-    }
-
-    /* ── TOOLBAR ── */
-    .toolbar {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
-
-    .status-pill {
-      font-size: 13px;
-      color: var(--muted);
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 6px 14px;
-      min-height: 32px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: color 0.2s;
-    }
-
-    .status-pill.error { color: var(--danger); border-color: #f5c6c2; background: var(--danger-soft); }
-
-    /* ── BUTTONS ── */
-    button {
-      cursor: pointer;
-      border: none;
-      border-radius: var(--radius-sm);
-      padding: 10px 20px;
-      font-weight: 700;
-      font-size: 14px;
-      font-family: inherit;
-      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
-    }
-
-    button:hover { opacity: 0.88; }
-    button:active { transform: scale(0.98); }
-
-    .btn-primary {
-      background: var(--accent);
-      color: var(--accent-fg);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-    }
-
-    .btn-secondary {
-      background: var(--card);
-      color: var(--text);
-      border: 1px solid var(--line);
-    }
-
-    .btn-danger {
-      background: var(--danger-soft);
-      color: var(--danger);
-      border: 1px solid #f5c6c2;
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--muted);
-      border: 1px dashed var(--line);
-    }
-
-    .btn-ghost:hover { color: var(--text); border-color: var(--text); opacity: 1; }
-
-    .btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 8px; }
-    .btn-xs { padding: 5px 10px; font-size: 12px; border-radius: 7px; }
-
-    .icon-btn {
-      width: 36px;
-      min-width: 36px;
-      height: 36px;
-      padding: 0;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      background: var(--card);
-      font-size: 15px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .icon-btn.locked {
-      background: var(--accent);
-      color: var(--accent-fg);
-      border-color: var(--accent);
-    }
-
-    .icon-btn.remove-extra {
-      color: var(--danger);
-      border-color: #f5c6c2;
-      background: var(--danger-soft);
-    }
-
-    /* ── SERVICE CARD ── */
-    .service-card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      margin-bottom: 20px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 18px 22px;
-      border-bottom: 1px solid var(--line-soft);
-      background: var(--card2);
-    }
-
-    .card-type-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-      background: var(--bg);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 4px 10px;
-      white-space: nowrap;
-    }
-
-    .card-type-badge.separator { color: #1a5fa0; border-color: #c3daf5; background: #eff6fd; }
-    .card-type-badge.folding { color: #7a4a1a; border-color: #f5dfc3; background: #fdf6ef; }
-    .card-type-badge.guillotine { color: #1a7a4a; border-color: #b8e4cc; background: #edf7f2; }
-    .card-type-badge.binding { color: #6a1a7a; border-color: #ddb8e4; background: #f7edfb; }
-    .card-type-badge.converter { color: #1a4a7a; border-color: #b8cce4; background: #edf2fb; }
-
-    .card-name-input {
-      flex: 1;
-      min-width: 0;
-      padding: 8px 12px;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 700;
-      font-family: inherit;
-      background: transparent;
-      color: var(--text);
-      transition: border-color 0.15s, background 0.15s;
-    }
-
-    .card-name-input:focus {
-      outline: none;
-      border-color: var(--line);
-      background: var(--card);
-    }
-
-    .card-body {
-      padding: 22px;
-    }
-
-    /* ── GRID ── */
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .col-span-full { grid-column: 1 / -1; }
-
-    /* ── FIELD ── */
-    .field { display: flex; flex-direction: column; gap: 6px; }
-
-    .field label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-
-    input[type="text"],
-    input[type="number"],
-    select {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-family: inherit;
-      background: var(--card);
-      color: var(--text);
-      height: 42px;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-
-    input[type="text"]:focus,
-    input[type="number"]:focus,
-    select:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(26,26,24,0.08);
-    }
-
-    input[type="number"] {
-      text-align: center;
-      -moz-appearance: textfield;
-    }
-
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button { display: none; }
-
-    /* ── FILE UPLOAD AREA ── */
-    .file-upload-area {
-      border: 2px dashed var(--line);
-      border-radius: var(--radius-sm);
-      padding: 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
-      background: var(--card2);
-      position: relative;
-    }
-
-    .file-upload-area:hover,
-    .file-upload-area.dragover {
-      border-color: var(--accent);
-      background: #f5f5f2;
-    }
-
-    .file-upload-area input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      height: 100%;
-      width: 100%;
-    }
-
-    .file-upload-icon { font-size: 28px; margin-bottom: 8px; }
-    .file-upload-label { font-size: 14px; font-weight: 600; color: var(--text); }
-    .file-upload-hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
-
-    .file-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 10px;
-    }
-
-    .file-chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      background: var(--green-soft);
-      border: 1px solid #b8e4cc;
-      border-radius: 8px;
-      font-size: 13px;
-    }
-
-    .file-chip-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--green); font-weight: 600; }
-    .file-chip-remove { cursor: pointer; color: var(--muted); font-size: 16px; line-height: 1; padding: 0 2px; background: none; border: none; }
-    .file-chip-remove:hover { color: var(--danger); }
-
-    /* ── FOLDING OPTIONS ── */
-    .fold-option-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .fold-option-card {
-      border: 1.5px solid var(--line);
-      border-radius: var(--radius-sm);
-      padding: 12px 14px;
-      cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
-      user-select: none;
-    }
-
-    .fold-option-card:hover { border-color: var(--accent); }
-    .fold-option-card.active { border-color: var(--accent); background: #f0f0ed; }
-
-    .fold-option-title { font-size: 13px; font-weight: 700; }
-    .fold-option-price { font-size: 12px; color: var(--muted); margin-top: 3px; }
-
-    /* ── CARD FOOTER ── */
-    .card-footer {
-      padding: 16px 22px;
-      border-top: 1px solid var(--line-soft);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      background: var(--card2);
-    }
-
-    /* ── RESULT SECTION ── */
-    .result-section {
-      border-top: 2px solid var(--line-soft);
-      display: none;
-    }
-
-    .result-section.visible { display: block; }
-
-    .result-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 22px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .result-header:hover { background: var(--card2); }
-
-    .result-title { font-size: 15px; font-weight: 700; }
-    .result-subtotal {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--accent);
-    }
-    .result-chevron { font-size: 16px; color: var(--muted); transition: transform 0.2s; }
-    .result-chevron.open { transform: rotate(180deg); }
-
-    .result-body {
-      padding: 0 22px 20px;
-    }
-
-    .result-body.collapsed { display: none; }
-
-    /* ── DOWNLOAD ACTIONS ── */
-    .download-actions {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-
-    /* ── TABLE ── */
-    .table-wrap {
-      width: 100%;
-      overflow-x: auto;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--line);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-      min-width: 700px;
-    }
-
-    th, td {
-      vertical-align: middle;
-      padding: 11px 14px;
-      border-bottom: 1px solid var(--line-soft);
-      font-size: 13.5px;
-    }
-
-    th {
-      background: #f7f7f5;
-      font-weight: 700;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      color: var(--muted);
-      white-space: nowrap;
-      text-align: left;
-    }
-
-    td { text-align: left; }
-    td.center { text-align: center; }
-    td.right { text-align: right; }
-
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #fafafa; }
-
-    .cell-code { font-size: 12px; color: var(--muted); font-weight: 500; }
-    .cell-label { font-size: 13px; font-weight: 500; line-height: 1.3; }
-    .cell-size { font-size: 13px; font-family: monospace; color: var(--muted); }
-
-    .sum-cell {
-      font-size: 16px;
-      font-weight: 800;
-      white-space: nowrap;
-      text-align: right !important;
-    }
-
-    .row-qty-input, .row-price-input {
-      width: 90px;
-      text-align: center;
-      height: 36px;
-      padding: 6px 10px;
-      font-size: 13px;
-    }
-
-    .price-edit-box {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* ── NOTE ── */
-    .note-box {
-      margin-top: 14px;
-      padding: 12px 16px;
-      background: #fffbee;
-      border: 1px solid #f0e0a0;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      line-height: 1.6;
-      color: #5a4a00;
-    }
-
-    /* ── BOTTOM TOTAL ── */
-    .bottom-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      margin-top: 8px;
-      flex-wrap: wrap;
-    }
-
-    .total-block {
-      background: var(--accent);
-      color: var(--accent-fg);
-      border-radius: var(--radius);
-      padding: 18px 28px;
-      display: none;
-    }
-
-    .total-block.visible { display: block; }
-    .total-label { font-size: 12px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-    .total-amount { font-size: 40px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
-
-    /* ── SEPARATOR PROGRESS ── */
-    .progress-bar-wrap {
-      height: 4px;
-      background: var(--line);
-      border-radius: 2px;
-      margin-top: 10px;
-      overflow: hidden;
-      display: none;
-    }
-
-    .progress-bar-wrap.visible { display: block; }
-
-    .progress-bar-fill {
-      height: 100%;
-      background: var(--accent);
-      border-radius: 2px;
-      transition: width 0.3s;
-      width: 0%;
-    }
-
-    /* ── HEADER BTN INVERSE ── */
-    .btn-inverse {
-      background: rgba(255,255,255,0.15);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.25);
-      backdrop-filter: blur(4px);
-    }
-
-    .btn-inverse:hover { background: rgba(255,255,255,0.25); opacity: 1; }
-
-    /* ── EMPTY STATE ── */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--muted);
-    }
-
-    .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
-    .empty-state-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-    .empty-state-sub { font-size: 14px; }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
-      .app-header { padding: 14px 18px; }
-      .wrap { padding: 18px 14px 40px; }
-      .card-body, .result-body { padding: 16px; }
-      .card-header, .card-footer { padding: 14px 16px; }
-      .result-header { padding: 12px 16px; }
-      .total-amount { font-size: 32px; }
-      .bottom-bar { flex-direction: column; align-items: stretch; }
-    }
-
-    /* Drag & drop highlight */
-    .service-card.drag-highlight { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,26,24,0.12); }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Калькулятор печати</title>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#f0f0ed;--card:#fff;--card2:#f7f7f5;--line:#e2e2de;--line-soft:#eeeeea;
+  --text:#1a1a18;--muted:#6b6b66;--accent:#1a1a18;--accent-fg:#fff;
+  --danger:#c0392b;--danger-soft:#fdf0ef;--green:#1a7a4a;--green-soft:#edf7f2;
+  --radius:16px;--radius-sm:10px;--shadow:0 2px 12px rgba(0,0,0,.07);
+}
+body{margin:0;font-family:'Geologica',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app-header{background:var(--accent);color:#fff;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.app-logo{display:flex;align-items:center;gap:12px}
+.app-logo-icon{width:34px;height:34px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px}
+.app-title{font-size:20px;font-weight:800;margin:0}
+.app-subtitle{font-size:11px;opacity:.55;margin:0}
+.header-actions{display:flex;gap:10px}
+.wrap{max-width:1280px;margin:0 auto;padding:24px 20px 48px}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:22px}
+.status-pill{font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 14px;display:none;align-items:center}
+.status-pill.error{color:var(--danger);border-color:#f5c6c2;background:var(--danger-soft)}
+button{cursor:pointer;border:none;border-radius:var(--radius-sm);padding:10px 18px;font-weight:700;font-size:14px;font-family:inherit;transition:opacity .15s,transform .1s}
+button:hover{opacity:.85}
+button:active{transform:scale(.98)}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--line)}
+.btn-danger{background:var(--danger-soft);color:var(--danger);border:1px solid #f5c6c2}
+.btn-ghost{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.btn-ghost:hover{color:var(--text);border-color:var(--text);opacity:1}
+.btn-sm{padding:7px 14px;font-size:13px;border-radius:8px}
+.btn-xs{padding:5px 10px;font-size:12px;border-radius:7px}
+.btn-inverse{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.btn-inverse:hover{background:rgba(255,255,255,.25);opacity:1}
+.icon-btn{width:36px;min-width:36px;height:36px;padding:0;border-radius:8px;border:1px solid var(--line);background:var(--card);font-size:15px;display:inline-flex;align-items:center;justify-content:center}
+.icon-btn.locked{background:var(--accent);color:#fff;border-color:var(--accent)}
+.icon-btn.remove-extra{color:var(--danger);border-color:#f5c6c2;background:var(--danger-soft)}
+.service-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:18px;box-shadow:var(--shadow);overflow:hidden}
+.card-header{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line-soft);background:var(--card2)}
+.card-type-badge{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border-radius:20px;padding:4px 10px;white-space:nowrap;border:1px solid var(--line);background:var(--bg);color:var(--muted)}
+.card-type-badge.separator{color:#1a5fa0;border-color:#c3daf5;background:#eff6fd}
+.card-type-badge.folding{color:#7a4a1a;border-color:#f5dfc3;background:#fdf6ef}
+.card-type-badge.guillotine{color:#1a7a4a;border-color:#b8e4cc;background:#edf7f2}
+.card-type-badge.binding{color:#6a1a7a;border-color:#ddb8e4;background:#f7edfb}
+.card-type-badge.converter{color:#1a4a7a;border-color:#b8cce4;background:#edf2fb}
+.card-name-input{flex:1;min-width:0;padding:7px 11px;border:1px solid transparent;border-radius:8px;font-size:15px;font-weight:700;font-family:inherit;background:transparent;color:var(--text);transition:border-color .15s,background .15s}
+.card-name-input:focus{outline:none;border-color:var(--line);background:var(--card)}
+.card-body{padding:20px}
+.card-footer{padding:14px 20px;border-top:1px solid var(--line-soft);display:flex;align-items:center;gap:12px;background:var(--card2)}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.col-span-full{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+input[type=text],input[type=number],select{width:100%;padding:10px 13px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;background:var(--card);color:var(--text);height:42px;transition:border-color .15s,box-shadow .15s}
+input[type=text]:focus,input[type=number]:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,26,24,.08)}
+input[type=number]{text-align:center;-moz-appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{display:none}
+.file-upload-area{border:2px dashed var(--line);border-radius:var(--radius-sm);padding:18px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;background:var(--card2)}
+.file-upload-area:hover,.file-upload-area.dragover{border-color:var(--accent);background:#f5f5f2}
+.file-upload-icon{font-size:26px;margin-bottom:6px}
+.file-upload-label{font-size:14px;font-weight:600}
+.file-upload-hint{font-size:12px;color:var(--muted);margin-top:4px}
+.file-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.file-chip{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--green-soft);border:1px solid #b8e4cc;border-radius:8px;font-size:13px}
+.file-chip-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--green);font-weight:600}
+.file-chip-remove{cursor:pointer;color:var(--muted);font-size:16px;line-height:1;padding:0 2px;background:none;border:none}
+.file-chip-remove:hover{color:var(--danger)}
+.result-section{border-top:2px solid var(--line-soft);display:none}
+.result-section.visible{display:block}
+.result-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;user-select:none}
+.result-header:hover{background:var(--card2)}
+.result-title{font-size:15px;font-weight:700}
+.result-subtotal{font-size:18px;font-weight:800;color:var(--accent)}
+.result-chevron{font-size:16px;color:var(--muted);transition:transform .2s}
+.result-chevron.open{transform:rotate(180deg)}
+.result-body{padding:0 20px 18px}
+.result-body.collapsed{display:none}
+.download-actions{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.table-wrap{width:100%;overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;background:#fff;min-width:600px}
+th,td{vertical-align:middle;padding:10px 13px;border-bottom:1px solid var(--line-soft);font-size:13.5px}
+th{background:#f7f7f5;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);white-space:nowrap;text-align:center}
+td{text-align:left}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+.cell-code{font-size:12px;color:var(--muted);font-weight:500}
+.cell-label{font-size:13px;font-weight:500;line-height:1.3;word-break:keep-all;overflow-wrap:normal;hyphens:none}
+.cell-size{font-size:13px;font-family:monospace;color:var(--muted)}
+.sum-cell{font-size:16px;font-weight:800;white-space:nowrap;text-align:right!important}
+.row-qty-input,.row-price-input{width:86px;text-align:center;height:36px;padding:6px 9px;font-size:13px}
+.price-edit-box{display:flex;align-items:center;gap:6px}
+.note-box{margin-top:12px;padding:11px 15px;background:#fffbee;border:1px solid #f0e0a0;border-radius:var(--radius-sm);font-size:13px;line-height:1.6;color:#5a4a00}
+.bottom-bar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:8px;flex-wrap:wrap}
+.total-block{background:var(--accent);color:#fff;border-radius:var(--radius);padding:16px 26px;display:none}
+.total-block.visible{display:block}
+.total-label{font-size:12px;opacity:.6;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.total-amount{font-size:38px;font-weight:800;letter-spacing:-1px;line-height:1}
+.progress-bar-wrap{height:4px;background:var(--line);border-radius:2px;margin-top:10px;overflow:hidden;display:none}
+.progress-bar-wrap.visible{display:block}
+.progress-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s;width:0%}
+.fold-line-grid{display:grid;grid-template-columns:1fr 1fr 90px 36px;gap:10px;align-items:end;margin-bottom:10px}
+/* Guillotine */
+.g-section-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line-soft)}
+.g-phase-label{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin:16px 0 8px;padding:8px 12px;background:var(--card2);border-radius:8px}
+.g-step{display:flex;gap:13px;align-items:flex-start;padding:13px 15px;border-radius:10px;border:1px solid var(--line);margin-bottom:7px;background:#fff}
+.g-step-check{cursor:pointer}
+.g-step-check:hover .g-step-num{background:var(--green)}
+.g-step-done{opacity:.42}
+.g-step-done .g-step-num{background:var(--green)!important}
+.g-step-done .g-step-action{text-decoration:line-through;color:var(--muted)}
+.g-step-num{width:27px;min-width:27px;height:27px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.g-step-body{flex:1}
+.g-step-action{font-size:14px;font-weight:700;margin-bottom:4px}
+.g-step-detail{font-size:13px;color:var(--muted);line-height:1.5}
+.g-step-values{display:flex;gap:8px;margin-top:7px;flex-wrap:wrap}
+.g-val-chip{background:#f0f0ed;border:1px solid var(--line);border-radius:8px;padding:4px 11px;font-size:13px;font-weight:600}
+.g-val-chip span{color:var(--muted);font-weight:400;font-size:12px}
+.g-summary{background:var(--green-soft);border:1px solid #b8e4cc;border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:14px;line-height:1.6}
+.g-warn{background:#fffbee;border:1px solid #f0e0a0;border-radius:10px;padding:11px 15px;font-size:13px;color:#5a4a00;margin-bottom:10px}
+.g-advanced-toggle{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:4px 0;font-family:inherit;text-decoration:underline}
+.g-advanced-toggle:hover{color:var(--text)}
+.g-orient{width:34px;height:34px;min-width:34px;border:1.5px solid var(--accent);border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;background:#fff;color:var(--accent)}
+.g-phase-head{display:flex;align-items:center;gap:12px;margin:18px 0 8px}
+.g-phase-head-text{font-size:13px;font-weight:700;color:var(--text)}
+.g-phase-head-sub{font-size:12px;color:var(--muted);font-weight:400}
+.g-flip-note{margin-top:6px;font-size:12px;color:#1a5fa0;font-weight:600}
+.g-dial-primary{font-size:22px;font-weight:800;color:var(--accent)}
+.g-dial-sub{font-size:12px;color:var(--muted);margin-top:2px}
+/* Row select */
+.row-format-select{height:36px;padding:6px 10px;font-size:13px;border-radius:8px;border:1px solid var(--line);background:#fff;font-family:inherit}
+@media(max-width:768px){
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .app-header{padding:13px 16px}
+  .wrap{padding:16px 12px 36px}
+  .card-body,.result-body{padding:14px}
+  .card-header,.card-footer{padding:13px 15px}
+  .total-amount{font-size:30px}
+  .bottom-bar{flex-direction:column;align-items:stretch}
+  .fold-line-grid{grid-template-columns:1fr 1fr 80px 36px}
+}
+</style>
 </head>
 <body>
 
-  <header class="app-header">
-    <div class="app-logo">
-      <div class="app-logo-icon">🖨</div>
-      <div>
-        <div class="app-title">Калькулятор печати</div>
-        <div class="app-subtitle">Разделитель · Фальцовка</div>
-      </div>
-    </div>
-    <div class="header-actions">
-      <button class="btn-inverse btn-sm" id="calculateAllBtn">Рассчитать все</button>
-      <button class="btn-inverse btn-sm" id="clearBtn">Сбросить</button>
-    </div>
-  </header>
-
-  <div class="wrap">
-    <div class="toolbar">
-      <button class="btn-primary" id="addSeparatorBtn">+ Разделитель</button>
-      <button class="btn-secondary" id="addFoldingBtn">+ Фальцовка</button>
-      <button class="btn-secondary" id="addGuillotineBtn">+ Гильотина</button>
-      <button class="btn-secondary" id="addBindingBtn">+ Брошюровка</button>
-      <button class="btn-secondary" id="addConverterBtn">+ Конвертер</button>
-      <div id="status" class="status-pill" style="display:none;"></div>
-    </div>
-
-    <div id="servicesContainer"></div>
-
-    <div class="bottom-bar">
-      <div></div>
-      <div id="totalBlock" class="total-block">
-        <div class="total-label">Итого</div>
-        <div id="totalAmount" class="total-amount"></div>
-      </div>
+<header class="app-header">
+  <div class="app-logo">
+    <div class="app-logo-icon">🖨</div>
+    <div>
+      <div class="app-title">Калькулятор печати</div>
+      <div class="app-subtitle">Разделитель · Фальцовка · Гильотина · Брошюровка · Конвертер</div>
     </div>
   </div>
+  <div class="header-actions">
+    <button class="btn-inverse btn-sm" id="calculateAllBtn">Рассчитать все</button>
+    <button class="btn-inverse btn-sm" id="clearBtn">Сбросить</button>
+  </div>
+</header>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<div class="wrap">
+  <div class="toolbar">
+    <button class="btn-primary" id="addSeparatorBtn">+ Разделитель</button>
+    <button class="btn-secondary" id="addFoldingBtn">+ Фальцовка</button>
+    <button class="btn-secondary" id="addBindingBtn">+ Брошюровка</button>
+    <button class="btn-secondary" id="addGuillotineBtn">+ Гильотина</button>
+    <button class="btn-secondary" id="addConverterBtn">+ Конвертер</button>
+    <div id="status" class="status-pill"></div>
+  </div>
+  <div id="servicesContainer"></div>
+  <div class="bottom-bar">
+    <div></div>
+    <div id="totalBlock" class="total-block">
+      <div class="total-label">Итого</div>
+      <div id="totalAmount" class="total-amount"></div>
+    </div>
+  </div>
+</div>
 
-  <script>
-    let PDFDocument;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script>
+'use strict';
+let PDFDocument;
 
-    window.addEventListener("load", () => {
-      if (typeof pdfjsLib === "undefined") {
-        document.getElementById("servicesContainer").innerHTML =
-          '<div class="empty-state"><div class="empty-state-icon">⚠️</div>' +
-          '<div class="empty-state-title">Не удалось загрузить библиотеки PDF</div>' +
-          '<div class="empty-state-sub">Проверьте подключение к интернету и обновите страницу</div></div>';
-        return;
+window.addEventListener('load', () => {
+  if (typeof pdfjsLib === 'undefined') {
+    document.getElementById('servicesContainer').innerHTML =
+      '<div style="padding:40px;text-align:center;color:var(--muted);">⚠️ Не удалось загрузить библиотеки. Проверьте интернет и обновите страницу.</div>';
+    return;
+  }
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  PDFDocument = PDFLib.PDFDocument;
+  addBlock('separator');
+});
+
+// ── CONSTANTS ──────────────────────────────────────────────────────
+const TOLERANCE_MM = 8;
+const COLOR_TOLERANCE = 18;
+const SAMPLE_STEP = 8;
+
+const FORMATS = {
+  A6:{w:105,h:148}, A5:{w:148,h:210}, A4:{w:210,h:297},
+  A3:{w:297,h:420}, A2:{w:420,h:594}, A1:{w:594,h:841}, A0:{w:841,h:1189}
+};
+
+// ── STATE ──────────────────────────────────────────────────────────
+let blockCounter = 1;
+let calculatedRows = [];
+const serviceStates = {};
+
+const container  = document.getElementById('servicesContainer');
+const statusEl   = document.getElementById('status');
+const totalBlock = document.getElementById('totalBlock');
+const totalAmountEl = document.getElementById('totalAmount');
+
+document.getElementById('addSeparatorBtn').addEventListener('click', () => addBlock('separator'));
+document.getElementById('addFoldingBtn').addEventListener('click',   () => addBlock('folding'));
+document.getElementById('addBindingBtn').addEventListener('click',   () => addBlock('binding'));
+document.getElementById('addGuillotineBtn').addEventListener('click',() => addBlock('guillotine'));
+document.getElementById('addConverterBtn').addEventListener('click', () => addBlock('converter'));
+document.getElementById('calculateAllBtn').addEventListener('click', calcAll);
+document.getElementById('clearBtn').addEventListener('click', clearAll);
+
+// ── PRICE DATA ─────────────────────────────────────────────────────
+const PRICES = {
+  documentsBW: {
+    A4:[
+      {max:10,  price:10.0, code:'1001', label:'Цифровая печать ч/б А4, до 10 прог.'},
+      {max:50,  price:7.0,  code:'1002', label:'Цифровая печать ч/б А4, 11–50 прог.'},
+      {max:100, price:6.0,  code:'1003', label:'Цифровая печать ч/б А4, 51–100 прог.'},
+      {max:500, price:5.5,  code:'1004', label:'Цифровая печать ч/б А4, 101–500 прог.'},
+      {max:Infinity, price:5.0, code:'1005', label:'Цифровая печать ч/б А4, от 501 прог.'}
+    ],
+    A3:[
+      {max:10,  price:20.0, code:'1008', label:'Цифровая печать ч/б А3, до 10 прог.'},
+      {max:50,  price:16.0, code:'1009', label:'Цифровая печать ч/б А3, 11–50 прог.'},
+      {max:100, price:14.0, code:'1010', label:'Цифровая печать ч/б А3, 51–100 прог.'},
+      {max:500, price:12.0, code:'1011', label:'Цифровая печать ч/б А3, 101–500 прог.'},
+      {max:Infinity, price:11.0, code:'1012', label:'Цифровая печать ч/б А3, от 501 прог.'}
+    ]
+  },
+  documentsColor: {
+    A4:{min:15.0, max:30.0, code:'1006–1007', label:'Цифровая печать цветн. А4'},
+    A3:{min:30.0, max:45.0, code:'1013–1014', label:'Цифровая печать цветн. А3'}
+  },
+  drawingsExact: {
+    bw:   {A2:{price:65,  code:'1039'}, A1:{price:110, code:'1049'}, A0:{price:220, code:'1051'}},
+    color:{A2:{price:75,  code:'1040'}, A1:{price:130, code:'1050'}, A0:{price:260, code:'1052'}}
+  },
+  drawingsWide: {
+    bw:{
+      A4:{3:52,4:69,5:86,6:104,7:121,8:138},
+      A3:{3:104,4:138,5:173,6:207,7:242,8:276},
+      A2:{3:207,4:276,5:345,6:414}
+    },
+    color:{
+      A4:{3:60,4:81,5:101,6:121,7:141,8:161},
+      A3:{3:121,4:161,5:201,6:242,7:282,8:322},
+      A2:{3:242,4:322,5:403,6:483}
+    }
+  }
+};
+
+const BINDING_OPTIONS = [
+  {key:'plastic_a4', label:'Пластиковая пружина А4', tiers:[
+    {max:40, price:110,code:'1085',label:'до 40 л, 8 мм'},
+    {max:80, price:140,code:'1086',label:'до 80 л, 12 мм'},
+    {max:120,price:170,code:'1087',label:'до 120 л, 16 мм'},
+    {max:180,price:200,code:'1088',label:'до 180 л, 22 мм'},
+    {max:240,price:230,code:'1089',label:'до 240 л, 28 мм'},
+    {max:340,price:260,code:'1090',label:'до 340 л, 38 мм'},
+    {max:500,price:290,code:'1091',label:'до 500 л, 51 мм'}
+  ]},
+  {key:'plastic_a3', label:'Пластиковая пружина А3', tiers:[
+    {max:40, price:135,code:'1092',label:'до 40 л, 8 мм'},
+    {max:80, price:165,code:'1093',label:'до 80 л, 12 мм'},
+    {max:120,price:195,code:'1094',label:'до 120 л, 16 мм'},
+    {max:180,price:225,code:'1095',label:'до 180 л, 22 мм'},
+    {max:240,price:255,code:'1096',label:'до 240 л, 28 мм'},
+    {max:340,price:285,code:'1097',label:'до 340 л, 38 мм'},
+    {max:500,price:315,code:'1098',label:'до 500 л, 51 мм'}
+  ]},
+  {key:'metal_a4', label:'Металлическая пружина А4', tiers:[
+    {max:35, price:125,code:'1099',label:'до 35 л, 6 мм'},
+    {max:50, price:140,code:'1100',label:'до 50 л, 8 мм'},
+    {max:80, price:155,code:'1101',label:'до 80 л, 10 мм'},
+    {max:100,price:170,code:'1102',label:'до 100 л, 12 мм'},
+    {max:120,price:185,code:'1103',label:'до 120 л, 14 мм'}
+  ]},
+  {key:'metal_a3', label:'Металлическая пружина А3', tiers:[
+    {max:35, price:150,code:'1104',label:'до 35 л, 6 мм'},
+    {max:50, price:165,code:'1105',label:'до 50 л, 8 мм'},
+    {max:80, price:180,code:'1106',label:'до 80 л, 10 мм'},
+    {max:100,price:195,code:'1107',label:'до 100 л, 12 мм'},
+    {max:120,price:210,code:'1108',label:'до 120 л, 14 мм'}
+  ]}
+];
+
+const FOLD_PRICES = {
+  'A3-A4':{price:8, code:'1110',label:'Фальцевание А3→А4'},
+  'A2-A4':{price:18,code:'1111',label:'Фальцевание А2→А4'},
+  'A1-A4':{price:26,code:'1112',label:'Фальцевание А1→А4'},
+  'A2-A3':{price:18,code:'1113',label:'Фальцевание А2→А3'},
+  'A1-A3':{price:26,code:'1114',label:'Фальцевание А1→А3'},
+  'custom-A4':{price:5,code:'1115',label:'Фальцевание нестандарт→А4'}
+};
+const FMT_AREA = {A4:1,A3:2,A2:4,A1:8,A0:16,A5:0.5,A6:0.25};
+
+const FOLD_DIRECTION_OPTS = [
+  {key:'A3-A4',label:'А3→А4',baseArea:2},
+  {key:'A2-A4',label:'А2→А4',baseArea:4},
+  {key:'A1-A4',label:'А1→А4',baseArea:8},
+  {key:'A2-A3',label:'А2→А3',baseArea:4},
+  {key:'A1-A3',label:'А1→А3',baseArea:8},
+  {key:'custom-A4',label:'Нестандарт→А4',baseArea:1}
+];
+const FOLD_FORMAT_OPTS = [
+  'A3','A2','A1','A0',
+  'A4x3','A4x4','A4x5','A4x6','A4x7','A4x8',
+  'A3x3','A3x4','A3x5','A3x6','A3x7','A3x8',
+  'A2x3','A2x4','A2x5','A2x6'
+];
+
+const ALL_FORMATS = ['A6','A5','A4','A3','A2','A1','A0',
+  'A4x3','A4x4','A4x5','A4x6','A4x7','A4x8',
+  'A3x3','A3x4','A3x5','A3x6','A3x7','A3x8',
+  'A2x3','A2x4','A2x5','A2x6'];
+
+const GUILL_SOURCES = {
+  SRA3:{w:320,h:450,label:'SRA3 (320×450)'},
+  A3:  {w:297,h:420,label:'А3 (297×420)'},
+  A4:  {w:210,h:297,label:'А4 (210×297)'}
+};
+const GUILL_TARGETS = [
+  {key:'A6',  label:'А6 (105×148)',  fw:105,fh:148},
+  {key:'A5',  label:'А5 (148×210)',  fw:148,fh:210},
+  {key:'A4',  label:'А4 (210×297)',  fw:210,fh:297}
+];
+
+// ── addBlock ───────────────────────────────────────────────────────
+function addBlock(type) {
+  const id = blockCounter++;
+  serviceStates[id] = {
+    type,
+    files: type==='separator'||type==='converter' ? [] : undefined,
+    rows: [],
+    notes: [],
+    collapsed: false,
+    foldLines:   type==='folding'  ? [{direction:'A2-A4',format:'A2',qty:1}] : undefined,
+    bindingLines:type==='binding'  ? [{key:'plastic_a4',sheets:40,copies:1}] : undefined
+  };
+
+  const badges = {
+    separator:'📄 Разделитель', folding:'📐 Фальцовка',
+    binding:'📚 Брошюровка', guillotine:'✂️ Гильотина', converter:'🔄 Конвертер'
+  };
+  const defaults = {
+    separator:`Разделитель #${id}`, folding:`Фальцовка #${id}`,
+    binding:`Брошюровка #${id}`, guillotine:`Гильотина #${id}`, converter:`Конвертер #${id}`
+  };
+
+  const card = document.createElement('div');
+  card.className = 'service-card';
+  card.dataset.id = id;
+  card.dataset.type = type;
+
+  const bodyHtml = type==='separator' ? renderSeparatorBody(id)
+    : type==='folding'   ? renderFoldingBody(id)
+    : type==='binding'   ? renderBindingBody(id)
+    : type==='guillotine'? renderGuillotineBody(id)
+    : renderConverterBody(id);
+
+  const footerHtml = type==='separator' ? `
+    <div class="card-footer">
+      <button type="button" class="btn-primary calc-btn">Рассчитать</button>
+      <div class="progress-bar-wrap" id="progress-wrap-${id}"><div class="progress-bar-fill" id="progress-bar-${id}"></div></div>
+    </div>
+    <div class="result-section" id="result-${id}">
+      <div class="result-header" id="result-header-${id}">
+        <div class="result-title">Результат</div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="result-subtotal" id="result-subtotal-${id}"></div>
+          <div class="result-chevron open" id="result-chevron-${id}">▾</div>
+        </div>
+      </div>
+      <div class="result-body" id="result-body-${id}"></div>
+    </div>` : '';
+
+  card.innerHTML = `
+    <div class="card-header">
+      <span class="card-type-badge ${type}">${badges[type]}</span>
+      <input type="text" class="card-name-input" value="${escapeHtml(defaults[type])}" placeholder="Название">
+      <button type="button" class="btn-danger btn-sm remove-card-btn">✕</button>
+    </div>
+    <div class="card-body">${bodyHtml}</div>
+    ${footerHtml}`;
+
+  container.appendChild(card);
+  bindCard(card, id, type);
+}
+
+function bindCard(card, id, type) {
+  card.querySelector('.remove-card-btn').addEventListener('click', () => {
+    delete serviceStates[id];
+    card.remove();
+    rebuildRows();
+    updateTotal();
+  });
+  if (type==='separator') {
+    card.querySelector('.calc-btn').addEventListener('click', () => calcBlock(card, id));
+    document.getElementById(`result-header-${id}`).addEventListener('click', () => {
+      const st = serviceStates[id];
+      st.collapsed = !st.collapsed;
+      document.getElementById(`result-body-${id}`).classList.toggle('collapsed', st.collapsed);
+      document.getElementById(`result-chevron-${id}`).classList.toggle('open', !st.collapsed);
+    });
+    bindSeparatorFiles(card, id);
+  } else if (type==='folding') {
+    buildFoldUI(card, id);
+  } else if (type==='binding') {
+    buildBindingUI(card, id);
+  } else if (type==='guillotine') {
+    initGuillotine(card, id);
+  } else if (type==='converter') {
+    initConverter(card, id);
+  }
+}
+
+// ── SEPARATOR ──────────────────────────────────────────────────────
+function renderSeparatorBody(id) {
+  return `
+    <div class="grid-2">
+      <div class="field col-span-full">
+        <label>PDF / DOCX файлы</label>
+        <div class="file-upload-area" id="sep-area-${id}">
+          <div class="file-upload-icon">📂</div>
+          <div class="file-upload-label">Нажмите или перетащите</div>
+          <div class="file-upload-hint">PDF и Word (.docx)</div>
+        </div>
+        <input type="file" id="sep-input-${id}" accept=".pdf,.docx" multiple style="display:none">
+        <div id="sep-list-${id}" class="file-list"></div>
+      </div>
+      <div class="field">
+        <label>Режим цвета</label>
+        <select id="sep-mode-${id}">
+          <option value="auto">Автоопределение</option>
+          <option value="bw">Всё ч/б</option>
+          <option value="color">Всё цветное</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Экземпляров</label>
+        <input type="number" id="sep-copies-${id}" min="1" step="1" value="1">
+      </div>
+    </div>`;
+}
+
+function bindSeparatorFiles(card, id) {
+  const area  = document.getElementById(`sep-area-${id}`);
+  const input = document.getElementById(`sep-input-${id}`);
+  const list  = document.getElementById(`sep-list-${id}`);
+  const st    = serviceStates[id];
+  area.addEventListener('click', () => input.click());
+  area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
+  area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+  area.addEventListener('drop', e => { e.preventDefault(); area.classList.remove('dragover'); pushFiles([...e.dataTransfer.files]); });
+  input.addEventListener('change', () => { pushFiles([...input.files]); input.value=''; });
+  function pushFiles(files) {
+    files.filter(f => /\.(pdf|docx)$/i.test(f.name)).forEach(f => {
+      if (!st.files.find(x => x.name===f.name)) st.files.push({name:f.name,fileRef:f,bytes:null});
+    });
+    renderList();
+  }
+  function renderList() {
+    list.innerHTML = st.files.map((f,i) => `
+      <div class="file-chip">
+        <span>${/\.docx$/i.test(f.name)?'📝':'📄'}</span>
+        <span class="file-chip-name">${escapeHtml(f.name)}</span>
+        <button class="file-chip-remove" data-i="${i}">×</button>
+      </div>`).join('');
+    list.querySelectorAll('.file-chip-remove').forEach(btn =>
+      btn.addEventListener('click', () => { st.files.splice(+btn.dataset.i,1); renderList(); }));
+  }
+}
+
+async function calcBlock(card, id) {
+  const st = serviceStates[id];
+  if (!st?.files?.length) { setStatus('Добавьте хотя бы один файл.', true); return; }
+  setStatus('Анализ...');
+  try {
+    const mode = document.getElementById(`sep-mode-${id}`).value;
+    const copies = Math.max(1, parseInt(document.getElementById(`sep-copies-${id}`).value)||1);
+    const allRows = [];
+    for (const fe of st.files) {
+      if (!fe.bytes) fe.bytes = new Uint8Array(await fe.fileRef.arrayBuffer());
+      if (/\.docx$/i.test(fe.name)) allRows.push(...await analyzeWord(fe, mode, copies, id));
+      else allRows.push(...await analyzePdf(fe, mode, copies, id));
+    }
+    const extra = (st.rows||[]).filter(r => r.isExtra);
+    st.rows = [...allRows, ...extra];
+    st.notes = [];
+    rebuildRows();
+    renderResult(card, id);
+    updateTotal();
+    setStatus('');
+  } catch(e) { console.error(e); setStatus(e.message||'Ошибка.', true); }
+}
+
+async function analyzePdf(fe, mode, copies, blockId) {
+  const pdf = await pdfjsLib.getDocument({data: fe.bytes.slice()}).promise;
+  const groups = new Map();
+  for (let i=1; i<=pdf.numPages; i++) {
+    setProgress(blockId, i/pdf.numPages*100);
+    setStatus(`${fe.name}: стр ${i}/${pdf.numPages}`);
+    const page = await pdf.getPage(i);
+    const vp = page.getViewport({scale:1});
+    const wMm = ptToMm(vp.width), hMm = ptToMm(vp.height);
+    const colorMode = mode==='auto' ? await detectColor(page) : mode;
+    const detected  = detectFormat(wMm, hMm);
+    const billed    = detected!=='CUSTOM' ? detected
+                    : detectWideFormat(wMm,hMm) || findSmallestFitting(wMm,hMm) || findNearest(wMm,hMm);
+    const actualLabel = `${Math.round(wMm*10)/10} × ${Math.round(hMm*10)/10} мм`;
+    const key = `${fe.name}||${actualLabel}||${colorMode}||${billed}`;
+    if (!groups.has(key)) groups.set(key, {fileName:fe.name,fileBytes:fe.bytes,actualLabel,colorMode,billed,pages:[],qty:0});
+    const g = groups.get(key);
+    g.pages.push(i);
+    g.qty += copies;
+  }
+  setProgress(blockId, 0);
+  return [...groups.values()].map(g => {
+    const p = getSepPrice(g.billed, g.colorMode, g.qty);
+    return {id:makeId(),blockId,fileName:g.fileName,fileBytes:g.fileBytes,actualLabel:g.actualLabel,
+      colorMode:g.colorMode,billedFormat:g.billed,pages:g.pages,qty:g.qty,copies,
+      unitPrice:p.price,tariffCode:p.code,tariffLabel:p.label,priceLocked:false,
+      isExtra:false,isSeparator:true,priceSyncKey:`${g.colorMode}:${g.billed}`};
+  });
+}
+
+async function analyzeWord(fe, mode, copies, blockId) {
+  setStatus(`Анализ ${fe.name}...`);
+  const result = await mammoth.extractRawText({arrayBuffer: fe.bytes.buffer});
+  const pages  = Math.max(1, (result.value.match(/\f/g)||[]).length + 1);
+  const colorMode = mode==='auto' ? 'bw' : mode;
+  const qty = pages * copies;
+  const p = getSepPrice('A4', colorMode, qty);
+  return [{id:makeId(),blockId,fileName:fe.name,fileBytes:null,actualLabel:`Word, ~${pages} стр.`,
+    colorMode,billedFormat:'A4',pages:Array.from({length:pages},(_,i)=>i+1),qty,copies,
+    unitPrice:p.price,tariffCode:p.code,tariffLabel:p.label,priceLocked:false,
+    isExtra:false,isSeparator:true,isWord:true}];
+}
+
+function getSepPrice(fmt, colorMode, qty) {
+  if (colorMode==='bw' && PRICES.documentsBW[fmt]) {
+    const t = PRICES.documentsBW[fmt].find(t => qty<=t.max) || PRICES.documentsBW[fmt].at(-1);
+    return {price:t.price, code:t.code, label:t.label};
+  }
+  if (colorMode==='color' && PRICES.documentsColor[fmt]) {
+    const i = PRICES.documentsColor[fmt];
+    return {price:i.min, code:i.code, label:`${i.label} (от ${i.min}–${i.max} ₽)`};
+  }
+  if (PRICES.drawingsExact[colorMode]?.[fmt]) {
+    const t = PRICES.drawingsExact[colorMode][fmt];
+    return {price:t.price, code:t.code, label:`Широкоформатная печать ${colorMode==='color'?'цветн.':'ч/б'} ${fmt}`};
+  }
+  const wp = parseWideKey(fmt);
+  if (wp) {
+    const tbl = PRICES.drawingsWide[colorMode]?.[wp.base];
+    if (tbl && tbl[wp.n]) return {price:tbl[wp.n], code:`wide-${colorMode}-${fmt}`,
+      label:`Широкоформатная печать ${colorMode==='color'?'цветн.':'ч/б'} ${fmt}`};
+    if (tbl) {
+      const keys = Object.keys(tbl).map(Number).sort((a,b)=>a-b);
+      const max  = keys.at(-1), prev = keys.at(-2)??max-1;
+      const step = tbl[max]-tbl[prev];
+      const extraPrice = tbl[max]+(wp.n-max)*step;
+      return {price:extraPrice, code:`wide-${colorMode}-${fmt}+`,
+        label:`Широкоформатная печать ${colorMode==='color'?'цветн.':'ч/б'} ${fmt} (продолжение прайса)`};
+    }
+  }
+  return {price:0, code:'—', label:`Нет тарифа для ${fmt}`};
+}
+
+// ── RESULT RENDER ──────────────────────────────────────────────────
+function renderResult(card, id) {
+  const st = serviceStates[id];
+  const resultEl = document.getElementById(`result-${id}`);
+  const bodyEl   = document.getElementById(`result-body-${id}`);
+  const subtotalEl = document.getElementById(`result-subtotal-${id}`);
+  if (!st.rows?.length) { resultEl.classList.remove('visible'); return; }
+  resultEl.classList.add('visible');
+  bodyEl.classList.toggle('collapsed', !!st.collapsed);
+  document.getElementById(`result-chevron-${id}`).classList.toggle('open', !st.collapsed);
+  const sub = st.rows.reduce((s,r) => s+r.qty*r.unitPrice, 0);
+  subtotalEl.textContent = money(sub);
+  const sepRows = st.rows.filter(r => r.isSeparator && !r.isWord);
+  let html = '';
+  if (sepRows.length) {
+    html += `<div class="download-actions">
+      <button type="button" class="btn-secondary btn-sm dl-all-btn" data-id="${id}">⬇ Скачать всё (ZIP)</button>
+      <button type="button" class="btn-secondary btn-sm merge-btn" data-id="${id}">⊞ Объединить строки</button>
+      <button type="button" class="btn-ghost btn-sm add-row-btn" data-id="${id}">+ Добавить строку</button>
+    </div>`;
+  }
+  html += `<div class="table-wrap"><table>
+    <thead><tr>
+      <th>Тариф</th><th>Размер в файле</th>
+      <th style="min-width:140px">Формат печати</th>
+      <th>Кол-во</th><th>Цена/ед.</th><th>Сумма</th><th></th>
+    </tr></thead>
+    <tbody>${st.rows.map(renderRowHtml).join('')}</tbody>
+  </table></div>`;
+  bodyEl.innerHTML = html;
+  bindResultEvents(bodyEl, card, id);
+}
+
+function renderRowHtml(row) {
+  const sum = row.qty * row.unitPrice;
+  const fmtCell = row.isSeparator ? `
+    <select class="row-format-select" data-row-id="${row.id}" style="height:36px;padding:6px 10px;font-size:13px;border-radius:8px;border:1px solid var(--line);background:#fff;font-family:inherit;min-width:120px;">
+      ${ALL_FORMATS.map(f => `<option value="${f}" ${f===row.billedFormat?'selected':''}>${escapeHtml(fmtLabel(f))}</option>`).join('')}
+    </select>` : escapeHtml(row.billedFormat||'—');
+  const dlBtn = row.isSeparator && !row.isWord && row.fileBytes
+    ? `<button type="button" class="btn-secondary btn-xs dl-row-btn" data-row-id="${row.id}">⬇ PDF</button>` : '';
+  const removeBtn = row.isExtra
+    ? `<button type="button" class="icon-btn remove-extra" data-row-id="${row.id}" title="Удалить">✕</button>` : '';
+  return `<tr data-row-id="${row.id}">
+    <td style="text-align:left">
+      <div class="cell-code">${escapeHtml(row.tariffCode||'—')}</div>
+      <div class="cell-label">${escapeHtml(row.tariffLabel||'—')}</div>
+      ${dlBtn}
+    </td>
+    <td class="cell-size" style="text-align:center">${escapeHtml(row.actualLabel||'—')}</td>
+    <td style="text-align:center">${fmtCell}</td>
+    <td style="text-align:center"><input type="number" class="row-qty-input row-qty-editor" data-row-id="${row.id}" value="${row.qty}" min="1" step="1" style="width:80px"></td>
+    <td style="text-align:center">
+      <div class="price-edit-box">
+        <input type="number" class="row-price-input row-price-editor" data-row-id="${row.id}" value="${row.unitPrice.toFixed(2)}" min="0" step="0.01" style="width:86px">
+        <button type="button" class="icon-btn lock-btn ${row.priceLocked?'locked':''}" data-row-id="${row.id}">${row.priceLocked?'🔒':'🔓'}</button>
+      </div>
+    </td>
+    <td class="sum-cell" data-row-id="${row.id}" style="text-align:right">${money(sum)}</td>
+    <td style="text-align:center">${removeBtn}</td>
+  </tr>`;
+}
+
+function bindResultEvents(bodyEl, card, id) {
+  const st = serviceStates[id];
+  bodyEl.querySelector('.dl-all-btn')?.addEventListener('click', () => downloadAll(id));
+  bodyEl.querySelector('.merge-btn')?.addEventListener('click', () => { mergeRows(st, card, id); });
+  bodyEl.querySelector('.add-row-btn')?.addEventListener('click', () => {
+    const fmt = 'A4', color = 'bw', qty = 1;
+    const p = getSepPrice(fmt, color, qty);
+    st.rows.push({id:makeId(),blockId:id,fileName:'(ручной ввод)',fileBytes:null,
+      actualLabel:'—',colorMode:color,billedFormat:fmt,pages:[],qty,copies:1,
+      unitPrice:p.price,tariffCode:p.code,tariffLabel:p.label,priceLocked:false,
+      isExtra:true,isSeparator:true,isWord:false});
+    rebuildRows(); renderResult(card,id); updateTotal();
+  });
+  bodyEl.querySelectorAll('.dl-row-btn').forEach(btn =>
+    btn.addEventListener('click', () => {
+      const row = calculatedRows.find(r => r.id===btn.dataset.rowId);
+      if (row) downloadRowPdf(row);
+    }));
+  bodyEl.querySelectorAll('.remove-extra').forEach(btn =>
+    btn.addEventListener('click', () => {
+      st.rows = st.rows.filter(r => r.id!==btn.dataset.rowId);
+      rebuildRows(); renderResult(card,id); updateTotal();
+    }));
+  bodyEl.querySelectorAll('.row-format-select').forEach(sel =>
+    sel.addEventListener('change', () => {
+      const row = calculatedRows.find(r => r.id===sel.dataset.rowId);
+      if (!row) return;
+      row.billedFormat = sel.value;
+      if (!row.priceLocked) {
+        const p = getSepPrice(row.billedFormat, row.colorMode, row.qty);
+        Object.assign(row, {unitPrice:p.price, tariffCode:p.code, tariffLabel:p.label});
+        updateTariffCell(sel.closest('tr'), row);
       }
-      pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      PDFDocument = PDFLib.PDFDocument;
-      addBlock("separator"); // start with one separator only
+      updateRowSum(row.id); updateSubtotal(id); syncRows(id); updateTotal();
+    }));
+  bodyEl.querySelectorAll('.lock-btn').forEach(btn =>
+    btn.addEventListener('click', () => {
+      const row = calculatedRows.find(r => r.id===btn.dataset.rowId);
+      if (!row) return;
+      row.priceLocked = !row.priceLocked;
+      syncRows(id); renderResult(card,id); updateTotal();
+    }));
+  bodyEl.querySelectorAll('.row-price-editor').forEach(inp =>
+    inp.addEventListener('input', () => {
+      const row = calculatedRows.find(r => r.id===inp.dataset.rowId);
+      if (!row) return;
+      row.unitPrice = Math.max(0, parseFloat(inp.value)||0);
+      updateRowSum(row.id); updateSubtotal(id); syncRows(id); updateTotal();
+    }));
+  bodyEl.querySelectorAll('.row-qty-editor').forEach(inp =>
+    inp.addEventListener('input', () => {
+      const row = calculatedRows.find(r => r.id===inp.dataset.rowId);
+      if (!row) return;
+      row.qty = Math.max(1, parseInt(inp.value)||1);
+      if (!row.priceLocked && row.isSeparator) {
+        const p = getSepPrice(row.billedFormat, row.colorMode, row.qty);
+        Object.assign(row, {unitPrice:p.price, tariffCode:p.code, tariffLabel:p.label});
+        updateTariffCell(inp.closest('tr'), row);
+        const pi = inp.closest('tr')?.querySelector('.row-price-editor');
+        if (pi) pi.value = row.unitPrice.toFixed(2);
+      }
+      updateRowSum(row.id); updateSubtotal(id); syncRows(id); updateTotal();
+    }));
+}
+
+function updateTariffCell(tr, row) {
+  if (!tr) return;
+  const cc = tr.querySelector('.cell-code'); if (cc) cc.textContent = row.tariffCode||'—';
+  const cl = tr.querySelector('.cell-label'); if (cl) cl.textContent = row.tariffLabel||'—';
+}
+function updateRowSum(rowId) {
+  const row = calculatedRows.find(r => r.id===rowId);
+  const cell = document.querySelector(`.sum-cell[data-row-id="${rowId}"]`);
+  if (row && cell) cell.textContent = money(row.qty*row.unitPrice);
+}
+function updateSubtotal(id) {
+  const st = serviceStates[id];
+  const sub = (st?.rows||[]).reduce((s,r)=>s+r.qty*r.unitPrice,0);
+  const el = document.getElementById(`result-subtotal-${id}`);
+  if (el) el.textContent = money(sub);
+}
+function syncRows(id) {
+  const st = serviceStates[id];
+  if (!st) return;
+  st.rows = st.rows.map(r => calculatedRows.find(c=>c.id===r.id)||r);
+}
+function mergeRows(st, card, id) {
+  const sep = st.rows.filter(r => r.isSeparator);
+  const other = st.rows.filter(r => !r.isSeparator);
+  const groups = new Map();
+  for (const r of sep) {
+    const k = `${r.billedFormat}||${r.colorMode||''}`;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(r);
+  }
+  const merged = [];
+  for (const [,rows] of groups) {
+    if (rows.length===1) { merged.push(rows[0]); continue; }
+    const base = {...rows[0], id:makeId()};
+    base.qty = rows.reduce((s,r)=>s+r.qty,0);
+    base.pages = rows.flatMap(r=>r.pages||[]).sort((a,b)=>a-b);
+    base.actualLabel = rows.map(r=>r.actualLabel).join(', ');
+    if (!base.priceLocked) {
+      const p = getSepPrice(base.billedFormat, base.colorMode, base.qty);
+      Object.assign(base, {unitPrice:p.price, tariffCode:p.code, tariffLabel:p.label});
+    }
+    merged.push(base);
+  }
+  st.rows = [...merged, ...other];
+  rebuildRows(); renderResult(card,id); updateTotal();
+}
+
+// ── DOWNLOAD ───────────────────────────────────────────────────────
+function colorLabel(m) { return m==='color'?'цвет':'чб'; }
+function buildFileName(billedFormat, colorMode, pages, fileName) {
+  const pg = compressRanges(pages).replace(/,\s*/g,'_');
+  const base = fileName ? '_'+sanitize(fileName.replace(/\.(pdf|docx)$/i,'')) : '';
+  return `${sanitize(billedFormat)}_${colorLabel(colorMode)}${base}_стр${pg}.pdf`;
+}
+async function downloadRowPdf(row) {
+  if (!row.fileBytes || !row.pages?.length) { setStatus('Нет данных.', true); return; }
+  try {
+    setStatus('Создаю PDF...');
+    const bytes = await buildPdf(row.fileBytes, row.pages);
+    downloadBytes(bytes, buildFileName(row.billedFormat, row.colorMode, row.pages, row.fileName), 'application/pdf');
+    setStatus('Файл скачан.');
+  } catch(e) { setStatus('Ошибка PDF.', true); }
+}
+async function downloadAll(id) {
+  const st = serviceStates[id];
+  const rows = (st?.rows||[]).filter(r => r.isSeparator && !r.isWord && r.fileBytes && r.pages?.length);
+  if (!rows.length) { setStatus('Нет файлов.', true); return; }
+  setStatus('Собираю архив...');
+  try {
+    const zip = new JSZip();
+    const groups = new Map();
+    for (const r of rows) {
+      const k = `${r.fileName||''}||${r.billedFormat}||${r.colorMode||'bw'}`;
+      if (!groups.has(k)) groups.set(k, {billedFormat:r.billedFormat,colorMode:r.colorMode||'bw',fileName:r.fileName,fileBytes:r.fileBytes,pages:[]});
+      groups.get(k).pages.push(...r.pages);
+    }
+    const used = new Set();
+    for (const g of groups.values()) {
+      const pages = [...new Set(g.pages)].sort((a,b)=>a-b);
+      const bytes = await buildPdf(g.fileBytes, pages);
+      let name = buildFileName(g.billedFormat, g.colorMode, pages, g.fileName);
+      if (used.has(name)) name = name.replace('.pdf', `_${makeId().slice(0,4)}.pdf`);
+      used.add(name);
+      zip.file(name, bytes);
+    }
+    const blob = await zip.generateAsync({type:'blob'});
+    const card = document.querySelector(`.service-card[data-id="${id}"]`);
+    const svcName = card?.querySelector('.card-name-input')?.value?.trim() || `разделитель_${id}`;
+    downloadBytes(blob, `${sanitize(svcName)}.zip`, 'application/zip');
+    setStatus(`Архив скачан: ${groups.size} файл(ов).`);
+  } catch(e) { console.error(e); setStatus('Ошибка архива.', true); }
+}
+async function buildPdf(srcBytes, pages) {
+  const src = await PDFDocument.load(srcBytes.slice());
+  const out  = await PDFDocument.create();
+  const cp   = await out.copyPages(src, pages.map(p=>p-1));
+  cp.forEach(p => out.addPage(p));
+  return out.save();
+}
+function downloadBytes(data, name, mime) {
+  const blob = data instanceof Blob ? data : new Blob([data], {type:mime});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href=url; a.download=name; a.style.display='none';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+}
+
+// ── FOLDING ────────────────────────────────────────────────────────
+function renderFoldingBody(id) { return `<div id="fold-ui-${id}"></div>`; }
+
+function buildFoldUI(card, id) {
+  const st   = serviceStates[id];
+  const root = document.getElementById(`fold-ui-${id}`);
+  if (!root) return;
+  const lines = st.foldLines;
+  const total = lines.reduce((s,l) => {
+    const t = FOLD_PRICES[l.direction];
+    if (!t) return s;
+    const baseArea = FOLD_DIRECTION_OPTS.find(d=>d.key===l.direction)?.baseArea||1;
+    let fmtArea = FMT_AREA[l.format]||1;
+    const m = /^([A][234])x(\d+)$/i.exec(l.format);
+    if (m) fmtArea = (FMT_AREA[m[1].toUpperCase()]||1)*Number(m[2]);
+    const price = l.direction==='custom-A4' ? t.price : Math.round(t.price*(fmtArea/baseArea)*100)/100;
+    return s + price * l.qty;
+  }, 0);
+
+  root.innerHTML = `
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;min-width:480px;">
+      <thead><tr>
+        <th style="text-align:left;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f7f7f5;border-bottom:1px solid var(--line)">Направление</th>
+        <th style="text-align:left;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f7f7f5;border-bottom:1px solid var(--line)">Формат листа</th>
+        <th style="text-align:center;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f7f7f5;border-bottom:1px solid var(--line)">Кол-во</th>
+        <th style="text-align:right;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f7f7f5;border-bottom:1px solid var(--line)">Цена/лист</th>
+        <th style="text-align:right;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f7f7f5;border-bottom:1px solid var(--line)">Сумма</th>
+        <th style="background:#f7f7f5;border-bottom:1px solid var(--line);width:36px"></th>
+      </tr></thead>
+      <tbody>
+        ${lines.map((l,idx) => {
+          const t = FOLD_PRICES[l.direction];
+          const baseArea = FOLD_DIRECTION_OPTS.find(d=>d.key===l.direction)?.baseArea||1;
+          let fmtArea = FMT_AREA[l.format]||1;
+          const m = /^([A][234])x(\d+)$/i.exec(l.format);
+          if (m) fmtArea = (FMT_AREA[m[1].toUpperCase()]||1)*Number(m[2]);
+          const price = !t ? 0 : l.direction==='custom-A4' ? t.price : Math.round(t.price*(fmtArea/baseArea)*100)/100;
+          const sum   = price * l.qty;
+          return `<tr style="border-bottom:1px solid var(--line-soft)">
+            <td style="padding:7px 10px">
+              <select class="fold-dir" data-idx="${idx}" style="width:100%;min-width:130px;height:38px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit">
+                ${FOLD_DIRECTION_OPTS.map(d=>`<option value="${d.key}" ${d.key===l.direction?'selected':''}>${d.label}</option>`).join('')}
+              </select>
+            </td>
+            <td style="padding:7px 10px">
+              <select class="fold-fmt" data-idx="${idx}" style="width:100%;min-width:130px;height:38px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit">
+                ${FOLD_FORMAT_OPTS.map(f=>`<option value="${f}" ${f===l.format?'selected':''}>${escapeHtml(fmtLabel(f))}</option>`).join('')}
+              </select>
+            </td>
+            <td style="padding:7px 10px;text-align:center">
+              <input type="number" class="fold-qty" data-idx="${idx}" value="${l.qty}" min="1" step="1" style="width:76px;text-align:center;height:38px;padding:6px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit">
+            </td>
+            <td style="padding:7px 10px;text-align:right;font-size:14px;font-weight:600">${fmt2(price)} ₽</td>
+            <td style="padding:7px 10px;text-align:right;font-size:15px;font-weight:800">${money(sum)}</td>
+            <td style="padding:7px 10px">
+              <button class="fold-del icon-btn" data-idx="${idx}" style="color:var(--danger);border-color:#f5c6c2;background:var(--danger-soft)">✕</button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+      <tfoot><tr style="border-top:2px solid var(--line)">
+        <td colspan="4" style="padding:10px;font-size:13px;font-weight:700">Итого</td>
+        <td style="padding:10px;text-align:right;font-size:18px;font-weight:800">${money(total)}</td>
+        <td></td>
+      </tr></tfoot>
+    </table>
+    </div>
+    <div style="margin-top:10px">
+      <button type="button" class="btn-ghost btn-sm fold-add">+ Добавить строку</button>
+    </div>`;
+
+  root.querySelectorAll('.fold-dir').forEach(sel =>
+    sel.addEventListener('change', () => { lines[+sel.dataset.idx].direction=sel.value; buildFoldUI(card,id); updateTotal(); }));
+  root.querySelectorAll('.fold-fmt').forEach(sel =>
+    sel.addEventListener('change', () => { lines[+sel.dataset.idx].format=sel.value; buildFoldUI(card,id); updateTotal(); }));
+  root.querySelectorAll('.fold-qty').forEach(inp =>
+    inp.addEventListener('input', () => { lines[+inp.dataset.idx].qty=Math.max(1,parseInt(inp.value)||1); buildFoldUI(card,id); updateTotal(); }));
+  root.querySelectorAll('.fold-del').forEach(btn =>
+    btn.addEventListener('click', () => { lines.splice(+btn.dataset.idx,1); buildFoldUI(card,id); updateTotal(); }));
+  root.querySelector('.fold-add').addEventListener('click', () => {
+    lines.push({direction:'A2-A4',format:'A2',qty:1}); buildFoldUI(card,id);
+  });
+}
+
+// ── BINDING ────────────────────────────────────────────────────────
+function renderBindingBody(id) { return `<div id="binding-ui-${id}"></div>`; }
+
+function buildBindingUI(card, id) {
+  const st   = serviceStates[id];
+  const root = document.getElementById(`binding-ui-${id}`);
+  if (!root) return;
+  const lines = st.bindingLines;
+  const total = lines.reduce((s,l) => {
+    const opt = BINDING_OPTIONS.find(o=>o.key===l.key);
+    if (!opt) return s;
+    const price = opt.tiers ? (opt.tiers.find(t=>l.sheets<=t.max)||opt.tiers.at(-1)).price : opt.price;
+    return s + price*l.copies;
+  }, 0);
+
+  root.innerHTML = `
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;min-width:500px">
+      <thead><tr>
+        <th style="text-align:left;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f7f7f5;border-bottom:1px solid var(--line)">Вид</th>
+        <th style="text-align:center;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f7f7f5;border-bottom:1px solid var(--line)">Листов</th>
+        <th style="text-align:center;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f7f7f5;border-bottom:1px solid var(--line)">Экз.</th>
+        <th style="text-align:center;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f7f7f5;border-bottom:1px solid var(--line)">Тариф</th>
+        <th style="text-align:center;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f7f7f5;border-bottom:1px solid var(--line)">Цена</th>
+        <th style="text-align:right;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f7f7f5;border-bottom:1px solid var(--line)">Сумма</th>
+        <th style="background:#f7f7f5;border-bottom:1px solid var(--line);width:36px"></th>
+      </tr></thead>
+      <tbody>
+        ${lines.map((l,idx) => {
+          const opt  = BINDING_OPTIONS.find(o=>o.key===l.key)||BINDING_OPTIONS[0];
+          const tier = opt.tiers ? (opt.tiers.find(t=>l.sheets<=t.max)||opt.tiers.at(-1)) : null;
+          const price = tier ? tier.price : opt.price;
+          const code  = tier ? tier.code  : opt.code;
+          const sum   = price * l.copies;
+          return `<tr style="border-bottom:1px solid var(--line-soft)">
+            <td style="padding:7px 10px">
+              <select class="b-type" data-idx="${idx}" style="width:100%;min-width:180px;height:38px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit">
+                ${BINDING_OPTIONS.map(o=>`<option value="${o.key}" ${o.key===l.key?'selected':''}>${escapeHtml(o.label)}</option>`).join('')}
+              </select>
+            </td>
+            <td style="padding:7px 10px;text-align:center">
+              <input type="number" class="b-sheets" data-idx="${idx}" value="${l.sheets}" min="1" style="width:68px;text-align:center;height:38px;padding:6px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit">
+            </td>
+            <td style="padding:7px 10px;text-align:center">
+              <input type="number" class="b-copies" data-idx="${idx}" value="${l.copies}" min="1" style="width:68px;text-align:center;height:38px;padding:6px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit">
+            </td>
+            <td style="padding:7px 10px;text-align:center;font-size:12px;color:var(--muted)">${escapeHtml(code)}${tier?`<br><span style="font-size:11px">${escapeHtml(tier.label)}</span>`:''}</td>
+            <td style="padding:7px 10px;text-align:center;font-weight:600">${money(price)}</td>
+            <td style="padding:7px 10px;text-align:right;font-size:16px;font-weight:800">${money(sum)}</td>
+            <td style="padding:7px 10px">
+              <button class="b-del icon-btn" data-idx="${idx}" style="color:var(--danger);border-color:#f5c6c2;background:var(--danger-soft)">✕</button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+      <tfoot><tr style="border-top:2px solid var(--line)">
+        <td colspan="5" style="padding:10px;font-size:13px;font-weight:700">Итого</td>
+        <td style="padding:10px;text-align:right;font-size:18px;font-weight:800">${money(total)}</td>
+        <td></td>
+      </tr></tfoot>
+    </table>
+    </div>
+    <div style="margin-top:10px">
+      <button type="button" class="btn-ghost btn-sm b-add">+ Добавить строку</button>
+    </div>`;
+
+  root.querySelectorAll('.b-type').forEach(sel =>
+    sel.addEventListener('change', () => { lines[+sel.dataset.idx].key=sel.value; buildBindingUI(card,id); updateTotal(); }));
+  root.querySelectorAll('.b-sheets').forEach(inp =>
+    inp.addEventListener('input', () => { lines[+inp.dataset.idx].sheets=Math.max(1,parseInt(inp.value)||1); buildBindingUI(card,id); updateTotal(); }));
+  root.querySelectorAll('.b-copies').forEach(inp =>
+    inp.addEventListener('input', () => { lines[+inp.dataset.idx].copies=Math.max(1,parseInt(inp.value)||1); buildBindingUI(card,id); updateTotal(); }));
+  root.querySelectorAll('.b-del').forEach(btn =>
+    btn.addEventListener('click', () => { lines.splice(+btn.dataset.idx,1); buildBindingUI(card,id); updateTotal(); }));
+  root.querySelector('.b-add').addEventListener('click', () => {
+    lines.push({key:'plastic_a4',sheets:40,copies:1}); buildBindingUI(card,id);
+  });
+}
+
+// ── GUILLOTINE ─────────────────────────────────────────────────────
+function renderGuillotineBody(id) { return `<div id="g-ui-${id}"></div>`; }
+
+function initGuillotine(card, id) {
+  const root = document.getElementById(`g-ui-${id}`);
+  if (!root) return;
+
+  root.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="grid-3">
+        <div class="field"><label>Исходный лист</label>
+          <select id="g-src-${id}" style="height:42px">
+            ${Object.entries(GUILL_SOURCES).map(([k,v])=>`<option value="${k}">${escapeHtml(v.label)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label>Итоговый формат</label>
+          <select id="g-tgt-${id}" style="height:42px">
+            ${GUILL_TARGETS.map(t=>`<option value="${t.key}">${escapeHtml(t.label)}</option>`).join('')}
+          </select>
+        </div>
+        <div></div>
+        <div class="field"><label>Отступ сверху (a), мм — портретная фаза</label>
+          <input type="number" id="g-a-${id}" min="0" step="0.1" value="8.5">
+        </div>
+        <div class="field"><label>Отступ слева (i), мм — альбомная фаза</label>
+          <input type="number" id="g-i-${id}" min="0" step="0.1" value="8.5">
+        </div>
+        <div id="g-info-${id}" style="font-size:13px;color:var(--muted);padding-top:8px"></div>
+      </div>
+      <div>
+        <button type="button" class="g-advanced-toggle" id="g-adv-btn-${id}">▸ Дополнительные параметры</button>
+        <div id="g-adv-${id}" style="display:none;margin-top:12px">
+          <div class="grid-3">
+            <div class="field"><label>Мин. рез, мм</label><input type="number" id="g-mincut-${id}" min="0" step="0.1" value="50"></div>
+            <div class="field"><label>Зазор между макетами, мм</label><input type="number" id="g-gap-${id}" min="0" step="0.1" value="4"></div>
+            <div class="field"><label>Брусок на упоре, мм</label><input type="number" id="g-block-${id}" min="0" step="0.1" value="6.5"></div>
+          </div>
+        </div>
+      </div>
+      <div><button type="button" class="btn-primary" id="g-calc-${id}">Рассчитать инструкцию</button></div>
+      <div id="g-result-${id}"></div>
+    </div>`;
+
+  const bestOrientation = (src, tgt, gap) => {
+    const fit = (sheetDim, itemDim) => itemDim > 0 ? Math.max(0, Math.floor((sheetDim + gap) / (itemDim + gap))) : 0;
+    const optA = { dimH: tgt.fw, dimW: tgt.fh, n1: fit(src.h, tgt.fw), n2: fit(src.w, tgt.fh) };
+    const optB = { dimH: tgt.fh, dimW: tgt.fw, n1: fit(src.h, tgt.fh), n2: fit(src.w, tgt.fw) };
+    return (optB.n1 * optB.n2 > optA.n1 * optA.n2) ? optB : optA;
+  };
+
+  const updateInfo = () => {
+    const src  = GUILL_SOURCES[document.getElementById(`g-src-${id}`).value];
+    const tgt  = GUILL_TARGETS.find(t=>t.key===document.getElementById(`g-tgt-${id}`).value);
+    const gap  = parseFloat(document.getElementById(`g-gap-${id}`)?.value) || 4;
+    const best = bestOrientation(src, tgt, gap);
+    const total = best.n1 * best.n2;
+    document.getElementById(`g-info-${id}`).innerHTML = total > 0
+      ? `На листе: <strong>${total} шт</strong> (${best.n1}×${best.n2})`
+      : `<span style="color:var(--danger)">Формат не помещается</span>`;
+  };
+
+  document.getElementById(`g-src-${id}`).addEventListener('change', updateInfo);
+  document.getElementById(`g-tgt-${id}`).addEventListener('change', updateInfo);
+  document.getElementById(`g-gap-${id}`)?.addEventListener('input', updateInfo);
+  document.getElementById(`g-adv-btn-${id}`).addEventListener('click', () => {
+    const adv = document.getElementById(`g-adv-${id}`);
+    const btn = document.getElementById(`g-adv-btn-${id}`);
+    const open = adv.style.display==='none';
+    adv.style.display = open ? 'block' : 'none';
+    btn.textContent = (open?'▾ ':'▸ ')+'Дополнительные параметры';
+  });
+  document.getElementById(`g-calc-${id}`).addEventListener('click', () => calcGuillotine(id));
+  updateInfo();
+}
+
+// Renders the rotated-"A" orientation icon used to show which way the sheet is fed
+function gOrientIcon(deg) {
+  return `<div class="g-orient" style="transform:rotate(${deg}deg)">A</div>`;
+}
+
+function calcGuillotine(id) {
+  const srcKey = document.getElementById(`g-src-${id}`).value;
+  const tgtKey = document.getElementById(`g-tgt-${id}`).value;
+  const src    = GUILL_SOURCES[srcKey];
+  const tgt    = GUILL_TARGETS.find(t=>t.key===tgtKey);
+  const a      = parseFloat(document.getElementById(`g-a-${id}`).value)||0;
+  const iVal   = parseFloat(document.getElementById(`g-i-${id}`).value)||0;
+  const minCut = parseFloat(document.getElementById(`g-mincut-${id}`)?.value)||50;
+  const gap    = parseFloat(document.getElementById(`g-gap-${id}`)?.value)||4;
+  const block  = parseFloat(document.getElementById(`g-block-${id}`)?.value)||6.5;
+  const resultEl = document.getElementById(`g-result-${id}`);
+
+  if (src.w === tgt.fw && src.h === tgt.fh) {
+    resultEl.innerHTML = `<div class="g-warn" style="margin-top:14px">⚠️ Исходный и итоговый формат совпадают — резать нечего.</div>`;
+    return;
+  }
+
+  // ── Choose orientation that yields the most pieces ──────────────
+  // Try both ways of mapping the target's two dimensions onto the sheet's
+  // height axis (portrait phase) and width axis (landscape phase).
+  function fitCount(sheetDim, itemDim) {
+    if (itemDim <= 0) return 0;
+    return Math.max(0, Math.floor((sheetDim + gap) / (itemDim + gap)));
+  }
+  const optA = { dimH: tgt.fw, dimW: tgt.fh, n1: fitCount(src.h, tgt.fw), n2: fitCount(src.w, tgt.fh) };
+  const optB = { dimH: tgt.fh, dimW: tgt.fw, n1: fitCount(src.h, tgt.fh), n2: fitCount(src.w, tgt.fw) };
+  const best = (optB.n1 * optB.n2 > optA.n1 * optA.n2) ? optB : optA;
+
+  if (best.n1 < 1 || best.n2 < 1) {
+    resultEl.innerHTML = `<div class="g-warn" style="margin-top:14px">⚠️ Формат ${escapeHtml(tgt.label)} не помещается на листе ${escapeHtml(src.label)}.</div>`;
+    return;
+  }
+
+  // ── Core chain builder for one axis ──────────────────────────────
+  // The stop is glued with a permanent block, so every dial value already
+  // includes it. Block is added ONCE at the very start of the axis; every
+  // following cut on the SAME (unflipped) side is just the previous dial
+  // value minus the real mm removed — the +block offset cancels through
+  // automatically. Only the final flip (approaching from the other edge)
+  // needs the block re-added, which is why that step is always the fixed
+  // constant itemDim + block, independent of whatever margin is left.
+  function axisChain(sheetDim, itemDim, marginInput, N) {
+    const steps = [];
+    let dial = sheetDim + block - marginInput;
+    steps.push({
+      kind: 'margin',
+      action: `Обрезка стартового поля (${fmt2(marginInput)} мм)`,
+      dial,
+      formula: `${fmt2(sheetDim)} + ${fmt2(block)} − ${fmt2(marginInput)} = ${fmt2(dial)}`,
+      removed: marginInput
     });
 
-    // ── CONSTANTS ──────────────────────────────────────────────────
-    const TOLERANCE_MM = 8;
-    const COLOR_TOLERANCE = 18;
-    const SAMPLE_STEP = 8;
-
-    const FORMATS = {
-      A6: { w: 105, h: 148 },
-      A5: { w: 148, h: 210 },
-      A4: { w: 210, h: 297 },
-      A3: { w: 297, h: 420 },
-      A2: { w: 420, h: 594 },
-      A1: { w: 594, h: 841 },
-      A0: { w: 841, h: 1189 }
-    };
-
-    // ── BINDING OPTIONS (prices from pricelist 01.12.2024) ────────
-    const BINDING_OPTIONS = [
-      {
-        key: "plastic_a4", label: "Пластиковая пружина А4",
-        tiers: [
-          { max: 40,  price: 110, code: "1085", label: "до 40 л, 8 мм"   },
-          { max: 80,  price: 140, code: "1086", label: "до 80 л, 12 мм"  },
-          { max: 120, price: 170, code: "1087", label: "до 120 л, 16 мм" },
-          { max: 180, price: 200, code: "1088", label: "до 180 л, 22 мм" },
-          { max: 240, price: 230, code: "1089", label: "до 240 л, 28 мм" },
-          { max: 340, price: 260, code: "1090", label: "до 340 л, 38 мм" },
-          { max: 500, price: 290, code: "1091", label: "до 500 л, 51 мм" }
-        ]
-      },
-      {
-        key: "plastic_a3", label: "Пластиковая пружина А3",
-        tiers: [
-          { max: 40,  price: 135, code: "1092", label: "до 40 л, 8 мм"   },
-          { max: 80,  price: 165, code: "1093", label: "до 80 л, 12 мм"  },
-          { max: 120, price: 195, code: "1094", label: "до 120 л, 16 мм" },
-          { max: 180, price: 225, code: "1095", label: "до 180 л, 22 мм" },
-          { max: 240, price: 255, code: "1096", label: "до 240 л, 28 мм" },
-          { max: 340, price: 285, code: "1097", label: "до 340 л, 38 мм" },
-          { max: 500, price: 315, code: "1098", label: "до 500 л, 51 мм" }
-        ]
-      },
-      {
-        key: "metal_a4", label: "Металлическая пружина А4",
-        tiers: [
-          { max: 35,  price: 125, code: "1099", label: "до 35 л, 6 мм"   },
-          { max: 50,  price: 140, code: "1100", label: "до 50 л, 8 мм"   },
-          { max: 80,  price: 155, code: "1101", label: "до 80 л, 10 мм"  },
-          { max: 100, price: 170, code: "1102", label: "до 100 л, 12 мм" },
-          { max: 120, price: 185, code: "1103", label: "до 120 л, 14 мм" }
-        ]
-      },
-      {
-        key: "metal_a3", label: "Металлическая пружина А3",
-        tiers: [
-          { max: 35,  price: 150, code: "1104", label: "до 35 л, 6 мм"   },
-          { max: 50,  price: 165, code: "1105", label: "до 50 л, 8 мм"   },
-          { max: 80,  price: 180, code: "1106", label: "до 80 л, 10 мм"  },
-          { max: 100, price: 195, code: "1107", label: "до 100 л, 12 мм" },
-          { max: 120, price: 210, code: "1108", label: "до 120 л, 14 мм" }
-        ]
-      }
-    ];
-
-    // Цены на печать для разделителя
-    const PRICES = {
-      documentsBW: {
-        A4: [
-          { max: 10,       price: 10.0, code: "1001", label: "Цифровая печать ч/б А4, до 10 прог." },
-          { max: 50,       price: 7.0,  code: "1002", label: "Цифровая печать ч/б А4, 11–50 прог." },
-          { max: 100,      price: 6.0,  code: "1003", label: "Цифровая печать ч/б А4, 51–100 прог." },
-          { max: 500,      price: 5.5,  code: "1004", label: "Цифровая печать ч/б А4, 101–500 прог." },
-          { max: Infinity, price: 5.0,  code: "1005", label: "Цифровая печать ч/б А4, от 501 прог." }
-        ],
-        A3: [
-          { max: 10,       price: 20.0, code: "1008", label: "Цифровая печать ч/б А3, до 10 прог." },
-          { max: 50,       price: 16.0, code: "1009", label: "Цифровая печать ч/б А3, 11–50 прог." },
-          { max: 100,      price: 14.0, code: "1010", label: "Цифровая печать ч/б А3, 51–100 прог." },
-          { max: 500,      price: 12.0, code: "1011", label: "Цифровая печать ч/б А3, 101–500 прог." },
-          { max: Infinity, price: 11.0, code: "1012", label: "Цифровая печать ч/б А3, от 501 прог." }
-        ]
-      },
-      documentsColor: {
-        A4: { min: 15.0, max: 30.0, code: "1006–1007", label: "Цифровая печать цветн. А4" },
-        A3: { min: 30.0, max: 45.0, code: "1013–1014", label: "Цифровая печать цветн. А3" }
-      },
-      drawingsExact: {
-        bw:    { A2: { price: 65, code: "1039" }, A1: { price: 110, code: "1049" }, A0: { price: 220, code: "1051" } },
-        color: { A2: { price: 75, code: "1040" }, A1: { price: 130, code: "1050" }, A0: { price: 260, code: "1052" } }
-      },
-      drawingsWide: {
-        bw: {
-          A4: { 3:52,4:69,5:86,6:104,7:121,8:138 },
-          A3: { 3:104,4:138,5:173,6:207,7:242,8:276 },
-          A2: { 3:207,4:276,5:345,6:414 }
-        },
-        color: {
-          A4: { 3:60,4:81,5:101,6:121,7:141,8:161 },
-          A3: { 3:121,4:161,5:201,6:242,7:282,8:322 },
-          A2: { 3:242,4:322,5:403,6:483 }
-        }
-      }
-    };
-
-    // ── STATE ──────────────────────────────────────────────────────
-    let blockCounter = 1;
-    let calculatedRows = [];
-    const serviceStates = {};
-
-    // ── DOM REFS ───────────────────────────────────────────────────
-    const container = document.getElementById("servicesContainer");
-    const statusEl = document.getElementById("status");
-    const totalBlock = document.getElementById("totalBlock");
-    const totalAmount = document.getElementById("totalAmount");
-
-    document.getElementById("addSeparatorBtn").addEventListener("click", () => addBlock("separator"));
-    document.getElementById("addFoldingBtn").addEventListener("click", () => addBlock("folding"));
-    document.getElementById("addGuillotineBtn").addEventListener("click", () => addBlock("guillotine"));
-    document.getElementById("addBindingBtn").addEventListener("click", () => addBlock("binding"));
-    document.getElementById("addConverterBtn").addEventListener("click", () => addBlock("converter"));
-    document.getElementById("calculateAllBtn").addEventListener("click", calcAll);
-    document.getElementById("clearBtn").addEventListener("click", clearAll);
-
-    // ── ADD BLOCK ──────────────────────────────────────────────────
-    function addBlock(type) {
-      const id = blockCounter++;
-
-      serviceStates[id] = {
-        type,
-        files: type === "separator" ? [] : undefined,
-        foldLines: type === "folding" ? [] : undefined,
-        rows: [],
-        notes: [],
-        collapsed: false
-      };
-
-      const card = document.createElement("div");
-      card.className = "service-card";
-      card.dataset.id = id;
-      card.dataset.type = type;
-
-      const typeBadge = type === "separator"
-        ? `<span class="card-type-badge separator">📄 Разделитель</span>`
-        : type === "folding"
-        ? `<span class="card-type-badge folding">📐 Фальцовка</span>`
-        : type === "guillotine"
-        ? `<span class="card-type-badge guillotine">✂️ Гильотина</span>`
-        : type === "binding"
-        ? `<span class="card-type-badge binding">📚 Брошюровка</span>`
-        : `<span class="card-type-badge converter">🔄 Конвертер</span>`;
-
-      const defaultName = type === "separator" ? `Разделитель #${id}`
-        : type === "folding" ? `Фальцовка #${id}`
-        : type === "guillotine" ? `Гильотина #${id}`
-        : type === "binding" ? `Брошюровка #${id}`
-        : `Конвертер #${id}`;
-
-      card.innerHTML = `
-        <div class="card-header">
-          ${typeBadge}
-          <input type="text" class="card-name-input" value="${escapeHtml(defaultName)}" placeholder="Название">
-          <button type="button" class="btn-danger btn-sm remove-card-btn">✕ Удалить</button>
-        </div>
-        <div class="card-body">
-          ${type === "separator" ? renderSeparatorBody(id)
-          : type === "folding" ? renderFoldingBody(id)
-          : type === "guillotine" ? renderGuillotineBody(id)
-          : type === "binding" ? renderBindingBody(id)
-          : renderConverterBody(id)}
-        </div>
-        ${type === "separator" ? `
-        <div class="card-footer">
-          <button type="button" class="btn-primary calc-btn">Рассчитать</button>
-          <div class="progress-bar-wrap" id="progress-wrap-${id}">
-            <div class="progress-bar-fill" id="progress-bar-${id}"></div>
-          </div>
-        </div>
-        <div class="result-section" id="result-${id}">
-          <div class="result-header" id="result-header-${id}">
-            <div class="result-title">Результат расчёта</div>
-            <div style="display:flex;align-items:center;gap:16px;">
-              <div class="result-subtotal" id="result-subtotal-${id}"></div>
-              <div class="result-chevron open" id="result-chevron-${id}">▾</div>
-            </div>
-          </div>
-          <div class="result-body" id="result-body-${id}"></div>
-        </div>
-        ` : ""}
-      `;
-
-      container.appendChild(card);
-      bindCard(card, id, type);
-    }
-
-    function renderSeparatorBody(id) {
-      return `
-        <div class="grid-2">
-          <div class="field col-span-full">
-            <label>PDF-файлы (можно несколько)</label>
-            <div class="file-upload-area" id="upload-area-${id}">
-              <input type="file" id="sep-files-${id}" accept="application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple>
-              <div class="file-upload-icon">📂</div>
-              <div class="file-upload-label">Нажмите или перетащите файлы</div>
-              <div class="file-upload-hint">PDF и Word (.docx)</div>
-            </div>
-            <div class="file-list" id="file-list-${id}"></div>
-          </div>
-          <div class="field">
-            <label>Режим цвета</label>
-            <select id="sep-mode-${id}">
-              <option value="auto">Автоопределение</option>
-              <option value="bw">Всё ч/б</option>
-              <option value="color">Всё цветное</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Кол-во экземпляров</label>
-            <input type="number" id="sep-copies-${id}" min="1" step="1" value="1">
-          </div>
-        </div>
-      `;
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // ── ГИЛЬОТИНА ─────────────────────────────────────────────────
-    // ══════════════════════════════════════════════════════════════
-
-    function renderGuillotineBody(id) {
-      return `<div id="guillotine-ui-${id}"></div>`;
-    }
-
-    function initGuillotine(card, id) {
-      const root = document.getElementById(`guillotine-ui-${id}`);
-      if (!root) return;
-
-      root.innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:18px;">
-          <div class="grid-3">
-            <div class="field"><label>Ширина листа, мм</label><input type="number" class="g-input" id="g-sheet-w-${id}" value="320" min="1"></div>
-            <div class="field"><label>Высота листа, мм</label><input type="number" class="g-input" id="g-sheet-h-${id}" value="450" min="1"></div>
-            <div></div>
-            <div class="field"><label>Ширина макета, мм</label><input type="number" class="g-input" id="g-item-w-${id}" value="94" min="1"></div>
-            <div class="field"><label>Высота макета, мм</label><input type="number" class="g-input" id="g-item-h-${id}" value="54" min="1"></div>
-            <div></div>
-            <div class="field"><label>Финальная ширина, мм</label><input type="number" class="g-input" id="g-final-w-${id}" value="90" min="1"></div>
-            <div class="field"><label>Финальная высота, мм</label><input type="number" class="g-input" id="g-final-h-${id}" value="50" min="1"></div>
-            <div></div>
-            <div class="field"><label>Поле сверху, мм</label><input type="number" class="g-input" id="g-margin-top-${id}" value="11" min="0" step="0.1"></div>
-            <div class="field"><label>Поле снизу, мм</label><input type="number" class="g-input" id="g-margin-bottom-${id}" value="7" min="0" step="0.1"></div>
-            <div></div>
-            <div class="field"><label>Поле слева, мм</label><input type="number" class="g-input" id="g-margin-left-${id}" value="18" min="0" step="0.1"></div>
-            <div class="field"><label>Поле справа, мм</label><input type="number" class="g-input" id="g-margin-right-${id}" value="19.5" min="0" step="0.1"></div>
-            <div></div>
-            <div class="field"><label>Колонок</label><input type="number" class="g-input" id="g-cols-${id}" value="3" min="1"></div>
-            <div class="field"><label>Строк</label><input type="number" class="g-input" id="g-rows-${id}" value="8" min="1"></div>
-            <div></div>
-          </div>
-          <div>
-            <button type="button" class="g-advanced-toggle" id="g-adv-btn-${id}">▸ Дополнительные параметры</button>
-            <div id="g-advanced-${id}" style="display:none;margin-top:14px;">
-              <div class="grid-3">
-                <div class="field"><label>Зазор X между макетами, мм</label><input type="number" class="g-input" id="g-gap-x-${id}" value="0" min="0" step="0.1"></div>
-                <div class="field"><label>Зазор Y между макетами, мм</label><input type="number" class="g-input" id="g-gap-y-${id}" value="0" min="0" step="0.1"></div>
-                <div></div>
-                <div class="field"><label>Минимальный рез, мм</label><input type="number" class="g-input" id="g-min-cut-${id}" value="50" min="0" step="0.1"></div>
-                <div class="field"><label>Брусок на упоре, мм (0 = нет)</label><input type="number" class="g-input" id="g-block-${id}" value="6.5" min="0" step="0.1"></div>
-                <div></div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <button type="button" class="btn-primary" id="g-calc-btn-${id}">Рассчитать инструкцию</button>
-          </div>
-          <div id="g-result-${id}"></div>
-        </div>
-      `;
-
-      if (!document.getElementById("g-styles")) {
-        const s = document.createElement("style");
-        s.id = "g-styles";
-        s.textContent = `
-          .g-section-title { font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line-soft); }
-          .g-step { display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-radius:10px;border:1px solid var(--line);margin-bottom:8px;background:#fff; }
-          .g-step-num { width:28px;min-width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800; }
-          .g-step-body { flex:1; }
-          .g-step-action { font-size:14px;font-weight:700;margin-bottom:4px; }
-          .g-step-detail { font-size:13px;color:#444;line-height:1.6; }
-          .g-step-values { display:flex;gap:10px;margin-top:8px;flex-wrap:wrap; }
-          .g-val-chip { background:#f0f0ed;border:1px solid var(--line);border-radius:8px;padding:5px 12px;font-size:13px;font-weight:600; }
-          .g-val-chip span { color:var(--muted);font-weight:400;font-size:12px; }
-          .g-phase-label { font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;margin:18px 0 8px; }
-          .g-warn { background:#fffbee;border:1px solid #f0e0a0;border-radius:10px;padding:12px 16px;font-size:13px;color:#5a4a00;margin-bottom:12px; }
-          .g-error { background:var(--danger-soft);border:1px solid #f5c6c2;border-radius:10px;padding:12px 16px;font-size:13px;color:var(--danger);margin-bottom:12px; }
-          .g-step-check { cursor: pointer; }
-          .g-step-check:hover .g-step-num { background: var(--green); }
-          .g-step-done {
-            opacity: 0.45;
-          }
-          .g-step-done .g-step-num {
-            background: var(--green) !important;
-          }
-          .g-step-done .g-step-action { text-decoration:line-through;color:var(--muted); }
-          .g-summary { background:var(--green-soft);border:1px solid #b8e4cc;border-radius:12px;padding:16px 20px;margin-bottom:16px;font-size:14px;line-height:1.6; }
-          .g-note { font-size:12px;color:var(--muted);margin-top:5px; }
-          .g-advanced-toggle { background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:4px 0;font-family:inherit;text-decoration:underline; }
-          .g-advanced-toggle:hover { color:var(--text); }
-        `;
-        document.head.appendChild(s);
-      }
-
-      document.getElementById(`g-calc-btn-${id}`).addEventListener("click", () => calcGuillotine(id));
-
-      // Advanced toggle
-      document.getElementById(`g-adv-btn-${id}`).addEventListener("click", () => {
-        const adv = document.getElementById(`g-advanced-${id}`);
-        const btn = document.getElementById(`g-adv-btn-${id}`);
-        const open = adv.style.display === "none";
-        adv.style.display = open ? "block" : "none";
-        btn.textContent = (open ? "▾ " : "▸ ") + "Дополнительные параметры";
-      });
-    }
-
-    function gVal(id, field) {
-      return parseFloat(document.getElementById(`g-${field}-${id}`)?.value || "0") || 0;
-    }
-
-    function fmt(n) {
-      const r = Math.round(n * 10) / 10;
-      return r % 1 === 0 ? String(r) : r.toFixed(1);
-    }
-
-    // Core idea:
-    // - A cut value = distance from blade to stop = the piece that STAYS against the stop (the smaller piece)
-    // - "From large to small" means: we always position so the CUT-OFF piece is the larger one,
-    //   and the piece staying at the stop is the smaller one — BUT that smaller piece must be >= minCut
-    // - If the piece to keep at stop < minCut: we flip — keep the large piece at stop, cut off the small margin
-    //   But then the measurement = large piece size, which must be >= minCut. Usually it is.
-    // - After each cut the current piece size decreases — all subsequent measurements use the new size
-
-    function calcGuillotine(id) {
-      const sheetW = gVal(id,"sheet-w"), sheetH = gVal(id,"sheet-h");
-      const itemW  = gVal(id,"item-w"),  itemH  = gVal(id,"item-h");
-      const finalW = gVal(id,"final-w"), finalH = gVal(id,"final-h");
-      const mL = gVal(id,"margin-left"), mR = gVal(id,"margin-right");
-      const mT = gVal(id,"margin-top"),  mB = gVal(id,"margin-bottom");
-      const gapX = gVal(id,"gap-x"), gapY = gVal(id,"gap-y");
-      const cols = Math.max(1,Math.round(gVal(id,"cols")));
-      const rows = Math.max(1,Math.round(gVal(id,"rows")));
-      const minCut = gVal(id,"min-cut");
-      const block  = gVal(id,"block");
-      const resultEl = document.getElementById(`g-result-${id}`);
-
-      // Geometry check
-      const warnings = [];
-      const expW = mL + cols*itemW + (cols-1)*gapX + mR;
-      const expH = mT + rows*itemH + (rows-1)*gapY + mB;
-      if (Math.abs(expW-sheetW)>0.5) warnings.push(`Ширина: поля+макеты = ${fmt(expW)} мм, лист = ${fmt(sheetW)} мм.`);
-      if (Math.abs(expH-sheetH)>0.5) warnings.push(`Высота: поля+макеты = ${fmt(expH)} мм, лист = ${fmt(sheetH)} мм.`);
-
-      const bleedH = (itemH - finalH) / 2;
-      const bleedW = (itemW - finalW) / 2;
-      const steps  = [];
-
-      // ── Core logic ────────────────────────────────────────────
-      // Rules:
-      //   1. Upor (stop) holds the BIG piece. Scale value = size of big piece.
-      //   2. Scale value must be >= minCut.
-      //   3. Scale value <= current piece size (obvious).
-      //   4. To avoid sheet swinging: cut-off must be <= stop piece.
-      //      i.e. cut-off <= pieceSize/2, i.e. stop >= pieceSize/2. 
-      //      This means we always cut off the SMALLER half.
-      //   5. Cut off the smaller margin first (smallest cut-off = easiest first step).
-      //      Then cut strips of itemSize from the same direction.
-      //      When the remaining big piece minus itemSize would be < minCut,
-      //      flip the piece and approach from the other end for remaining strips.
-      //
-      // For each axis we build steps with:
-      //   stopVal = value to set on the machine (size of big piece kept at stop)
-      //   pieceSize = current piece size before this cut
-      //   cutOff = pieceSize - stopVal (small piece that falls off)
-
-      // axisSteps: simple and correct guillotine sequence
-      // ─────────────────────────────────────────────────────────
-      // Concept (as user described):
-      //   1. Trim the near margin (upor = total - mNear, big piece at stop, margin falls off)
-      //   2. Repeat N-1 times: upor = item (constant), each time one strip falls off the feed side
-      //   3. Last piece = item + mFar. Flip, trim far margin: upor = item, margin falls off.
-      //
-      // The upor value for strip cuts = item (constant, same every time).
-      // For the margin cuts: upor = total - margin (large value, always >= minCut).
-      // If item < minCut → warn. Otherwise all steps are valid.
-      //
-      // "Near" = the side we feed first (the side whose margin we trim first).
-      // We choose near = the side with the SMALLER margin, so first cut-off is smallest.
-      // If both margins equal, near = "top" for H, "left" for V.
-      //
-      // Upor = size of the piece that stays at the stop (the big piece).
-      // For margin trim: big piece = total - margin (rest of sheet). Upor = total - margin.
-      // For strip cuts:  big piece = remaining block (total - margin - strips_cut_so_far).
-      //                  Upor = remaining - item  (the strip falls off the front).
-      //                  BUT after first strip: upor changes each time (remaining shrinks).
-      //
-      // WAIT — re-reading user's description more carefully:
-      // "Отрезаю поле, затем визитки по строкам" with the same stop value each time.
-      // This is ONLY possible if after trimming the margin the remaining = count * item (+ gaps),
-      // and each strip cut uses upor = (count-k) * item where k = strips already cut.
-      // These values DECREASE: count*item → (count-1)*item → ... → item.
-      // 
-      // So the sequence of upor values is DESCENDING for strip cuts.
-      // That is physically fine — each time you just move the stop closer.
-      // The user's "-4, -50, -4, -50" was describing the CUT-OFF sizes alternating (margin, strip, margin, strip...),
-      // not the upor values.
-      //
-      // FINAL CORRECT SEQUENCE:
-      //   Step 1: Trim near margin. Upor = total - mNear. (Large, set once.)
-      //   Steps 2..N: Cut strips 1..(count-1). Upor decreases by item each time.
-      //               Upor_k = total - mNear - k*item - k_gaps  for k=1..count-1
-      //               Equivalently: upor starts at (total-mNear-item) and decreases by (item+gap) each step.
-      //   Step N+1: Last piece = item + mFar. Flip. Trim far margin. Upor = item.
-      //
-      // All upor values >= minCut as long as item >= minCut (warn if not).
-
-      function axisSteps(total, mNear, mFar, count, item, gap, isH) {
-        // Физика гильотины:
-        //   Упор сзади, нож спереди. Лист кладём и толкаем ДАЛЬНИМ краем к упору.
-        //   Нож отрезает то, что выступает СПЕРЕДИ (со стороны оператора).
-        //
-        //   Чтобы отрезать нижние N мм:
-        //     → нижний край выступает перед ножом (спереди)
-        //     → к упору подаём ВЕРХНИЙ край
-        //     → упор = total - N (расстояние от упора до ножа = размер куска у упора)
-        //
-        //   Чтобы отрезать верхние N мм:
-        //     → к упору подаём НИЖНИЙ край
-        //     → упор = total - N
-        //
-        //   "near" = верх (mT), "far" = низ (mB) для isH
-        //   "near" = лево (mL), "far" = право (mR) для !isH
-
-        const S = [];
-
-        // Метки сторон
-        const cutFarLabel  = isH ? "нижнего" : "правого";   // отрезаем со стороны "far"
-        const cutNearLabel = isH ? "верхнего" : "левого";    // отрезаем со стороны "near"
-
-        // Чтобы отрезать со стороны "far": к упору подаём "near" край
-        const edgeToStopForFarCut  = isH ? "верхним краем к упору" : "левым краем к упору";
-        // Чтобы отрезать со стороны "near": к упору подаём "far" край
-        const edgeToStopForNearCut = isH ? "нижним краем к упору" : "правым краем к упору";
-
-        const stripWord = isH ? "полоса" : "колонка";
-
-        // Начинаем с МЕНЬШЕГО поля (меньше мусора, легче первый рез)
-        const cutFarFirst = mFar <= mNear;   // сначала отрезаем "far" сторону?
-        const firstMarginCutLabel = cutFarFirst ? cutFarLabel : cutNearLabel;
-        const lastMarginCutLabel  = cutFarFirst ? cutNearLabel : cutFarLabel;
-        const firstEdgeToStop     = cutFarFirst ? edgeToStopForFarCut : edgeToStopForNearCut;
-        const lastEdgeToStop      = cutFarFirst ? edgeToStopForNearCut : edgeToStopForFarCut;
-        const firstMargin         = cutFarFirst ? mFar : mNear;
-        const lastMargin          = cutFarFirst ? mNear : mFar;
-
-        // ── Шаг 1: отрезать меньшее поле ─────────────────────────
-        if (firstMargin > 0.001) {
-          const cutSide = cutFarFirst
-            ? (isH ? "снизу" : "справа")
-            : (isH ? "сверху" : "слева");
-          S.push(step(
-            `Обрезка поля ${cutSide} (${fmt(firstMargin)} мм)`,
-            `${firstEdgeToStop.charAt(0).toUpperCase() + firstEdgeToStop.slice(1)}. ` +
-            `Нож окажется у ${cutFarFirst ? (isH ? "нижнего" : "правого") : (isH ? "верхнего" : "левого")} края — отрезается поле ${fmt(firstMargin)} мм ${cutSide}. В отход. ` +
-            `Упор = ${fmt(total)} − ${fmt(firstMargin)} = ${fmt(total - firstMargin)} мм.`,
-            total - firstMargin, total
-          ));
-        }
-
-        // ── Шаги: полосы с ПОСТОЯННЫМ упором = item ───────────────
-        for (let i = 1; i <= count - 1; i++) {
-          const cutSide = cutFarFirst
-            ? (isH ? "снизу" : "справа")
-            : (isH ? "сверху" : "слева");
-          S.push(step(
-            `${isH ? "Полоса" : "Колонка"} ${i} из ${count}`,
-            `${firstEdgeToStop.charAt(0).toUpperCase() + firstEdgeToStop.slice(1)}, упор = ${fmt(item)} мм (не меняем). ` +
-            `Отрезается ${stripWord} ${i} ${cutSide} — отложите.`,
-            item, null
-          ));
-
-          if (gap > 0.001) {
-            S.push(step(
-              `Зазор`,
-              `${firstEdgeToStop.charAt(0).toUpperCase() + firstEdgeToStop.slice(1)}, упор = ${fmt(gap)} мм. Зазор — в отход.`,
-              gap, null
-            ));
-          }
-        }
-
-        // ── Последний кусок: полоса + второе поле ─────────────────
-        if (lastMargin > 0.001) {
-          const pieceSize = item + lastMargin;
-          const cutSideLast = cutFarFirst
-            ? (isH ? "сверху" : "слева")
-            : (isH ? "снизу" : "справа");
-          const cutEdgeLast = cutFarFirst
-            ? (isH ? "нижнего" : "правого")
-            : (isH ? "верхнего" : "левого");
-          S.push(step(
-            `${isH ? "Полоса" : "Колонка"} ${count} из ${count} — обрезка поля ${cutSideLast} (${fmt(lastMargin)} мм)`,
-            `Последний кусок = ${fmt(pieceSize)} мм. Переверните — ${lastEdgeToStop}. ` +
-            `Нож окажется у ${cutEdgeLast} края — отрезается поле ${fmt(lastMargin)} мм ${cutSideLast}. В отход. ` +
-            `Упор = ${fmt(item)} мм.`,
-            item, pieceSize
-          ));
-        }
-
-        return S;
-      }
-
-      // stopVal = значение на шкале гильотины (без бруска)
-      // pieceSize = размер куска до реза (null = упор фиксирован)
-      function step(action, detail, stopVal, pieceSize) {
-        const tooSmall = stopVal < minCut - 0.05;
-        return { action, detail, stopVal, pieceSize, tooSmall };
-      }
-
-      // Phase 1: horizontal cuts (rows)
-      steps.push({ phase: "ФАЗА 1 — Горизонтальные резы: выделяем строки" });
-      for (const s of axisSteps(sheetH, mT, mB, rows, itemH, gapY, true)) steps.push(s);
-
-      // Phase 2: bleed trim (height)
-      if (bleedH > 0.05) {
-        steps.push({ phase: `ФАЗА 2 — Вылет по высоте ${fmt(bleedH)} мм (каждую полосу)` });
-        steps.push(step("Вылет — первая сторона",
-          `Каждую полосу (${fmt(itemH)} мм) подайте к упору. Обрежьте вылет ${fmt(bleedH)} мм.`,
-          itemH - bleedH, itemH));
-        steps.push(step("Вылет — вторая сторона",
-          `Переверните. Подайте другим краем. Обрежьте вылет ${fmt(bleedH)} мм → финал ${fmt(finalH)} мм.`,
-          finalH, itemH - bleedH));
-      }
-
-      // Phase 3: vertical cuts (columns)
-      steps.push({ phase: "ФАЗА 3 — Вертикальные резы: выделяем колонки (для каждой полосы)" });
-      for (const s of axisSteps(sheetW, mL, mR, cols, itemW, gapX, false)) steps.push(s);
-
-      // Phase 4: bleed trim (width)
-      if (bleedW > 0.05) {
-        steps.push({ phase: `ФАЗА 4 — Вылет по ширине ${fmt(bleedW)} мм (каждую колонку)` });
-        steps.push(step("Вылет — первая сторона",
-          `Каждую колонку (${fmt(itemW)} мм) подайте к упору. Обрежьте вылет ${fmt(bleedW)} мм.`,
-          itemW - bleedW, itemW));
-        steps.push(step("Вылет — вторая сторона",
-          `Переверните. Подайте другим краем. Обрежьте вылет ${fmt(bleedW)} мм → финал ${fmt(finalW)} мм.`,
-          finalW, itemW - bleedW));
-      }
-
-      // ── Render ────────────────────────────────────────────────
-      const actionSteps = steps.filter(s => s.stopVal !== undefined);
-      const totalItems  = cols * rows;
-
-      let html = `<div style="margin-top:20px;">
-        <div class="g-summary">
-          <strong>${totalItems} изделий</strong> ${fmt(finalW)}×${fmt(finalH)} мм
-          из листа ${fmt(sheetW)}×${fmt(sheetH)} мм, сетка ${cols}×${rows} —
-          итого <strong>${actionSteps.length} резов</strong>.
-        </div>`;
-
-      if (warnings.length)
-        html += warnings.map(w => `<div class="g-warn">⚠️ ${escapeHtml(w)}</div>`).join("");
-
-      let stepNum = 0;
-      for (const s of steps) {
-        if (s.phase) {
-          html += `<div class="g-phase-label">✂️ ${escapeHtml(s.phase)}</div>`;
-        } else {
-          stepNum++;
-          const stepId = `gstep-${id}-${stepNum}`;
-          html += `<div class="g-step" id="${stepId}">
-            <label class="g-step-check" title="Отметить выполнено">
-              <input type="checkbox" class="g-checkbox" data-step="${stepId}" style="display:none">
-              <div class="g-step-num">${stepNum}</div>
-            </label>
-            <div class="g-step-body">
-              <div class="g-step-action">${escapeHtml(s.action)}</div>
-              <div class="g-step-detail">${escapeHtml(s.detail)}</div>
-              <div class="g-step-values">
-                <div class="g-val-chip">Без бруска: <span>${fmt(s.stopVal)} мм</span></div>
-                ${block > 0 ? `<div class="g-val-chip" style="background:#edf7f2;border-color:#b8e4cc;">С бруском ${fmt(block)} мм: <span>${fmt(s.stopVal + block)} мм</span></div>` : ""}
-                ${s.pieceSize !== null && s.pieceSize !== undefined ? `<div class="g-val-chip" style="font-size:11px;color:var(--muted)">отрезается: ${fmt(s.pieceSize - s.stopVal)} мм</div>` : ""}
-              </div>
-              ${s.tooSmall ? `<div style="margin-top:6px;padding:8px 12px;background:var(--danger-soft);border:1px solid #f5c6c2;border-radius:8px;font-size:12px;color:var(--danger);">🚫 Упор ${fmt(s.stopVal)} мм < минимального реза (${fmt(minCut)} мм). Пересмотрите раскладку.</div>` : ""}
-            </div>
-          </div>`;
-        }
-      }
-
-      html += `</div>`;
-      resultEl.innerHTML = html;
-
-      // Bind checkboxes — click the number to toggle done state
-      resultEl.querySelectorAll(".g-step-check").forEach(label => {
-        label.addEventListener("click", () => {
-          const cb   = label.querySelector(".g-checkbox");
-          cb.checked = !cb.checked;
-          const step = document.getElementById(cb.dataset.step);
-          if (step) step.classList.toggle("g-step-done", cb.checked);
-          const num  = label.querySelector(".g-step-num");
-          if (num) num.textContent = cb.checked ? "✓" : label.closest(".g-step").dataset.num || "";
-        });
-      });
-      // Store step numbers as data attr for toggle restore
-      resultEl.querySelectorAll(".g-step").forEach((el, i) => { el.dataset.num = i + 1; });
-    }
-
-    // ── БРОШЮРОВКА ─────────────────────────────────────────────────
-    function renderBindingBody(id) {
-      return `<div id="binding-ui-${id}"></div>`;
-    }
-
-    function initBinding(card, id) {
-      const root = document.getElementById(`binding-ui-${id}`);
-      if (!root) return;
-
-      root.innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <div class="grid-2">
-            <div class="field">
-              <label>Вид брошюровки</label>
-              <select id="b-type-${id}" style="height:42px;">
-                ${BINDING_OPTIONS.map(o => `<option value="${o.key}">${escapeHtml(o.label)}</option>`).join("")}
-              </select>
-            </div>
-            <div class="field">
-              <label>Количество листов в экземпляре</label>
-              <input type="number" id="b-sheets-${id}" min="1" step="1" value="40">
-            </div>
-            <div class="field">
-              <label>Количество экземпляров</label>
-              <input type="number" id="b-copies-${id}" min="1" step="1" value="1">
-            </div>
-            <div></div>
-          </div>
-          <div>
-            <button type="button" class="btn-primary" id="b-calc-btn-${id}">Рассчитать</button>
-          </div>
-          <div id="b-result-${id}"></div>
-        </div>
-      `;
-
-      const recalc = () => {
-        const typeKey = document.getElementById(`b-type-${id}`).value;
-        const sheets  = Math.max(1, parseInt(document.getElementById(`b-sheets-${id}`).value) || 1);
-        const copies  = Math.max(1, parseInt(document.getElementById(`b-copies-${id}`).value) || 1);
-        const opt     = BINDING_OPTIONS.find(o => o.key === typeKey);
-        if (!opt) return;
-
-        let price, code, tierLabel;
-        if (opt.tiers) {
-          const tier = opt.tiers.find(t => sheets <= t.max) || opt.tiers[opt.tiers.length - 1];
-          price = tier.price; code = tier.code; tierLabel = tier.label;
-        } else {
-          price = opt.price; code = opt.code; tierLabel = opt.desc || "";
-        }
-
-        const total = price * copies;
-        const res = document.getElementById(`b-result-${id}`);
-        res.innerHTML = `
-          <div style="border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:4px;">
-            <table style="width:100%;border-collapse:collapse;">
-              <thead>
-                <tr>
-                  <th style="text-align:left;padding:10px 14px;background:#f7f7f5;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;">Тариф</th>
-                  <th style="text-align:center;padding:10px 14px;background:#f7f7f5;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;">Листов</th>
-                  <th style="text-align:center;padding:10px 14px;background:#f7f7f5;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;">Экз.</th>
-                  <th style="text-align:center;padding:10px 14px;background:#f7f7f5;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;">Цена/экз.</th>
-                  <th style="text-align:right;padding:10px 14px;background:#f7f7f5;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;">Сумма</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="padding:12px 14px;">
-                    <div style="font-size:12px;color:var(--muted);">${escapeHtml(code)}</div>
-                    <div style="font-size:13px;font-weight:600;">${escapeHtml(opt.label)}</div>
-                    ${tierLabel ? `<div style="font-size:12px;color:var(--muted);">${escapeHtml(tierLabel)}</div>` : ""}
-                  </td>
-                  <td style="text-align:center;padding:12px 14px;">${sheets}</td>
-                  <td style="text-align:center;padding:12px 14px;">${copies}</td>
-                  <td style="text-align:center;padding:12px 14px;font-weight:600;">${money(price)}</td>
-                  <td style="text-align:right;padding:12px 14px;font-size:18px;font-weight:800;">${money(total)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>`;
-
-        // Update total
-        updateTotal();
-      };
-
-      document.getElementById(`b-calc-btn-${id}`).addEventListener("click", recalc);
-      document.getElementById(`b-type-${id}`).addEventListener("change", recalc);
-      document.getElementById(`b-sheets-${id}`).addEventListener("input", recalc);
-      document.getElementById(`b-copies-${id}`).addEventListener("input", recalc);
-      recalc(); // show default result immediately
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // ── КОНВЕРТЕР ФОРМАТОВ ─────────────────────────────────────────
-    // ══════════════════════════════════════════════════════════════
-
-    function renderConverterBody(id) {
-      return `<div id="converter-ui-${id}"></div>`;
-    }
-
-    function initConverter(card, id) {
-      const root = document.getElementById(`converter-ui-${id}`);
-      if (!root) return;
-
-      // Load heic2any if not already loaded
-      if (!window._heic2anyLoaded) {
-        window._heic2anyLoaded = true;
-        const s = document.createElement("script");
-        s.src = "https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js";
-        document.head.appendChild(s);
-      }
-
-      const convFiles = [];
-
-      root.innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <div class="field">
-            <label>Файлы (PDF, JPG, PNG, WEBP, HEIC, BMP, TIFF, DOCX)</label>
-            <div class="file-upload-area" id="conv-area-${id}" style="cursor:pointer;">
-              <div class="file-upload-icon">🔄</div>
-              <div class="file-upload-label">Нажмите или перетащите файлы</div>
-              <div class="file-upload-hint">PDF, JPG, PNG, WEBP, HEIC, BMP, TIFF, DOCX</div>
-            </div>
-            <input type="file" id="conv-input-${id}"
-              accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.bmp,.tiff,.tif,.docx"
-              multiple style="display:none">
-            <div id="conv-filelist-${id}" class="file-list"></div>
-          </div>
-          <div class="grid-2">
-            <div class="field">
-              <label>Конвертировать в</label>
-              <select id="conv-target-${id}" style="height:42px;">
-                <option value="pdf">PDF</option>
-                <option value="jpg">JPG</option>
-                <option value="png">PNG</option>
-                <option value="webp">WEBP</option>
-              </select>
-            </div>
-            <div class="field" id="conv-qwrap-${id}">
-              <label>Качество JPG/WEBP (0.1–1.0)</label>
-              <input type="number" id="conv-quality-${id}" min="0.1" max="1" step="0.05" value="0.92">
-            </div>
-          </div>
-          <div>
-            <button type="button" class="btn-primary" id="conv-go-${id}">Конвертировать</button>
-          </div>
-          <div id="conv-links-${id}" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;"></div>
-          <div id="conv-log-${id}" style="font-size:13px;color:var(--muted);min-height:20px;"></div>
-        </div>
-      `;
-
-      const area     = document.getElementById(`conv-area-${id}`);
-      const input    = document.getElementById(`conv-input-${id}`);
-      const listEl   = document.getElementById(`conv-filelist-${id}`);
-      const targetSel= document.getElementById(`conv-target-${id}`);
-      const qWrap    = document.getElementById(`conv-qwrap-${id}`);
-      const goBtn    = document.getElementById(`conv-go-${id}`);
-      const linksEl  = document.getElementById(`conv-links-${id}`);
-      const logEl    = document.getElementById(`conv-log-${id}`);
-
-      const showQual = () => {
-        qWrap.style.display = ["jpg","webp"].includes(targetSel.value) ? "" : "none";
-      };
-      targetSel.addEventListener("change", showQual);
-      showQual();
-
-      // Click area → open file dialog
-      area.addEventListener("click", () => input.click());
-      area.addEventListener("dragover", e => { e.preventDefault(); area.classList.add("dragover"); });
-      area.addEventListener("dragleave", () => area.classList.remove("dragover"));
-      area.addEventListener("drop", e => {
-        e.preventDefault();
-        area.classList.remove("dragover");
-        pushFiles([...e.dataTransfer.files]);
+    for (let k = 1; k <= N - 1; k++) {
+      dial -= itemDim;
+      steps.push({
+        kind: 'item',
+        action: `Деталь ${k} из ${N}`,
+        dial,
+        formula: `− ${fmt2(itemDim)} мм (размер детали) = ${fmt2(dial)}`,
+        removed: itemDim
       });
 
-      input.addEventListener("change", () => {
-        pushFiles([...input.files]);
-        input.value = "";
-      });
-
-      function pushFiles(files) {
-        files.forEach(f => {
-          if (!convFiles.find(x => x.name === f.name)) convFiles.push(f);
-        });
-        renderList();
-      }
-
-      function renderList() {
-        listEl.innerHTML = convFiles.map((f, i) => `
-          <div class="file-chip">
-            <span>${getFileIcon(f.name)}</span>
-            <span class="file-chip-name">${escapeHtml(f.name)}</span>
-            <button class="file-chip-remove" data-i="${i}" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:0 2px;">×</button>
-          </div>`).join("");
-        listEl.querySelectorAll(".file-chip-remove").forEach(btn => {
-          btn.addEventListener("click", () => {
-            convFiles.splice(Number(btn.dataset.i), 1);
-            renderList();
-          });
+      if (gap > 0.001) {
+        dial -= gap;
+        steps.push({
+          kind: 'gap',
+          action: `Зазор`,
+          dial,
+          formula: `− ${fmt2(gap)} мм (зазор) = ${fmt2(dial)}`,
+          removed: gap
         });
       }
-
-      goBtn.addEventListener("click", async () => {
-        if (!convFiles.length) { logEl.textContent = "Сначала добавьте файлы."; return; }
-        const fmt  = targetSel.value;
-        const qual = Math.min(1, Math.max(0.1, parseFloat(document.getElementById(`conv-quality-${id}`).value) || 0.92));
-        linksEl.innerHTML = "";
-        logEl.textContent = "";
-        goBtn.disabled = true;
-
-        for (const f of convFiles) {
-          logEl.textContent = `Обрабатываю: ${f.name}…`;
-          try {
-            const res = await convertFile(f, fmt, qual);
-            const a = document.createElement("a");
-            a.href = res.url;
-            a.download = res.name;
-            a.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:600;text-decoration:none;color:var(--text);cursor:pointer;";
-            a.innerHTML = `⬇ ${escapeHtml(res.name)}`;
-            linksEl.appendChild(a);
-          } catch(err) {
-            const errDiv = document.createElement("div");
-            errDiv.style.cssText = "padding:8px 12px;background:var(--danger-soft);border:1px solid #f5c6c2;border-radius:8px;font-size:13px;color:var(--danger);";
-            errDiv.textContent = `${f.name}: ${err.message}`;
-            linksEl.appendChild(errDiv);
-            console.error(err);
-          }
-        }
-
-        logEl.textContent = "Готово.";
-        goBtn.disabled = false;
-      });
     }
 
-    function getFileIcon(name) {
-      const ext = (name.split(".").pop() || "").toLowerCase();
-      return { pdf:"📄", docx:"📝", jpg:"🖼", jpeg:"🖼", png:"🖼", webp:"🖼", heic:"🖼", heif:"🖼", bmp:"🖼", tiff:"🖼", tif:"🖼" }[ext] || "📎";
-    }
+    // Physical piece remaining before the flip = dial - block.
+    // The flip-trim always removes exactly itemDim from that, whatever's
+    // left (the trailing margin) falls away — no need to know its size.
+    const physBefore = dial - block;
+    const trailingMargin = physBefore - itemDim;
+    const finalDial = itemDim + block;
+    steps.push({
+      kind: 'flip',
+      action: `Деталь ${N} из ${N} — последняя (после переворота)`,
+      dial: finalDial,
+      formula: `${fmt2(itemDim)} + ${fmt2(block)} = ${fmt2(finalDial)} (фиксированное значение)`,
+      removed: trailingMargin > 0.05 ? trailingMargin : null,
+      flip: true
+    });
 
-    function canvasToBlob(canvas, mime, quality) {
-      return new Promise((res, rej) => {
-        canvas.toBlob(b => b ? res(b) : rej(new Error("Не удалось создать изображение")), mime, quality);
-      });
-    }
+    return steps;
+  }
 
-    function loadImage(file) {
-      return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        img.onload  = () => { URL.revokeObjectURL(url); resolve(img); };
-        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Не удалось открыть изображение (формат не поддерживается браузером)")); };
-        img.src = url;
-      });
-    }
+  const hSteps = axisChain(src.h, best.dimH, a, best.n1);
+  const vSteps = axisChain(src.w, best.dimW, iVal, best.n2);
 
-    async function fileToCanvas(file) {
-      const ext = (file.name.split(".").pop() || "").toLowerCase();
+  const totalPieces = best.n1 * best.n2;
+  const totalSteps   = hSteps.length + vSteps.length;
 
-      // HEIC/HEIF — convert via heic2any first
-      if (["heic","heif"].includes(ext)) {
-        if (typeof heic2any === "undefined")
-          throw new Error("Библиотека heic2any ещё загружается, подождите секунду и повторите.");
-        const blob = await heic2any({ blob: file, toType: "image/png" });
-        const pngFile = new File([blob], file.name.replace(/\.[^.]+$/, ".png"), { type: "image/png" });
-        return loadImage(pngFile).then(img => {
-          const c = document.createElement("canvas");
-          c.width = img.naturalWidth; c.height = img.naturalHeight;
-          c.getContext("2d").drawImage(img, 0, 0);
-          return c;
-        });
-      }
+  // ── Render ────────────────────────────────────────────────────────
+  let html = `<div style="margin-top:16px">
+    <div class="g-summary">
+      ${escapeHtml(src.label)} → <strong>${totalPieces} шт</strong> ${escapeHtml(tgt.label)}
+      (${best.n1}×${best.n2}). Брусок ${fmt2(block)} мм. Итого <strong>${totalSteps} резов</strong>.
+    </div>`;
 
-      const img = await loadImage(file);
-      const c = document.createElement("canvas");
-      c.width = img.naturalWidth; c.height = img.naturalHeight;
-      c.getContext("2d").drawImage(img, 0, 0);
-      return c;
-    }
+  let stepNum = 0;
 
-    async function convertFile(file, targetFmt, quality) {
-      const ext  = (file.name.split(".").pop() || "").toLowerCase();
-      const stem = file.name.slice(0, file.name.lastIndexOf("."));
-      const imgExts = ["jpg","jpeg","png","webp","heic","heif","bmp","tiff","tif"];
+  function renderStepGroup(steps, phaseDeg, phaseTitle, phaseSub) {
+    // Split into "normal" steps and the final flip step
+    const normalSteps = steps.filter(s => !s.flip);
+    const flipStep     = steps.find(s => s.flip);
 
-      // ── Image → any ───────────────────────────────────────────────
-      if (imgExts.includes(ext)) {
-        const canvas = await fileToCanvas(file);
+    let out = `<div class="g-phase-head">
+      ${gOrientIcon(phaseDeg)}
+      <div>
+        <div class="g-phase-head-text">${escapeHtml(phaseTitle)}</div>
+        <div class="g-phase-head-sub">${escapeHtml(phaseSub)}</div>
+      </div>
+    </div>`;
 
-        if (targetFmt === "pdf") {
-          if (!PDFDocument) throw new Error("PDF-lib не загружен, обновите страницу.");
-          const pngBlob  = await canvasToBlob(canvas, "image/png", 1);
-          const pngBytes = new Uint8Array(await pngBlob.arrayBuffer());
-          const doc  = await PDFDocument.create();
-          const img  = await doc.embedPng(pngBytes);
-          const page = doc.addPage([img.width, img.height]);
-          page.drawImage(img, { x:0, y:0, width:img.width, height:img.height });
-          const bytes = await doc.save();
-          const blob  = new Blob([bytes], { type:"application/pdf" });
-          return { url: URL.createObjectURL(blob), name: `${stem}.pdf` };
-        }
+    for (const s of normalSteps) out += renderGStep(++stepNum, s);
 
-        const mimes = { jpg:"image/jpeg", jpeg:"image/jpeg", png:"image/png", webp:"image/webp" };
-        const mime  = mimes[targetFmt] || "image/png";
-        const blob  = await canvasToBlob(canvas, mime, quality);
-        return { url: URL.createObjectURL(blob), name: `${stem}.${targetFmt === "jpeg" ? "jpg" : targetFmt}` };
-      }
-
-      // ── PDF → image(s) ────────────────────────────────────────────
-      if (ext === "pdf" && targetFmt !== "pdf") {
-        if (typeof pdfjsLib === "undefined") throw new Error("PDF.js не загружен.");
-        const bytes = new Uint8Array(await file.arrayBuffer());
-        const pdf   = await pdfjsLib.getDocument({ data: bytes }).promise;
-        const mimes = { jpg:"image/jpeg", png:"image/png", webp:"image/webp" };
-        const mime  = mimes[targetFmt] || "image/png";
-
-        const renderPage = async (pageNum) => {
-          const page = await pdf.getPage(pageNum);
-          const vp   = page.getViewport({ scale: 2 });
-          const canvas = document.createElement("canvas");
-          canvas.width = vp.width; canvas.height = vp.height;
-          await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
-          return canvasToBlob(canvas, mime, quality);
-        };
-
-        if (pdf.numPages === 1) {
-          const blob = await renderPage(1);
-          return { url: URL.createObjectURL(blob), name: `${stem}.${targetFmt}` };
-        }
-
-        const zip = new JSZip();
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const blob = await renderPage(i);
-          zip.file(`${stem}_стр${i}.${targetFmt}`, await blob.arrayBuffer());
-        }
-        const zipBlob = await zip.generateAsync({ type:"blob" });
-        return { url: URL.createObjectURL(zipBlob), name: `${stem}_страницы.zip` };
-      }
-
-      // ── DOCX → HTML (best possible in browser) ───────────────────
-      if (ext === "docx") {
-        if (typeof mammoth === "undefined") throw new Error("Mammoth не загружен.");
-        const res  = await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() });
-        const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-          <style>body{font-family:Arial,sans-serif;margin:40px;line-height:1.6;max-width:800px;}</style>
-          </head><body>${res.value}</body></html>`;
-        const blob = new Blob([html], { type:"text/html" });
-        return { url: URL.createObjectURL(blob), name: `${stem}.html` };
-      }
-
-      throw new Error(`Конвертация .${ext} → ${targetFmt.toUpperCase()} не поддерживается.`);
-    }
-
-    // ── FOLD PRICE DATA ────────────────────────────────────────────
-    // Base prices from pricelist (per sheet of that exact format)
-    const FOLD_PRICES = {
-      "A3-A4": { price: 8,  code: "1110", label: "Фальцевание А3 → А4" },
-      "A2-A4": { price: 18, code: "1111", label: "Фальцевание А2 → А4" },
-      "A1-A4": { price: 26, code: "1112", label: "Фальцевание А1 → А4" },
-      "A2-A3": { price: 18, code: "1113", label: "Фальцевание А2 → А3" },
-      "A1-A3": { price: 26, code: "1114", label: "Фальцевание А1 → А3" },
-      "custom-A4": { price: 5, code: "1115", label: "Фальцевание нестандарт → А4" }
-    };
-
-    // Area in A4 units: A4=1, A3=2, A2=4, A1=8, A0=16
-    const FMT_AREA = { A4:1, A3:2, A2:4, A1:8, A0:16, A5:0.5, A6:0.25 };
-
-    const FOLD_DIRECTION_OPTS = [
-      { key: "A3-A4",     label: "А3 → А4",          baseArea: 2 },
-      { key: "A2-A4",     label: "А2 → А4",          baseArea: 4 },
-      { key: "A1-A4",     label: "А1 → А4",          baseArea: 8 },
-      { key: "A2-A3",     label: "А2 → А3",          baseArea: 4 },
-      { key: "A1-A3",     label: "А1 → А3",          baseArea: 8 },
-      { key: "custom-A4", label: "Нестандарт → А4",  baseArea: 1 }
-    ];
-
-    const FOLD_FORMAT_OPTS = [
-      "A3","A2","A1","A0",
-      "A4x3","A4x4","A4x5","A4x6","A4x7","A4x8",
-      "A3x3","A3x4","A3x5","A3x6","A3x7","A3x8",
-      "A2x3","A2x4","A2x5","A2x6"
-    ];
-
-    function foldFormatArea(fmt) {
-      if (FMT_AREA[fmt]) return FMT_AREA[fmt];
-      const m = /^([A][234])x(\d+)$/i.exec(fmt);
-      if (m) return (FMT_AREA[m[1].toUpperCase()] || 1) * Number(m[2]);
-      return 1;
-    }
-
-    function foldFormatLabel(fmt) {
-      if (FORMATS[fmt]) return `${fmt} (${FORMATS[fmt].w}×${FORMATS[fmt].h} мм)`;
-      const m = /^([A][234])x(\d+)$/i.exec(fmt);
-      if (m) {
-        const base = m[1].toUpperCase(), n = Number(m[2]);
-        return `${base}×${n} (${FORMATS[base].w * n}×${FORMATS[base].h} мм)`;
-      }
-      return fmt;
-    }
-
-    function calcLineFoldPrice(dirKey, fmt) {
-      const t = FOLD_PRICES[dirKey];
-      if (!t) return { price: 0, priceLabel: "—" };
-      if (dirKey === "custom-A4") return { price: t.price, priceLabel: `${t.price} ₽` };
-      const dir = FOLD_DIRECTION_OPTS.find(d => d.key === dirKey);
-      const baseArea = dir ? dir.baseArea : 1;
-      const sheetArea = foldFormatArea(fmt);
-      const ratio = sheetArea / baseArea;
-      const price = Math.round(t.price * ratio * 100) / 100;
-      return { price, priceLabel: `${price} ₽` };
-    }
-
-    function renderFoldingBody(id) {
-      // Rendered after DOM insert, so just a container
-      return `<div id="fold-ui-${id}"></div>`;
-    }
-
-    function initFoldingLines(card, id) {
-      const state = serviceStates[id];
-      if (!state.foldLines || !state.foldLines.length) {
-        state.foldLines = [{ direction: "A2-A4", format: "A2", qty: 1 }];
-      }
-      buildFoldUI(card, id);
-    }
-
-    function buildFoldUI(card, id) {
-      const state = serviceStates[id];
-      const root = document.getElementById(`fold-ui-${id}`);
-      if (!root) return;
-
-      // Build header row + data rows
-      const dirOpts = FOLD_DIRECTION_OPTS.map(d =>
-        `<option value="${d.key}">${d.label}</option>`
-      ).join("");
-
-      const fmtOpts = FOLD_FORMAT_OPTS.map(f =>
-        `<option value="${f}">${foldFormatLabel(f)}</option>`
-      ).join("");
-
-      root.innerHTML = `
-        <div style="overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;min-width:500px;">
-            <thead>
-              <tr>
-                <th style="text-align:left;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;background:#f7f7f5;border-bottom:1px solid var(--line);">Направление</th>
-                <th style="text-align:left;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;background:#f7f7f5;border-bottom:1px solid var(--line);">Формат листа</th>
-                <th style="text-align:center;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;background:#f7f7f5;border-bottom:1px solid var(--line);">Кол-во</th>
-                <th style="text-align:right;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;background:#f7f7f5;border-bottom:1px solid var(--line);">Цена/лист</th>
-                <th style="text-align:right;padding:8px 10px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;background:#f7f7f5;border-bottom:1px solid var(--line);">Сумма</th>
-                <th style="background:#f7f7f5;border-bottom:1px solid var(--line);width:40px;"></th>
-              </tr>
-            </thead>
-            <tbody id="fold-tbody-${id}">
-              ${state.foldLines.map((line, idx) => buildFoldRow(id, line, idx, dirOpts, fmtOpts)).join("")}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="4" style="padding:10px;border-top:2px solid var(--line);font-size:13px;font-weight:700;">Итого</td>
-                <td style="padding:10px;border-top:2px solid var(--line);text-align:right;font-size:18px;font-weight:800;" id="fold-total-${id}">${calcFoldTotal(state.foldLines)}</td>
-                <td style="border-top:2px solid var(--line);"></td>
-              </tr>
-            </tfoot>
-          </table>
+    if (flipStep) {
+      const flipDeg = phaseDeg === 0 ? 180 : (phaseDeg === -90 ? 90 : phaseDeg);
+      out += `<div class="g-phase-head" style="margin-top:14px">
+        ${gOrientIcon(flipDeg)}
+        <div>
+          <div class="g-phase-head-text">Переворот листа</div>
+          <div class="g-phase-head-sub">Подайте лист другой стороной к упору для финального реза</div>
         </div>
-        <div style="margin-top:12px;">
-          <button type="button" class="btn-ghost btn-sm add-fold-line-btn">+ Добавить строку</button>
+      </div>`;
+      out += renderGStep(++stepNum, flipStep);
+    }
+
+    return out;
+  }
+
+  html += renderStepGroup(
+    hSteps, 0,
+    'ФАЗА 1 — Портретная ориентация',
+    `Лист как обычно, рез всегда снизу. Получаем ${best.n1} полос(ы) шириной ${fmt2(best.dimH)} мм.`
+  );
+
+  html += renderStepGroup(
+    vSteps, -90,
+    'ФАЗА 2 — Альбомная ориентация (повторить для каждой полосы)',
+    `Лист повёрнут на 90° против часовой. Каждую из ${best.n1} полос делим на ${best.n2} детали(ей) по ${fmt2(best.dimW)} мм.`
+  );
+
+  html += `</div>`;
+  resultEl.innerHTML = html;
+
+  resultEl.querySelectorAll('.g-step-check').forEach(label => {
+    label.addEventListener('click', () => {
+      const cb = label.querySelector('.g-cb');
+      cb.checked = !cb.checked;
+      const el = document.getElementById(cb.dataset.sid);
+      if (el) el.classList.toggle('g-step-done', cb.checked);
+      const num = label.querySelector('.g-step-num');
+      if (num) num.textContent = cb.checked ? '✓' : el?.dataset.num||'';
+    });
+  });
+
+  // ── Local render helper (closure captures id + minCut) ──────────
+  function renderGStep(stepNum, s) {
+    const sid = `gs-${id}-${stepNum}`;
+    const tooSmall = s.dial < minCut - 0.05;
+    return `<div class="g-step" id="${sid}" data-num="${stepNum}">
+      <label class="g-step-check" title="Отметить выполнено">
+        <input type="checkbox" class="g-cb" data-sid="${sid}" style="display:none">
+        <div class="g-step-num">${stepNum}</div>
+      </label>
+      <div class="g-step-body">
+        <div class="g-step-action">${escapeHtml(s.action)}</div>
+        <div class="g-dial-primary">${fmt2(s.dial)} мм</div>
+        <div class="g-dial-sub">${escapeHtml(s.formula)}</div>
+        ${s.removed != null ? `<div class="g-val-chip" style="margin-top:8px;font-size:11px;color:var(--muted)">в отход: ${fmt2(s.removed)} мм</div>` : ''}
+        ${tooSmall ? `<div style="margin-top:7px;padding:7px 11px;background:var(--danger-soft);border:1px solid #f5c6c2;border-radius:7px;font-size:12px;color:var(--danger)">🚫 Значение ${fmt2(s.dial)} мм меньше минимального реза (${fmt2(minCut)} мм)</div>` : ''}
+      </div>
+    </div>`;
+  }
+}
+
+
+// ── CONVERTER ──────────────────────────────────────────────────────
+function renderConverterBody(id) { return `<div id="conv-ui-${id}"></div>`; }
+
+function initConverter(card, id) {
+  const root = document.getElementById(`conv-ui-${id}`);
+  if (!root) return;
+  if (!window._heic2anyLoaded) {
+    window._heic2anyLoaded = true;
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js';
+    document.head.appendChild(s);
+  }
+  const files = serviceStates[id].files;
+  root.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="field">
+        <label>Файлы (PDF, JPG, PNG, WEBP, HEIC, DOCX)</label>
+        <div class="file-upload-area" id="cv-area-${id}" style="cursor:pointer">
+          <div class="file-upload-icon">🔄</div>
+          <div class="file-upload-label">Нажмите или перетащите файлы</div>
+          <div class="file-upload-hint">PDF, JPG, PNG, WEBP, HEIC, DOCX и другие</div>
         </div>
-      `;
-
-      bindFoldUI(card, id);
-    }
-
-    function buildFoldRow(id, line, idx, dirOpts, fmtOpts) {
-      const { price } = calcLineFoldPrice(line.direction, line.format);
-      const sum = price * (line.qty || 1);
-      return `
-        <tr data-fold-idx="${idx}" style="border-bottom:1px solid var(--line-soft);">
-          <td style="padding:8px 10px;">
-            <select class="fold-dir" data-idx="${idx}"
-              style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;height:38px;">
-              ${FOLD_DIRECTION_OPTS.map(d =>
-                `<option value="${d.key}" ${d.key === line.direction ? "selected" : ""}>${d.label}</option>`
-              ).join("")}
-            </select>
-          </td>
-          <td style="padding:8px 10px;">
-            <select class="fold-fmt" data-idx="${idx}"
-              style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;height:38px;">
-              ${FOLD_FORMAT_OPTS.map(f =>
-                `<option value="${f}" ${f === line.format ? "selected" : ""}>${foldFormatLabel(f)}</option>`
-              ).join("")}
-            </select>
-          </td>
-          <td style="padding:8px 10px;text-align:center;">
-            <input type="number" class="fold-qty" data-idx="${idx}" min="1" step="1" value="${line.qty}"
-              style="width:80px;text-align:center;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;height:38px;">
-          </td>
-          <td style="padding:8px 10px;text-align:right;font-size:14px;font-weight:600;" class="fold-unit-${id}-${idx}">${price.toFixed(2).replace(".",",")} ₽</td>
-          <td style="padding:8px 10px;text-align:right;font-size:15px;font-weight:800;" class="fold-sum-${id}-${idx}">${money(sum)}</td>
-          <td style="padding:8px 10px;">
-            <button type="button" class="fold-del icon-btn" data-idx="${idx}"
-              style="color:var(--danger);border-color:#f5c6c2;background:var(--danger-soft);">✕</button>
-          </td>
-        </tr>
-      `;
-    }
-
-    function calcFoldTotal(lines) {
-      const total = (lines || []).reduce((s, line) => {
-        const { price } = calcLineFoldPrice(line.direction, line.format);
-        return s + price * (line.qty || 1);
-      }, 0);
-      return money(total);
-    }
-
-    function bindFoldUI(card, id) {
-      const state = serviceStates[id];
-      const root = document.getElementById(`fold-ui-${id}`);
-
-      function updateRow(idx) {
-        const line = state.foldLines[idx];
-        const { price } = calcLineFoldPrice(line.direction, line.format);
-        const sum = price * (line.qty || 1);
-        const unitEl = root.querySelector(`.fold-unit-${id}-${idx}`);
-        const sumEl = root.querySelector(`.fold-sum-${id}-${idx}`);
-        if (unitEl) unitEl.textContent = price.toFixed(2).replace(".",",") + " ₽";
-        if (sumEl) sumEl.textContent = money(sum);
-        updateFoldTotal(id, state);
-        updateTotal();
-      }
-
-      root.querySelectorAll(".fold-dir").forEach(sel => {
-        sel.addEventListener("change", () => {
-          const idx = Number(sel.dataset.idx);
-          state.foldLines[idx].direction = sel.value;
-          updateRow(idx);
-        });
-      });
-
-      root.querySelectorAll(".fold-fmt").forEach(sel => {
-        sel.addEventListener("change", () => {
-          const idx = Number(sel.dataset.idx);
-          state.foldLines[idx].format = sel.value;
-          updateRow(idx);
-        });
-      });
-
-      root.querySelectorAll(".fold-qty").forEach(inp => {
-        inp.addEventListener("input", () => {
-          const idx = Number(inp.dataset.idx);
-          state.foldLines[idx].qty = Math.max(1, parseInt(inp.value) || 1);
-          updateRow(idx);
-        });
-      });
-
-      root.querySelectorAll(".fold-del").forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.foldLines.splice(Number(btn.dataset.idx), 1);
-          buildFoldUI(card, id);
-          updateTotal();
-        });
-      });
-
-      root.querySelector(".add-fold-line-btn").addEventListener("click", () => {
-        state.foldLines.push({ direction: "A2-A4", format: "A2", qty: 1 });
-        buildFoldUI(card, id);
-      });
-    }
-
-    function updateFoldTotal(id, state) {
-      const el = document.getElementById(`fold-total-${id}`);
-      if (el) el.textContent = calcFoldTotal(state.foldLines);
-    }
-
-    function bindCard(card, id, type) {
-      card.querySelector(".remove-card-btn").addEventListener("click", () => {
-        delete serviceStates[id];
-        card.remove();
-        rebuildRows();
-        updateTotal();
-      });
-
-      if (type === "separator") {
-        card.querySelector(".calc-btn").addEventListener("click", () => calcBlock(card, id));
-        const rHeader = document.getElementById(`result-header-${id}`);
-        rHeader.addEventListener("click", () => {
-          const state = serviceStates[id];
-          state.collapsed = !state.collapsed;
-          document.getElementById(`result-body-${id}`).classList.toggle("collapsed", state.collapsed);
-          document.getElementById(`result-chevron-${id}`).classList.toggle("open", !state.collapsed);
-        });
-        bindSeparatorFileInput(card, id);
-      } else if (type === "folding") {
-        initFoldingLines(card, id);
-      } else if (type === "guillotine") {
-        initGuillotine(card, id);
-      } else if (type === "binding") {
-        initBinding(card, id);
-      } else if (type === "converter") {
-        initConverter(card, id);
-      }
-    }
-
-    // ── FILE INPUT BINDING ─────────────────────────────────────────
-    function bindSeparatorFileInput(card, id) {
-      const input = document.getElementById(`sep-files-${id}`);
-      const area = document.getElementById(`upload-area-${id}`);
-
-      input.addEventListener("change", () => {
-        addFilesToState(id, input.files);
-        input.value = "";
-        renderFileList(id);
-      });
-
-      area.addEventListener("dragover", e => { e.preventDefault(); area.classList.add("dragover"); });
-      area.addEventListener("dragleave", () => area.classList.remove("dragover"));
-      area.addEventListener("drop", e => {
-        e.preventDefault();
-        area.classList.remove("dragover");
-        addFilesToState(id, e.dataTransfer.files);
-        renderFileList(id);
-      });
-    }
-
-    function addFilesToState(id, fileList) {
-      const state = serviceStates[id];
-      if (!state) return;
-      const files = [...fileList].filter(f =>
-        f.type === "application/pdf" ||
-        f.name.endsWith(".pdf") ||
-        f.name.endsWith(".docx") ||
-        f.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      );
-      files.forEach(f => {
-        if (!state.files.find(sf => sf.name === f.name)) {
-          state.files.push({ name: f.name, fileRef: f, bytes: null });
-        }
-      });
-    }
-
-    function renderFileList(id) {
-      const state = serviceStates[id];
-      const listEl = document.getElementById(`file-list-${id}`);
-      if (!listEl || !state) return;
-
-      if (!state.files.length) { listEl.innerHTML = ""; return; }
-
-      listEl.innerHTML = state.files.map((f, idx) => `
-        <div class="file-chip">
-          <span>📄</span>
-          <span class="file-chip-name">${escapeHtml(f.name)}</span>
-          <button class="file-chip-remove" data-idx="${idx}">×</button>
+        <input type="file" id="cv-inp-${id}" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.bmp,.tiff,.tif,.docx" multiple style="display:none">
+        <div id="cv-list-${id}" class="file-list"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Конвертировать в</label>
+          <select id="cv-tgt-${id}" style="height:42px">
+            <option value="pdf">PDF</option>
+            <option value="jpg">JPG</option>
+            <option value="png">PNG</option>
+            <option value="webp">WEBP</option>
+          </select>
         </div>
-      `).join("");
+        <div class="field" id="cv-qwrap-${id}">
+          <label>Качество JPG/WEBP (0.1–1)</label>
+          <input type="number" id="cv-q-${id}" min="0.1" max="1" step="0.05" value="0.92">
+        </div>
+      </div>
+      <div><button type="button" class="btn-primary" id="cv-go-${id}">Конвертировать</button></div>
+      <div id="cv-links-${id}" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+      <div id="cv-log-${id}" style="font-size:13px;color:var(--muted)"></div>
+    </div>`;
 
-      listEl.querySelectorAll(".file-chip-remove").forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.files.splice(Number(btn.dataset.idx), 1);
-          renderFileList(id);
-        });
-      });
-    }
+  const area   = document.getElementById(`cv-area-${id}`);
+  const input  = document.getElementById(`cv-inp-${id}`);
+  const listEl = document.getElementById(`cv-list-${id}`);
+  const tgtSel = document.getElementById(`cv-tgt-${id}`);
+  const qWrap  = document.getElementById(`cv-qwrap-${id}`);
+  const logEl  = document.getElementById(`cv-log-${id}`);
+  const goBtn  = document.getElementById(`cv-go-${id}`);
+  const linksEl= document.getElementById(`cv-links-${id}`);
 
-    // ── FOLDING CALC ───────────────────────────────────────────────
-    async function calcAll() {
-      const cards = [...document.querySelectorAll(".service-card")];
-      for (const card of cards) {
-        if (card.dataset.type === "separator") {
-          await calcBlock(card, Number(card.dataset.id));
-        }
-      }
-    }
+  tgtSel.addEventListener('change', () => { qWrap.style.display = ['jpg','webp'].includes(tgtSel.value)?'':'none'; });
+  qWrap.style.display = 'none';
 
-    async function calcBlock(card, id) {
-      const state = serviceStates[id];
-      if (!state || state.type !== "separator") return;
+  area.addEventListener('click', () => input.click());
+  area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
+  area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+  area.addEventListener('drop', e => { e.preventDefault(); area.classList.remove('dragover'); push([...e.dataTransfer.files]); });
+  input.addEventListener('change', () => { push([...input.files]); input.value=''; });
 
-      setStatus("Идёт анализ...");
+  function push(fs) {
+    fs.forEach(f => { if (!files.find(x=>x.name===f.name)) files.push(f); });
+    renderList();
+  }
+  function renderList() {
+    const icons = {pdf:'📄',docx:'📝',jpg:'🖼',jpeg:'🖼',png:'🖼',webp:'🖼',heic:'🖼',heif:'🖼',bmp:'🖼',tiff:'🖼',tif:'🖼'};
+    listEl.innerHTML = files.map((f,i) => {
+      const ext = (f.name.split('.').pop()||'').toLowerCase();
+      return `<div class="file-chip">
+        <span>${icons[ext]||'📎'}</span>
+        <span class="file-chip-name">${escapeHtml(f.name)}</span>
+        <button class="file-chip-remove" data-i="${i}" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px">×</button>
+      </div>`;
+    }).join('');
+    listEl.querySelectorAll('.file-chip-remove').forEach(btn =>
+      btn.addEventListener('click', () => { files.splice(+btn.dataset.i,1); renderList(); }));
+  }
 
+  goBtn.addEventListener('click', async () => {
+    if (!files.length) { logEl.textContent='Добавьте файлы.'; return; }
+    const fmt  = tgtSel.value;
+    const qual = Math.min(1,Math.max(0.1,parseFloat(document.getElementById(`cv-q-${id}`).value)||0.92));
+    linksEl.innerHTML=''; logEl.textContent=''; goBtn.disabled=true;
+    for (const f of files) {
+      logEl.textContent = `Обрабатываю: ${f.name}…`;
       try {
-        await calcSeparator(card, id);
-        renderResult(card, id);
-        rebuildRows();
-        updateTotal();
-        setStatus("");
-      } catch (err) {
-        console.error(err);
-        setStatus(err.message || "Ошибка расчёта.", true);
+        const res = await convertFile(f, fmt, qual);
+        const a = document.createElement('a');
+        a.href=res.url; a.download=res.name;
+        a.style.cssText='display:inline-flex;align-items:center;gap:6px;padding:9px 15px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:600;text-decoration:none;color:var(--text);cursor:pointer';
+        a.innerHTML=`⬇ ${escapeHtml(res.name)}`;
+        linksEl.appendChild(a);
+      } catch(err) {
+        const d = document.createElement('div');
+        d.style.cssText='padding:8px 12px;background:var(--danger-soft);border:1px solid #f5c6c2;border-radius:8px;font-size:13px;color:var(--danger)';
+        d.textContent=`${f.name}: ${err.message}`;
+        linksEl.appendChild(d);
       }
     }
+    logEl.textContent='Готово.'; goBtn.disabled=false;
+  });
+}
 
-    // ── SEPARATOR CALC ─────────────────────────────────────────────
-    async function calcSeparator(card, id) {
-      const state = serviceStates[id];
+function toBlob(canvas, mime, q) {
+  return new Promise((res,rej) => canvas.toBlob(b=>b?res(b):rej(new Error('toBlob failed')), mime, q));
+}
+function loadImg(file) {
+  return new Promise((res,rej) => {
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{URL.revokeObjectURL(url);res(img);};
+    img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('Не удалось открыть изображение'));};
+    img.src=url;
+  });
+}
+async function imgToCanvas(file) {
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  if (['heic','heif'].includes(ext)) {
+    if (typeof heic2any==='undefined') throw new Error('heic2any загружается, повторите через секунду');
+    const blob = await heic2any({blob:file,toType:'image/png'});
+    const png  = new File([blob], file.name.replace(/\.[^.]+$/,'.png'),{type:'image/png'});
+    const img  = await loadImg(png);
+    const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight;
+    c.getContext('2d').drawImage(img,0,0); return c;
+  }
+  const img=await loadImg(file);
+  const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight;
+  c.getContext('2d').drawImage(img,0,0); return c;
+}
+async function convertFile(file, fmt, qual) {
+  const ext  = (file.name.split('.').pop()||'').toLowerCase();
+  const stem = file.name.slice(0,file.name.lastIndexOf('.'));
+  const imgExts = ['jpg','jpeg','png','webp','heic','heif','bmp','tiff','tif'];
 
-      if (!state.files.length) throw new Error("Добавьте хотя бы один файл.");
-
-      const printMode = document.getElementById(`sep-mode-${id}`).value;
-      const copies = Math.max(1, parseInt(document.getElementById(`sep-copies-${id}`).value) || 1);
-
-      const allRows = [];
-
-      for (const fileEntry of state.files) {
-        if (!fileEntry.bytes) {
-          fileEntry.bytes = new Uint8Array(await fileEntry.fileRef.arrayBuffer());
-        }
-
-        const isWord = /\.(docx)$/i.test(fileEntry.name);
-
-        if (isWord) {
-          const rows = await analyzeWordFile(fileEntry, printMode, copies, id);
-          allRows.push(...rows);
-        } else {
-          const rows = await analyzeSeparatorPdf(fileEntry, printMode, copies, id, state.files.length);
-          allRows.push(...rows);
-        }
-      }
-
-      const extraRows = (state.rows || []).filter(r => r.isExtra);
-      state.rows = [...allRows, ...extraRows];
-      state.notes = [];
+  if (imgExts.includes(ext)) {
+    const canvas = await imgToCanvas(file);
+    if (fmt==='pdf') {
+      if (!PDFDocument) throw new Error('PDF-lib не загружен');
+      const pngBlob = await toBlob(canvas,'image/png',1);
+      const pngBytes= new Uint8Array(await pngBlob.arrayBuffer());
+      const doc=await PDFDocument.create(), img=await doc.embedPng(pngBytes);
+      const page=doc.addPage([img.width,img.height]);
+      page.drawImage(img,{x:0,y:0,width:img.width,height:img.height});
+      const bytes=await doc.save();
+      return {url:URL.createObjectURL(new Blob([bytes],{type:'application/pdf'})),name:`${stem}.pdf`};
     }
+    const mimes={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp'};
+    const blob=await toBlob(canvas,mimes[fmt]||'image/png',qual);
+    return {url:URL.createObjectURL(blob),name:`${stem}.${fmt}`};
+  }
 
-    async function analyzeWordFile(fileEntry, printMode, copies, blockId) {
-      setStatus(`Анализ ${fileEntry.name}...`);
-
-      // Use mammoth to extract page count via page breaks
-      const result = await mammoth.extractRawText({ arrayBuffer: fileEntry.bytes.buffer });
-      const text = result.value || "";
-
-      // Count form-feed characters (\f) as page breaks + 1
-      const pageBreaks = (text.match(/\f/g) || []).length;
-      const pageCount = Math.max(1, pageBreaks + 1);
-
-      // Word docs are assumed A4
-      const fmt = "A4";
-      const colorMode = printMode === "auto" ? "bw" : printMode; // Word: default bw for auto
-      const qty = pageCount * copies;
-      const price = getSepPrice(fmt, colorMode, qty);
-
-      return [{
-        id: makeId(),
-        blockId,
-        fileName: fileEntry.name,
-        fileBytes: null, // Word files can't be split by page here
-        actualLabel: `Word, ~${pageCount} стр.`,
-        colorMode,
-        billedFormat: fmt,
-        pages: Array.from({ length: pageCount }, (_, i) => i + 1),
-        qty,
-        copies,
-        unitPrice: price.price,
-        tariffCode: price.code,
-        tariffLabel: price.label,
-        priceLocked: false,
-        isExtra: false,
-        isSeparator: true,
-        isWord: true,
-        priceSyncKey: `${colorMode}:${fmt}`
-      }];
+  if (ext==='pdf' && fmt!=='pdf') {
+    if (!pdfjsLib) throw new Error('PDF.js не загружен');
+    const bytes=new Uint8Array(await file.arrayBuffer());
+    const pdf=await pdfjsLib.getDocument({data:bytes}).promise;
+    const mimes={jpg:'image/jpeg',png:'image/png',webp:'image/webp'};
+    const mime=mimes[fmt]||'image/png';
+    const render=async(n) => {
+      const pg=await pdf.getPage(n), vp=pg.getViewport({scale:2});
+      const c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height;
+      await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+      return toBlob(c,mime,qual);
+    };
+    if (pdf.numPages===1) {
+      const blob=await render(1);
+      return {url:URL.createObjectURL(blob),name:`${stem}.${fmt}`};
     }
+    const zip=new JSZip();
+    for (let i=1;i<=pdf.numPages;i++) {
+      const blob=await render(i);
+      zip.file(`${stem}_стр${i}.${fmt}`,await blob.arrayBuffer());
+    }
+    const zblob=await zip.generateAsync({type:'blob'});
+    return {url:URL.createObjectURL(zblob),name:`${stem}_страницы.zip`};
+  }
 
-    async function analyzeSeparatorPdf(fileEntry, printMode, copies, blockId, totalFiles) {
-      const pdf = await pdfjsLib.getDocument({ data: fileEntry.bytes.slice() }).promise;
-      const groupsMap = new Map();
-      const totalPages = pdf.numPages;
+  if (ext==='docx') {
+    if (typeof mammoth==='undefined') throw new Error('Mammoth не загружен');
+    const r=await mammoth.convertToHtml({arrayBuffer:await file.arrayBuffer()});
+    const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif;margin:40px;line-height:1.6;max-width:800px}</style></head><body>${r.value}</body></html>`;
+    return {url:URL.createObjectURL(new Blob([html],{type:'text/html'})),name:`${stem}.html`};
+  }
+  throw new Error(`Конвертация .${ext}→${fmt.toUpperCase()} не поддерживается`);
+}
 
-      for (let i = 1; i <= totalPages; i++) {
-        setProgress(blockId, i / totalPages * 100);
-        setStatus(`Анализ ${fileEntry.name}: страница ${i}/${totalPages}`);
-
-        const page = await pdf.getPage(i);
-        const vp = page.getViewport({ scale: 1 });
-
-        const wMm = ptToMm(vp.width);
-        const hMm = ptToMm(vp.height);
-
-        let colorMode = printMode === "auto" ? await detectColor(page) : printMode;
-
-        const detected = detectFormat(wMm, hMm);
-        const billed = detected !== "CUSTOM"
-          ? detected
-          : detectWideFormat(wMm, hMm) || findSmallestFitting(wMm, hMm) || findNearest(wMm, hMm);
-
-        // Exact size label (not rounded to standard)
-        const actualLabel = buildExactSizeLabel(wMm, hMm, detected);
-
-        const priceInfo = getSepPrice(billed, colorMode, copies);
-        const groupKey = `${fileEntry.name}||${actualLabel}||${colorMode}||${billed}`;
-
-        if (!groupsMap.has(groupKey)) {
-          groupsMap.set(groupKey, {
-            fileName: fileEntry.name,
-            fileBytes: fileEntry.bytes,
-            actualLabel,
-            colorMode,
-            billedFormat: billed,
-            pages: [],
-            qty: 0,
-            priceInfo
-          });
-        }
-
-        const g = groupsMap.get(groupKey);
-        g.pages.push(i);
-        g.qty += copies;
-      }
-
-      setProgress(blockId, 0);
-
-      return [...groupsMap.values()].map(g => {
-        // Recalculate price using TOTAL qty of this group (pages × copies)
-        const finalPrice = getSepPrice(g.billedFormat, g.colorMode, g.qty);
-        return {
-          id: makeId(),
-          blockId,
-          fileName: g.fileName,
-          fileBytes: g.fileBytes,
-          actualLabel: g.actualLabel,
-          colorMode: g.colorMode,
-          billedFormat: g.billedFormat,
-          pages: g.pages,
-          qty: g.qty,
-          copies,
-          unitPrice: finalPrice.price,
-          tariffCode: finalPrice.code,
-          tariffLabel: finalPrice.label,
-          priceLocked: false,
-          isExtra: false,
-          isSeparator: true,
-          priceSyncKey: `${g.colorMode}:${g.billedFormat}`
-        };
+// ── GLOBAL HELPERS ─────────────────────────────────────────────────
+async function calcAll() {
+  const cards = [...document.querySelectorAll('.service-card')];
+  for (const c of cards) if (c.dataset.type==='separator') await calcBlock(c, +c.dataset.id);
+}
+function clearAll() {
+  container.innerHTML=''; blockCounter=1; calculatedRows=[];
+  Object.keys(serviceStates).forEach(k=>delete serviceStates[k]);
+  totalBlock.classList.remove('visible');
+  setStatus('');
+  addBlock('separator');
+}
+function rebuildRows() {
+  calculatedRows=[];
+  Object.values(serviceStates).forEach(st => { if (st.rows) calculatedRows.push(...st.rows); });
+}
+function updateTotal() {
+  let total = calculatedRows.reduce((s,r)=>s+r.qty*r.unitPrice, 0);
+  Object.values(serviceStates).forEach(st => {
+    if (st.type==='folding' && st.foldLines) {
+      st.foldLines.forEach(l => {
+        const t=FOLD_PRICES[l.direction]; if (!t) return;
+        const ba=FOLD_DIRECTION_OPTS.find(d=>d.key===l.direction)?.baseArea||1;
+        let fa=FMT_AREA[l.format]||1;
+        const m=/^([A][234])x(\d+)$/i.exec(l.format);
+        if (m) fa=(FMT_AREA[m[1].toUpperCase()]||1)*Number(m[2]);
+        const price=l.direction==='custom-A4'?t.price:Math.round(t.price*(fa/ba)*100)/100;
+        total+=price*l.qty;
       });
     }
-
-    // ── GET SEPARATOR PRICE ────────────────────────────────────────
-    function getSepPrice(fmt, colorMode, qty) {
-      // BW tiered pricing for A4/A3
-      if (colorMode === "bw" && PRICES.documentsBW[fmt]) {
-        const tiers = PRICES.documentsBW[fmt];
-        const tier = tiers.find(t => qty <= t.max) || tiers[tiers.length - 1];
-        return { price: tier.price, code: tier.code, label: tier.label };
-      }
-
-      // Color A4/A3
-      if (colorMode === "color" && PRICES.documentsColor[fmt]) {
-        const info = PRICES.documentsColor[fmt];
-        return {
-          price: info.min, // minimum by default
-          code: info.code,
-          label: `${info.label} (от ${info.min} до ${info.max} ₽)`
-        };
-      }
-
-      // Wide format drawings
-      if (PRICES.drawingsExact[colorMode]?.[fmt]) {
-        const t = PRICES.drawingsExact[colorMode][fmt];
-        return { price: t.price, code: t.code, label: `Широкоформатная струйная печать, ${colorMode === "color" ? "цветн" : "ч/б"}, ${fmt}` };
-      }
-
-      // Wide multiplied formats
-      const wide = parseWideKey(fmt);
-      if (wide) {
-        const tbl = PRICES.drawingsWide[colorMode]?.[wide.base];
-        if (tbl && tbl[wide.n]) {
-          return {
-            price: tbl[wide.n],
-            code: `wide-${colorMode}-${fmt}`,
-            label: `Широкоформатная струйная печать, ${colorMode === "color" ? "цветн" : "ч/б"}, ${fmt}`
-          };
-        }
-      }
-
-      return { price: 0, code: "—", label: `Нет тарифа для ${fmt}` };
-    }
-
-    // ── RENDER RESULT ──────────────────────────────────────────────
-    function renderResult(card, id) {
-      const state = serviceStates[id];
-      const resultEl = document.getElementById(`result-${id}`);
-      const bodyEl = document.getElementById(`result-body-${id}`);
-      const subtotalEl = document.getElementById(`result-subtotal-${id}`);
-
-      if (!state.rows || !state.rows.length) {
-        resultEl.classList.remove("visible");
-        return;
-      }
-
-      resultEl.classList.add("visible");
-      bodyEl.classList.toggle("collapsed", !!state.collapsed);
-      document.getElementById(`result-chevron-${id}`).classList.toggle("open", !state.collapsed);
-
-      const subtotal = state.rows.reduce((s, r) => s + r.qty * r.unitPrice, 0);
-      subtotalEl.textContent = money(subtotal);
-
-      let html = "";
-
-      // Download buttons for separator
-      const sepRows = state.rows.filter(r => r.isSeparator);
-      if (sepRows.length) {
-        html += `<div class="download-actions">
-          <button type="button" class="btn-secondary btn-sm download-all-btn" data-id="${id}">⬇ Скачать всё (ZIP)</button>
-          <button type="button" class="btn-secondary btn-sm merge-rows-btn" data-id="${id}" title="Объединить строки с одинаковым форматом печати — количество суммируется">⊞ Объединить строки</button>
-        </div>`;
-      }
-
-      html += `<div class="table-wrap"><table>
-        <thead>
-          <tr>
-            <th style="min-width:180px;text-align:center">Тариф</th>
-            <th style="text-align:center">Размер в файле</th>
-            <th style="min-width:140px;text-align:center">Формат печати</th>
-            <th style="text-align:center">Кол-во</th>
-            <th style="text-align:center">Цена / ед.</th>
-            <th style="text-align:center">Сумма</th>
-            <th style="text-align:center"></th>
-          </tr>
-        </thead>
-        <tbody>
-          ${state.rows.map(row => renderRowHtml(row)).join("")}
-        </tbody>
-      </table></div>`;
-
-      if (state.notes && state.notes.length) {
-        html += `<div class="note-box">${state.notes.map(n => `• ${escapeHtml(n)}`).join("<br>")}</div>`;
-      }
-
-      bodyEl.innerHTML = html;
-      bindResultEvents(bodyEl, card, id);
-    }
-
-    // All selectable formats for the format dropdown
-    const ALL_FORMATS = ["A6","A5","A4","A3","A2","A1","A0",
-      "A4x3","A4x4","A4x5","A4x6","A4x7","A4x8",
-      "A3x3","A3x4","A3x5","A3x6","A3x7","A3x8",
-      "A2x3","A2x4","A2x5","A2x6"];
-
-    function renderRowHtml(row) {
-      const sum = row.qty * row.unitPrice;
-
-      const priceCell = `
-        <div class="price-edit-box">
-          <input type="number" class="row-price-input row-price-editor" data-row-id="${row.id}"
-                 value="${row.unitPrice.toFixed(2)}" min="0" step="0.01" style="width:90px;">
-          <button type="button" class="icon-btn lock-btn ${row.priceLocked ? "locked" : ""}" data-row-id="${row.id}"
-                  title="${row.priceLocked ? "Цена зафиксирована" : "Зафиксировать цену"}">
-            ${row.priceLocked ? "🔒" : "🔓"}
-          </button>
-        </div>`;
-
-      const removeBtn = row.isExtra
-        ? `<button type="button" class="icon-btn remove-extra" data-row-id="${row.id}" title="Удалить">✕</button>`
-        : "";
-
-      const downloadBtn = row.isSeparator && !row.isWord && row.fileBytes
-        ? `<button type="button" class="btn-secondary btn-xs dl-row-btn" data-row-id="${row.id}">⬇ PDF</button>`
-        : "";
-
-      // Format select — only for separator rows, folding rows show "—"
-      const formatCell = row.isSeparator
-        ? `<select class="row-format-select" data-row-id="${row.id}" style="height:36px;padding:6px 10px;font-size:13px;">
-            ${ALL_FORMATS.map(f => `<option value="${f}" ${f === row.billedFormat ? "selected" : ""}>${escapeHtml(formatLabel(f))}</option>`).join("")}
-           </select>`
-        : escapeHtml(row.billedFormat || "—");
-
-      return `
-        <tr data-row-id="${row.id}">
-          <td style="word-break:keep-all;overflow-wrap:normal;hyphens:none;text-align:left;min-width:180px">
-            <div class="cell-code">${escapeHtml(row.tariffCode || "—")}</div>
-            <div class="cell-label" style="word-break:keep-all;overflow-wrap:normal;hyphens:none;white-space:normal">${escapeHtml(row.tariffLabel || "—")}</div>
-            ${downloadBtn}
-          </td>
-          <td style="text-align:center" class="cell-size">${escapeHtml(row.actualLabel || "—")}</td>
-          <td style="text-align:center">${formatCell}</td>
-          <td style="text-align:center">
-            <input type="number" class="row-qty-input row-qty-editor" data-row-id="${row.id}"
-                   value="${row.qty}" min="1" step="1">
-          </td>
-          <td style="text-align:center">${priceCell}</td>
-          <td class="right sum-cell" data-row-id="${row.id}" style="text-align:right">${money(sum)}</td>
-          <td style="text-align:center">${removeBtn}</td>
-        </tr>`;
-    }
-
-    function bindResultEvents(bodyEl, card, id) {
-      const state = serviceStates[id];
-
-      // Download all
-      bodyEl.querySelector(".download-all-btn")?.addEventListener("click", () => downloadAll(id));
-
-      // Merge rows
-      bodyEl.querySelector(".merge-rows-btn")?.addEventListener("click", () => {
-        mergeRowsByFormat(state, card, id);
-      });
-
-      // Download row
-      bodyEl.querySelectorAll(".dl-row-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const row = calculatedRows.find(r => r.id === btn.dataset.rowId);
-          if (row) downloadRowPdf(row);
-        });
-      });
-
-      // Remove extra
-      bodyEl.querySelectorAll(".remove-extra").forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.rows = state.rows.filter(r => r.id !== btn.dataset.rowId);
-          rebuildRows();
-          renderResult(card, id);
-          updateTotal();
-        });
-      });
-
-      // Price edit
-      bodyEl.querySelectorAll(".row-price-editor").forEach(inp => {
-        inp.addEventListener("input", () => {
-          const row = calculatedRows.find(r => r.id === inp.dataset.rowId);
-          if (!row) return;
-          row.unitPrice = Math.max(0, parseFloat(inp.value.replace(",", ".")) || 0);
-          updateRowSum(inp.dataset.rowId);
-          updateSubtotal(id);
-          updateTotal();
-        });
-      });
-
-      // Lock
-      bodyEl.querySelectorAll(".lock-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const row = calculatedRows.find(r => r.id === btn.dataset.rowId);
-          if (!row) return;
-          row.priceLocked = !row.priceLocked;
-          syncStateFromRows(id);
-          renderResult(card, id);
-        });
-      });
-
-      // Format select change
-      bodyEl.querySelectorAll(".row-format-select").forEach(sel => {
-        sel.addEventListener("change", () => {
-          const row = calculatedRows.find(r => r.id === sel.dataset.rowId);
-          if (!row) return;
-          row.billedFormat = sel.value;
-          if (!row.priceLocked) {
-            const newPrice = getSepPrice(row.billedFormat, row.colorMode, row.qty);
-            row.unitPrice = newPrice.price;
-            row.tariffCode = newPrice.code;
-            row.tariffLabel = newPrice.label;
-            // update tariff cell
-            const tr = sel.closest("tr");
-            if (tr) {
-              tr.querySelector(".cell-code").textContent = row.tariffCode || "—";
-              tr.querySelector(".cell-label").textContent = row.tariffLabel || "—";
-              const priceInput = tr.querySelector(".row-price-editor");
-              if (priceInput) priceInput.value = row.unitPrice.toFixed(2);
-            }
-          }
-          updateRowSum(row.id);
-          updateSubtotal(id);
-          syncStateFromRows(id);
-          updateTotal();
-        });
-      });
-
-      // Qty edit
-      bodyEl.querySelectorAll(".row-qty-editor").forEach(inp => {
-        inp.addEventListener("input", () => {
-          const row = calculatedRows.find(r => r.id === inp.dataset.rowId);
-          if (!row) return;
-          row.qty = Math.max(1, parseInt(inp.value) || 1);
-
-          // Recalc price based on qty if not locked
-          if (!row.priceLocked && row.isSeparator) {
-            const newPrice = getSepPrice(row.billedFormat, row.colorMode, row.qty);
-            row.unitPrice = newPrice.price;
-            row.tariffCode = newPrice.code;
-            row.tariffLabel = newPrice.label;
-
-            const tr = inp.closest("tr");
-            if (tr) {
-              tr.querySelector(".cell-code").textContent = row.tariffCode || "—";
-              tr.querySelector(".cell-label").textContent = row.tariffLabel || "—";
-              const priceInput = tr.querySelector(".row-price-editor");
-              if (priceInput) priceInput.value = row.unitPrice.toFixed(2);
-            }
-          }
-
-          updateRowSum(row.id);
-          updateSubtotal(id);
-          syncStateFromRows(id);
-          updateTotal();
-        });
+    if (st.type==='binding' && st.bindingLines) {
+      st.bindingLines.forEach(l => {
+        const opt=BINDING_OPTIONS.find(o=>o.key===l.key); if (!opt) return;
+        const price=opt.tiers?(opt.tiers.find(t=>l.sheets<=t.max)||opt.tiers.at(-1)).price:opt.price;
+        total+=price*l.copies;
       });
     }
+  });
+  const hasAny = calculatedRows.length>0 ||
+    Object.values(serviceStates).some(st=>
+      (st.type==='folding'&&st.foldLines?.length)||
+      (st.type==='binding'&&st.bindingLines?.length));
+  if (hasAny) { totalBlock.classList.add('visible'); totalAmountEl.textContent=money(total); }
+  else totalBlock.classList.remove('visible');
+}
+function setStatus(text, isError=false) {
+  statusEl.style.display = text ? 'flex' : 'none';
+  statusEl.textContent = text||'';
+  statusEl.className = 'status-pill'+(isError?' error':'');
+}
+function setProgress(id, pct) {
+  const w=document.getElementById(`progress-wrap-${id}`);
+  const b=document.getElementById(`progress-bar-${id}`);
+  if (!w||!b) return;
+  if (pct>0&&pct<100) { w.classList.add('visible'); b.style.width=pct+'%'; }
+  else { w.classList.remove('visible'); b.style.width='0%'; }
+}
 
-    function updateRowSum(rowId) {
-      const row = calculatedRows.find(r => r.id === rowId);
-      const cell = document.querySelector(`.sum-cell[data-row-id="${rowId}"]`);
-      if (row && cell) cell.textContent = money(row.qty * row.unitPrice);
-    }
-
-    function updateSubtotal(id) {
-      const state = serviceStates[id];
-      if (!state) return;
-      const sub = state.rows.reduce((s, r) => s + r.qty * r.unitPrice, 0);
-      const el = document.getElementById(`result-subtotal-${id}`);
-      if (el) el.textContent = money(sub);
-    }
-
-    function syncStateFromRows(id) {
-      const state = serviceStates[id];
-      if (!state) return;
-      state.rows = state.rows.map(r => calculatedRows.find(cr => cr.id === r.id) || r);
-    }
-
-    // Merge rows that share the same billedFormat + colorMode — sum their qty,
-    // merge their page arrays, recalc price for new total qty
-    function mergeRowsByFormat(state, card, id) {
-      const sepRows = state.rows.filter(r => r.isSeparator);
-      const otherRows = state.rows.filter(r => !r.isSeparator);
-
-      // Group by billedFormat + colorMode
-      const groups = new Map();
-      for (const row of sepRows) {
-        const key = `${row.billedFormat}||${row.colorMode || ""}`;
-        if (!groups.has(key)) {
-          groups.set(key, []);
-        }
-        groups.get(key).push(row);
-      }
-
-      const merged = [];
-      for (const [, rows] of groups) {
-        if (rows.length === 1) {
-          merged.push(rows[0]);
-          continue;
-        }
-
-        // Merge: sum qty, combine pages, use first row as base
-        const base = { ...rows[0] };
-        base.id = makeId(); // new id for merged row
-        base.qty = rows.reduce((s, r) => s + r.qty, 0);
-        base.pages = rows.flatMap(r => r.pages || []).sort((a, b) => a - b);
-        base.actualLabel = rows.map(r => r.actualLabel).join(", ");
-
-        // Recalc price for merged qty
-        if (!base.priceLocked) {
-          const p = getSepPrice(base.billedFormat, base.colorMode, base.qty);
-          base.unitPrice = p.price;
-          base.tariffCode = p.code;
-          base.tariffLabel = p.label;
-        }
-
-        merged.push(base);
-      }
-
-      state.rows = [...merged, ...otherRows];
-      rebuildRows();
-      renderResult(card, id);
-      updateTotal();
-    }
-
-    // ── DOWNLOAD ───────────────────────────────────────────────────
-
-    // Human-readable color label
-    function colorLabel(mode) {
-      return mode === "color" ? "цвет" : "чб";
-    }
-
-    // Build a clean filename: "Формат_цвет_стр1-5.pdf"
-    function buildFileName(billedFormat, colorMode, pages, sourceFileName) {
-      const fmt = sanitize(billedFormat || "формат");
-      const clr = colorLabel(colorMode);
-      const pages_str = compressRanges(pages).replace(/,\s*/g, "_");
-      const base = sourceFileName
-        ? "_" + sanitize(sourceFileName.replace(/\.(pdf|docx)$/i, ""))
-        : "";
-      return `${fmt}_${clr}${base}_стр${pages_str}.pdf`;
-    }
-
-    // Single-row download — pages strictly from this row
-    async function downloadRowPdf(row) {
-      if (!row.fileBytes || !row.pages?.length) {
-        setStatus("Нет данных для скачивания.", true);
-        return;
-      }
-      try {
-        setStatus("Создаётся PDF...");
-        const bytes = await buildPdf(row.fileBytes, row.pages);
-        const name = buildFileName(row.billedFormat, row.colorMode, row.pages, row.fileName);
-        downloadBytes(bytes, name, "application/pdf");
-        setStatus("Файл скачан.");
-      } catch (e) {
-        console.error(e);
-        setStatus("Ошибка при создании PDF.", true);
+// ── FORMAT DETECTION ───────────────────────────────────────────────
+function detectFormat(w, h) {
+  for (const [name, size] of Object.entries(FORMATS)) {
+    const n=Math.abs(w-size.w)<=TOLERANCE_MM&&Math.abs(h-size.h)<=TOLERANCE_MM;
+    const r=Math.abs(w-size.h)<=TOLERANCE_MM&&Math.abs(h-size.w)<=TOLERANCE_MM;
+    if (n||r) return name;
+  }
+  return 'CUSTOM';
+}
+function detectWideFormat(w, h) {
+  // A4xN: width=210*N, height=297. step=210, constant=297.
+  const bases = ['A4','A3','A2','A1'];
+  let best=null, bestScore=Infinity;
+  for (const base of bases) {
+    const s=FORMATS[base];
+    const step=s.w, con=s.h;
+    for (const [pageStep,pageConst] of [[Math.max(w,h),Math.min(w,h)],[Math.min(w,h),Math.max(w,h)]]) {
+      const constDiff=Math.abs(pageConst-con);
+      if (constDiff>15) continue;
+      const rawN=pageStep/step;
+      for (const n of [Math.floor(rawN),Math.round(rawN),Math.ceil(rawN)]) {
+        if (n<2||n>20) continue;
+        const stepDiff=Math.abs(pageStep-step*n);
+        if (stepDiff>20) continue;
+        const score=constDiff*3+stepDiff;
+        if (score<bestScore) { bestScore=score; best=`${base}x${n}`; }
       }
     }
+  }
+  return best;
+}
+function findSmallestFitting(w, h) {
+  const short=Math.min(w,h), long=Math.max(w,h);
+  for (const name of ['A6','A5','A4','A3','A2','A1','A0']) {
+    const s=FORMATS[name], fs=Math.min(s.w,s.h), fl=Math.max(s.w,s.h);
+    if (short<=fs+TOLERANCE_MM&&long<=fl+TOLERANCE_MM) return name;
+  }
+  return null;
+}
+function findNearest(w, h) {
+  let best='A4', bestDist=Infinity;
+  Object.entries(FORMATS).forEach(([name,size]) => {
+    const d=Math.min(Math.abs(w-size.w)+Math.abs(h-size.h),Math.abs(w-size.h)+Math.abs(h-size.w));
+    if (d<bestDist) { bestDist=d; best=name; }
+  });
+  return best;
+}
 
-    // ZIP download — re-group all separator rows by billedFormat+colorMode+sourceFile,
-    // collect their page lists, build one PDF per group, name clearly
-    async function downloadAll(id) {
-      const state = serviceStates[id];
-      if (!state) return;
-
-      const sepRows = state.rows.filter(r => r.isSeparator && !r.isWord && r.fileBytes && r.pages?.length);
-      if (!sepRows.length) {
-        setStatus("Нет файлов для скачивания.", true);
-        return;
-      }
-
-      setStatus("Собирается архив...");
-
-      try {
-        const zip = new JSZip();
-
-        // Group by sourceFile + billedFormat + colorMode
-        // This respects whatever the user has set in the "Формат печати" column
-        const groups = new Map();
-        for (const row of sepRows) {
-          const key = `${row.fileName || ""}||${row.billedFormat}||${row.colorMode || "bw"}`;
-          if (!groups.has(key)) {
-            groups.set(key, {
-              billedFormat: row.billedFormat,
-              colorMode: row.colorMode || "bw",
-              fileName: row.fileName,
-              fileBytes: row.fileBytes,
-              pages: []
-            });
-          }
-          const g = groups.get(key);
-          // Merge pages (in case multiple rows share same key after user edits)
-          g.pages.push(...row.pages);
-        }
-
-        const usedNames = new Set();
-
-        for (const g of groups.values()) {
-          // Deduplicate and sort pages
-          const pages = [...new Set(g.pages)].sort((a, b) => a - b);
-          const bytes = await buildPdf(g.fileBytes, pages);
-
-          let fname = buildFileName(g.billedFormat, g.colorMode, pages, g.fileName);
-
-          // Avoid duplicate filenames in archive
-          if (usedNames.has(fname)) {
-            fname = fname.replace(".pdf", `_${makeId().slice(0, 4)}.pdf`);
-          }
-          usedNames.add(fname);
-
-          zip.file(fname, bytes);
-        }
-
-        const blob = await zip.generateAsync({ type: "blob" });
-
-        // Name the ZIP after the service block
-        const card = document.querySelector(`.service-card[data-id="${id}"]`);
-        const serviceName = card?.querySelector(".card-name-input")?.value?.trim() || `разделитель_${id}`;
-        downloadBytes(blob, `${sanitize(serviceName)}.zip`, "application/zip");
-
-        setStatus(`Архив скачан: ${groups.size} файл(ов).`);
-      } catch (e) {
-        console.error(e);
-        setStatus("Ошибка при создании архива.", true);
-      }
+// ── COLOR DETECTION ────────────────────────────────────────────────
+async function detectColor(page) {
+  const vp=page.getViewport({scale:0.5});
+  const canvas=document.createElement('canvas');
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  canvas.width=Math.max(1,Math.floor(vp.width));
+  canvas.height=Math.max(1,Math.floor(vp.height));
+  await page.render({canvasContext:ctx,viewport:vp}).promise;
+  const {data,width,height}=ctx.getImageData(0,0,canvas.width,canvas.height);
+  let colorPx=0;
+  for (let y=0;y<height;y+=SAMPLE_STEP) {
+    for (let x=0;x<width;x+=SAMPLE_STEP) {
+      const i=(y*width+x)*4;
+      const r=data[i],g=data[i+1],b=data[i+2],a=data[i+3];
+      if (a<10) continue;
+      if (Math.abs(r-g)>COLOR_TOLERANCE||Math.abs(g-b)>COLOR_TOLERANCE||Math.abs(r-b)>COLOR_TOLERANCE)
+        if (++colorPx>=5) return 'color';
     }
+  }
+  return 'bw';
+}
 
-    async function buildPdf(sourceBytes, pages) {
-      const src = await PDFDocument.load(sourceBytes.slice());
-      const out = await PDFDocument.create();
-      const copied = await out.copyPages(src, pages.map(p => p - 1));
-      copied.forEach(p => out.addPage(p));
-      return out.save();
-    }
-
-    function downloadBytes(data, name, mime) {
-      const blob = data instanceof Blob ? data : new Blob([data], { type: mime });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = name;
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 3000);
-    }
-
-    // ── ROWS / TOTAL ───────────────────────────────────────────────
-    function rebuildRows() {
-      calculatedRows = [];
-      Object.values(serviceStates).forEach(state => {
-        if (state.rows) calculatedRows.push(...state.rows);
-      });
-    }
-
-    function updateTotal() {
-      let total = calculatedRows.reduce((s, r) => s + r.qty * r.unitPrice, 0);
-
-      // Add folding totals (live, not in calculatedRows)
-      Object.values(serviceStates).forEach(state => {
-        if (state.type === "folding" && state.foldLines) {
-          state.foldLines.forEach(line => {
-            const { price } = calcLineFoldPrice(line.direction, line.format);
-            total += price * (line.qty || 1);
-          });
-        }
-      });
-
-      const hasAnything = calculatedRows.length > 0 ||
-        Object.values(serviceStates).some(s => s.type === "folding" && s.foldLines?.length);
-
-      if (hasAnything) {
-        totalBlock.classList.add("visible");
-        totalAmount.textContent = money(total);
-      } else {
-        totalBlock.classList.remove("visible");
-      }
-    }
-
-    // ── PROGRESS ───────────────────────────────────────────────────
-    function setProgress(id, pct) {
-      const wrap = document.getElementById(`progress-wrap-${id}`);
-      const bar = document.getElementById(`progress-bar-${id}`);
-      if (!wrap || !bar) return;
-
-      if (pct > 0 && pct < 100) {
-        wrap.classList.add("visible");
-        bar.style.width = pct + "%";
-      } else {
-        wrap.classList.remove("visible");
-        bar.style.width = "0%";
-      }
-    }
-
-    // ── STATUS ─────────────────────────────────────────────────────
-    function setStatus(text, isError = false) {
-      if (!text) {
-        statusEl.style.display = "none";
-        return;
-      }
-      statusEl.style.display = "flex";
-      statusEl.textContent = text;
-      statusEl.className = "status-pill" + (isError ? " error" : "");
-    }
-
-    function clearAll() {
-      container.innerHTML = "";
-      blockCounter = 1;
-      calculatedRows = [];
-      Object.keys(serviceStates).forEach(k => delete serviceStates[k]);
-      totalBlock.classList.remove("visible");
-      setStatus("");
-      addBlock("separator");
-    }
-
-    // ── PDF ANALYSIS ───────────────────────────────────────────────
-    async function detectColor(page) {
-      const vp = page.getViewport({ scale: 0.5 });
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      canvas.width = Math.max(1, Math.floor(vp.width));
-      canvas.height = Math.max(1, Math.floor(vp.height));
-
-      await page.render({ canvasContext: ctx, viewport: vp }).promise;
-      const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-      let colorPx = 0;
-      for (let y = 0; y < height; y += SAMPLE_STEP) {
-        for (let x = 0; x < width; x += SAMPLE_STEP) {
-          const i = (y * width + x) * 4;
-          const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
-          if (a < 10) continue;
-          if (Math.abs(r - g) > COLOR_TOLERANCE || Math.abs(g - b) > COLOR_TOLERANCE || Math.abs(r - b) > COLOR_TOLERANCE) {
-            if (++colorPx >= 5) return "color";
-          }
-        }
-      }
-
-      return "bw";
-    }
-
-    function detectFormat(w, h) {
-      for (const [name, size] of Object.entries(FORMATS)) {
-        const n = Math.abs(w - size.w) <= TOLERANCE_MM && Math.abs(h - size.h) <= TOLERANCE_MM;
-        const r = Math.abs(w - size.h) <= TOLERANCE_MM && Math.abs(h - size.w) <= TOLERANCE_MM;
-        if (n || r) return name;
-      }
-      return "CUSTOM";
-    }
-
-    function findSmallestFitting(w, h) {
-      const short = Math.min(w, h), long = Math.max(w, h);
-      for (const name of ["A6","A5","A4","A3","A2","A1","A0"]) {
-        const s = FORMATS[name];
-        const fs = Math.min(s.w, s.h), fl = Math.max(s.w, s.h);
-        if (short <= fs + TOLERANCE_MM && long <= fl + TOLERANCE_MM) return name;
-      }
-      return null;
-    }
-
-    // Detect wide/roll formats like A4x3, A3x4, A2x3 etc.
-    // Logic: one side matches base format short side, other side ≈ base_long × N
-    function detectWideFormat(w, h) {
-      // Try both orientations
-      const candidates = [
-        { short: Math.min(w, h), long: Math.max(w, h) }
-      ];
-
-      const bases = ["A4", "A3", "A2", "A1"];
-      let best = null;
-      let bestScore = Infinity;
-
-      for (const { short, long } of candidates) {
-        for (const base of bases) {
-          const s = FORMATS[base];
-          const baseShort = Math.min(s.w, s.h);
-          const baseStep  = Math.max(s.w, s.h);
-
-          const shortDiff = Math.abs(short - baseShort);
-          // Allow up to 15mm tolerance on short side (print bleed/variation)
-          if (shortDiff > 15) continue;
-
-          // Long side: find best integer multiplier ≥ 2
-          const rawN = long / baseStep;
-          for (const n of [Math.floor(rawN), Math.round(rawN), Math.ceil(rawN)]) {
-            if (n < 2 || n > 20) continue;
-            const expectedLong = baseStep * n;
-            const longDiff = Math.abs(long - expectedLong);
-            // Allow up to 20mm on long side (scales with length)
-            if (longDiff > 20) continue;
-            const score = shortDiff * 2 + longDiff; // weight short side accuracy more
-            if (score < bestScore) {
-              bestScore = score;
-              best = `${base}x${n}`;
-            }
-          }
-        }
-      }
-
-      return best;
-    }
-
-    function findNearest(w, h) {
-      let best = "A4", bestDist = Infinity;
-      Object.entries(FORMATS).forEach(([name, size]) => {
-        const d = Math.min(
-          Math.abs(w - size.w) + Math.abs(h - size.h),
-          Math.abs(w - size.h) + Math.abs(h - size.w)
-        );
-        if (d < bestDist) { bestDist = d; best = name; }
-      });
-      return best;
-    }
-
-    // Exact size label — shows real mm from file without rounding to standard
-    function buildExactSizeLabel(wMm, hMm, detectedFmt) {
-      const w = Math.round(wMm * 10) / 10;
-      const h = Math.round(hMm * 10) / 10;
-      // Show exact dimensions
-      return `${w} × ${h} мм`;
-    }
-
-    function parseWideKey(key) {
-      const m = /^([A][234])x(\d+)$/i.exec(String(key));
-      return m ? { base: m[1].toUpperCase(), n: Number(m[2]) } : null;
-    }
-
-    // ── UTILS ──────────────────────────────────────────────────────
-    function ptToMm(pt) { return pt * 25.4 / 72; }
-
-    function formatLabel(key) {
-      if (FORMATS[key]) return `${key} (${FORMATS[key].w}×${FORMATS[key].h} мм)`;
-      const m = /^([A][234])x(\d+)$/i.exec(key);
-      if (m) {
-        const base = m[1].toUpperCase();
-        const n = Number(m[2]);
-        return `${base}×${n} (${FORMATS[base].w * n}×${FORMATS[base].h} мм)`;
-      }
-      return key;
-    }
-
-    function money(v) {
-      return `${Number(v).toFixed(2).replace(".", ",")} ₽`;
-    }
-
-    function escapeHtml(t) {
-      return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-    }
-
-    function sanitize(v) {
-      return String(v || "").replace(/[\\/:*?"<>|]+/g, "_");
-    }
-
-    function makeId() {
-      return "r_" + Math.random().toString(36).slice(2, 10);
-    }
-
-    function compressRanges(pages) {
-      if (!pages?.length) return "";
-      const sorted = [...new Set(pages)].sort((a, b) => a - b);
-      const ranges = [];
-      let start = sorted[0], prev = sorted[0];
-      for (let i = 1; i < sorted.length; i++) {
-        if (sorted[i] === prev + 1) { prev = sorted[i]; continue; }
-        ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
-        start = prev = sorted[i];
-      }
-      ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
-      return ranges.join(",");
-    }
-
-  </script>
+// ── UTILS ──────────────────────────────────────────────────────────
+function ptToMm(pt) { return pt*25.4/72; }
+function money(v) { return `${Number(v).toFixed(2).replace('.',',')} ₽`; }
+function fmt2(n) { const r=Math.round(n*10)/10; return r%1===0?String(r):r.toFixed(1); }
+function fmtLabel(key) {
+  if (FORMATS[key]) return `${key} (${FORMATS[key].w}×${FORMATS[key].h} мм)`;
+  const m=/^([A][234])x(\d+)$/i.exec(key);
+  if (m) { const base=m[1].toUpperCase(),n=+m[2]; return `${base}×${n} (${FORMATS[base].w*n}×${FORMATS[base].h} мм)`; }
+  return key;
+}
+function escapeHtml(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function sanitize(v) { return String(v||'').replace(/[\\/:*?"<>|]+/g,'_'); }
+function makeId() { return 'r_'+Math.random().toString(36).slice(2,10); }
+function compressRanges(pages) {
+  if (!pages?.length) return '';
+  const s=[...new Set(pages)].sort((a,b)=>a-b);
+  const ranges=[]; let start=s[0],prev=s[0];
+  for (let i=1;i<s.length;i++) {
+    if (s[i]===prev+1) { prev=s[i]; continue; }
+    ranges.push(start===prev?`${start}`:`${start}-${prev}`);
+    start=prev=s[i];
+  }
+  ranges.push(start===prev?`${start}`:`${start}-${prev}`);
+  return ranges.join(',');
+}
+function parseWideKey(key) {
+  const m=/^([A][234])x(\d+)$/i.exec(String(key));
+  return m?{base:m[1].toUpperCase(),n:+m[2]}:null;
+}
+</script>
 </body>
 </html>
