@@ -339,9 +339,12 @@ const GUILL_SOURCES = {
   A4:  {w:210,h:297,label:'А4 (210×297)'}
 };
 const GUILL_TARGETS = [
-  {key:'A6',  label:'А6 (105×148)',  fw:105,fh:148},
-  {key:'A5',  label:'А5 (148×210)',  fw:148,fh:210},
-  {key:'A4',  label:'А4 (210×297)',  fw:210,fh:297}
+  {key:'A6',     label:'А6 (105×148)',    fw:105,fh:148},
+  {key:'A5',     label:'А5 (148×210)',    fw:148,fh:210},
+  {key:'A4',     label:'А4 (210×297)',    fw:210,fh:297},
+  {key:'A3',     label:'А3 (297×420)',    fw:297,fh:420},
+  {key:'vis',    label:'Визитка (50×90)', fw:50, fh:90},
+  {key:'custom', label:'Произвольный формат', fw:null,fh:null}
 ];
 
 // ── addBlock ───────────────────────────────────────────────────────
@@ -1007,11 +1010,22 @@ function initGuillotine(card, id) {
           </select>
         </div>
         <div></div>
-        <div class="field"><label>Отступ сверху (a), мм — портретная фаза</label>
-          <input type="number" id="g-a-${id}" min="0" step="0.1" value="8.5">
+      </div>
+      <div id="g-custom-wrap-${id}" class="grid-3" style="display:none">
+        <div class="field"><label>Ширина произвольного формата, мм</label>
+          <input type="number" id="g-custom-w-${id}" min="1" step="0.1" value="100">
         </div>
-        <div class="field"><label>Отступ слева (i), мм — альбомная фаза</label>
-          <input type="number" id="g-i-${id}" min="0" step="0.1" value="8.5">
+        <div class="field"><label>Высота произвольного формата, мм</label>
+          <input type="number" id="g-custom-h-${id}" min="1" step="0.1" value="150">
+        </div>
+        <div></div>
+      </div>
+      <div class="grid-3">
+        <div class="field"><label>Отступ снизу (y), мм — портретная фаза</label>
+          <input type="number" id="g-y-${id}" min="0" step="0.1" value="8.5">
+        </div>
+        <div class="field"><label>Отступ слева (x), мм — альбомная фаза</label>
+          <input type="number" id="g-x-${id}" min="0" step="0.1" value="8.5">
         </div>
         <div id="g-info-${id}" style="font-size:13px;color:var(--muted);padding-top:8px"></div>
       </div>
@@ -1036,9 +1050,24 @@ function initGuillotine(card, id) {
     return (optB.n1 * optB.n2 > optA.n1 * optA.n2) ? optB : optA;
   };
 
+  const getTarget = () => {
+    const tgtKey = document.getElementById(`g-tgt-${id}`).value;
+    if (tgtKey === 'custom') {
+      const w = parseFloat(document.getElementById(`g-custom-w-${id}`)?.value) || 0;
+      const h = parseFloat(document.getElementById(`g-custom-h-${id}`)?.value) || 0;
+      return { key:'custom', label:`Произвольный (${fmt2(w)}×${fmt2(h)})`, fw:w, fh:h };
+    }
+    return GUILL_TARGETS.find(t=>t.key===tgtKey);
+  };
+
+  const updateCustomVis = () => {
+    const isCustom = document.getElementById(`g-tgt-${id}`).value === 'custom';
+    document.getElementById(`g-custom-wrap-${id}`).style.display = isCustom ? 'grid' : 'none';
+  };
+
   const updateInfo = () => {
     const src  = GUILL_SOURCES[document.getElementById(`g-src-${id}`).value];
-    const tgt  = GUILL_TARGETS.find(t=>t.key===document.getElementById(`g-tgt-${id}`).value);
+    const tgt  = getTarget();
     const gap  = parseFloat(document.getElementById(`g-gap-${id}`)?.value) || 4;
     const best = bestOrientation(src, tgt, gap);
     const total = best.n1 * best.n2;
@@ -1048,7 +1077,9 @@ function initGuillotine(card, id) {
   };
 
   document.getElementById(`g-src-${id}`).addEventListener('change', updateInfo);
-  document.getElementById(`g-tgt-${id}`).addEventListener('change', updateInfo);
+  document.getElementById(`g-tgt-${id}`).addEventListener('change', () => { updateCustomVis(); updateInfo(); });
+  document.getElementById(`g-custom-w-${id}`).addEventListener('input', updateInfo);
+  document.getElementById(`g-custom-h-${id}`).addEventListener('input', updateInfo);
   document.getElementById(`g-gap-${id}`)?.addEventListener('input', updateInfo);
   document.getElementById(`g-adv-btn-${id}`).addEventListener('click', () => {
     const adv = document.getElementById(`g-adv-${id}`);
@@ -1058,7 +1089,20 @@ function initGuillotine(card, id) {
     btn.textContent = (open?'▾ ':'▸ ')+'Дополнительные параметры';
   });
   document.getElementById(`g-calc-${id}`).addEventListener('click', () => calcGuillotine(id));
+  updateCustomVis();
   updateInfo();
+}
+
+// Reads the currently selected target format, building a synthetic one from
+// the custom-size fields when "произвольный формат" is selected.
+function guillGetTarget(id) {
+  const tgtKey = document.getElementById(`g-tgt-${id}`).value;
+  if (tgtKey === 'custom') {
+    const w = parseFloat(document.getElementById(`g-custom-w-${id}`)?.value) || 0;
+    const h = parseFloat(document.getElementById(`g-custom-h-${id}`)?.value) || 0;
+    return { key:'custom', label:`Произвольный (${fmt2(w)}×${fmt2(h)})`, fw:w, fh:h };
+  }
+  return GUILL_TARGETS.find(t=>t.key===tgtKey);
 }
 
 // Renders the rotated-"A" orientation icon used to show which way the sheet is fed
@@ -1068,15 +1112,19 @@ function gOrientIcon(deg) {
 
 function calcGuillotine(id) {
   const srcKey = document.getElementById(`g-src-${id}`).value;
-  const tgtKey = document.getElementById(`g-tgt-${id}`).value;
   const src    = GUILL_SOURCES[srcKey];
-  const tgt    = GUILL_TARGETS.find(t=>t.key===tgtKey);
-  const a      = parseFloat(document.getElementById(`g-a-${id}`).value)||0;
-  const iVal   = parseFloat(document.getElementById(`g-i-${id}`).value)||0;
+  const tgt    = guillGetTarget(id);
+  const y      = parseFloat(document.getElementById(`g-y-${id}`).value)||0;
+  const x      = parseFloat(document.getElementById(`g-x-${id}`).value)||0;
   const minCut = parseFloat(document.getElementById(`g-mincut-${id}`)?.value)||50;
   const gap    = parseFloat(document.getElementById(`g-gap-${id}`)?.value)||4;
   const block  = parseFloat(document.getElementById(`g-block-${id}`)?.value)||6.5;
   const resultEl = document.getElementById(`g-result-${id}`);
+
+  if (!tgt.fw || !tgt.fh) {
+    resultEl.innerHTML = `<div class="g-warn" style="margin-top:14px">⚠️ Укажите ширину и высоту произвольного формата.</div>`;
+    return;
+  }
 
   if (src.w === tgt.fw && src.h === tgt.fh) {
     resultEl.innerHTML = `<div class="g-warn" style="margin-top:14px">⚠️ Исходный и итоговый формат совпадают — резать нечего.</div>`;
@@ -1158,8 +1206,8 @@ function calcGuillotine(id) {
     return steps;
   }
 
-  const hSteps = axisChain(src.h, best.dimH, a, best.n1);
-  const vSteps = axisChain(src.w, best.dimW, iVal, best.n2);
+  const hSteps = axisChain(src.h, best.dimH, y, best.n1);
+  const vSteps = axisChain(src.w, best.dimW, x, best.n2);
 
   const totalPieces = best.n1 * best.n2;
   const totalSteps   = hSteps.length + vSteps.length;
