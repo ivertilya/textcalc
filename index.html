@@ -155,10 +155,6 @@ tr:hover td{background:#fafafa}
       <div class="app-subtitle">Разделитель · Фальцовка · Гильотина · Брошюровка · Конвертер</div>
     </div>
   </div>
-  <div class="header-actions">
-    <button class="btn-inverse btn-sm" id="calculateAllBtn">Рассчитать все</button>
-    <button class="btn-inverse btn-sm" id="clearBtn">Сбросить</button>
-  </div>
 </header>
 
 <div class="wrap">
@@ -225,8 +221,6 @@ document.getElementById('addFoldingBtn').addEventListener('click',   () => addBl
 document.getElementById('addBindingBtn').addEventListener('click',   () => addBlock('binding'));
 document.getElementById('addGuillotineBtn').addEventListener('click',() => addBlock('guillotine'));
 document.getElementById('addConverterBtn').addEventListener('click', () => addBlock('converter'));
-document.getElementById('calculateAllBtn').addEventListener('click', calcAll);
-document.getElementById('clearBtn').addEventListener('click', clearAll);
 
 // ── PRICE DATA ─────────────────────────────────────────────────────
 const PRICES = {
@@ -267,6 +261,12 @@ const PRICES = {
     }
   }
 };
+
+// User-added/overriding price-list entries, editable from the separator card.
+// Each entry: {id, code, label, format, colorMode, price}.
+// Checked BEFORE the built-in catalog in getSepPrice, so a custom entry can
+// either extend the catalog (new format key) or override an existing one.
+let CUSTOM_PRICES = [];
 
 const BINDING_OPTIONS = [
   {key:'plastic_a4', label:'Пластиковая пружина А4', tiers:[
@@ -462,6 +462,10 @@ function renderSeparatorBody(id) {
         <label>Экземпляров</label>
         <input type="number" id="sep-copies-${id}" min="1" step="1" value="1">
       </div>
+    </div>
+    <div style="margin-top:14px">
+      <button type="button" class="btn-ghost btn-sm prices-toggle-btn" data-id="${id}">⚙ Управление прайсом печати</button>
+      <div id="prices-panel-${id}" style="display:none;margin-top:12px"></div>
     </div>`;
 }
 
@@ -491,6 +495,15 @@ function bindSeparatorFiles(card, id) {
     list.querySelectorAll('.file-chip-remove').forEach(btn =>
       btn.addEventListener('click', () => { st.files.splice(+btn.dataset.i,1); renderList(); }));
   }
+
+  const pricesBtn   = card.querySelector('.prices-toggle-btn');
+  const pricesPanel = document.getElementById(`prices-panel-${id}`);
+  pricesBtn.addEventListener('click', () => {
+    const open = pricesPanel.style.display === 'none';
+    pricesPanel.style.display = open ? 'block' : 'none';
+    pricesBtn.textContent = (open ? '▾ ' : '⚙ ') + 'Управление прайсом печати';
+    if (open) buildPricesPanel(id);
+  });
 }
 
 async function calcBlock(card, id) {
@@ -560,6 +573,9 @@ async function analyzeWord(fe, mode, copies, blockId) {
 }
 
 function getSepPrice(fmt, colorMode, qty) {
+  const custom = CUSTOM_PRICES.find(c => c.format===fmt && c.colorMode===colorMode);
+  if (custom) return {price:custom.price, code:custom.code, label:custom.label};
+
   if (colorMode==='bw' && PRICES.documentsBW[fmt]) {
     const t = PRICES.documentsBW[fmt].find(t => qty<=t.max) || PRICES.documentsBW[fmt].at(-1);
     return {price:t.price, code:t.code, label:t.label};
@@ -587,6 +603,182 @@ function getSepPrice(fmt, colorMode, qty) {
     }
   }
   return {price:0, code:'—', label:`Нет тарифа для ${fmt}`};
+}
+
+// ── PRICE LIST MANAGEMENT PANEL ──────────────────────────────────────
+// Renders an editable view of the global PRICES catalog plus custom
+// user-added entries. Edits mutate PRICES/CUSTOM_PRICES directly — since
+// the price list is shared across the whole shop, a change here affects
+// every separator card immediately.
+
+function buildPricesPanel(id) {
+  const panel = document.getElementById(`prices-panel-${id}`);
+  if (!panel) return;
+
+  const sectionStyle = 'font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin:14px 0 6px';
+  const tableOpen = `<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr>
+    <th style="text-align:left;padding:6px 8px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--line)">Код</th>
+    <th style="text-align:left;padding:6px 8px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--line)">Тариф</th>`;
+
+  let html = `<div style="border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--card2)">`;
+
+  // ── Ч/б тиражи А4 / А3 ──────────────────────────────────────────
+  html += `<div style="${sectionStyle}">Цифровая печать ч/б</div>`;
+  html += `<div class="grid-2">`;
+  ['A4','A3'].forEach(fmt => {
+    html += `<div><div style="font-size:12px;font-weight:600;margin-bottom:4px">${fmt}</div>`;
+    html += tableOpen + `<th style="text-align:center;padding:6px 8px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--line)">До, шт</th>
+      <th style="text-align:center;padding:6px 8px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--line)">₽</th></tr></thead><tbody>`;
+    PRICES.documentsBW[fmt].forEach((t,ti) => {
+      html += `<tr style="border-bottom:1px solid var(--line-soft)" data-bw="${fmt}:${ti}">
+        <td style="padding:6px 8px;font-size:11px;color:var(--muted)">${escapeHtml(t.code)}</td>
+        <td style="padding:6px 8px;font-size:12px">${escapeHtml(t.label.split(', ').pop())}</td>
+        <td style="padding:6px 8px;text-align:center">
+          <input type="number" class="pp-bw-max" data-fmt="${fmt}" data-i="${ti}" value="${t.max===Infinity?'':t.max}" placeholder="∞" min="1"
+            style="width:64px;text-align:center;height:32px;padding:4px;border:1px solid var(--line);border-radius:6px;font-size:12px" ${ti===PRICES.documentsBW[fmt].length-1?'disabled title="Последний уровень — без верхней границы"':''}>
+        </td>
+        <td style="padding:6px 8px;text-align:center">
+          <input type="number" class="pp-bw-price" data-fmt="${fmt}" data-i="${ti}" value="${t.price}" min="0" step="0.1"
+            style="width:70px;text-align:center;height:32px;padding:4px;border:1px solid var(--line);border-radius:6px;font-size:12px">
+        </td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+  });
+  html += `</div>`;
+
+  // ── Цветная печать А4 / А3 ──────────────────────────────────────
+  html += `<div style="${sectionStyle}">Цифровая печать цветная</div>`;
+  html += `<div class="grid-2">`;
+  ['A4','A3'].forEach(fmt => {
+    const c = PRICES.documentsColor[fmt];
+    html += `<div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:12px;font-weight:600;min-width:26px">${fmt}</span>
+      <span style="font-size:11px;color:var(--muted)">от</span>
+      <input type="number" class="pp-color-min" data-fmt="${fmt}" value="${c.min}" min="0" step="0.1"
+        style="width:70px;text-align:center;height:32px;padding:4px;border:1px solid var(--line);border-radius:6px;font-size:12px">
+      <span style="font-size:11px;color:var(--muted)">до</span>
+      <input type="number" class="pp-color-max" data-fmt="${fmt}" value="${c.max}" min="0" step="0.1"
+        style="width:70px;text-align:center;height:32px;padding:4px;border:1px solid var(--line);border-radius:6px;font-size:12px">
+      <span style="font-size:11px;color:var(--muted)">₽</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ── Широкоформатная точная (А2/А1/А0) ────────────────────────────
+  html += `<div style="${sectionStyle}">Широкоформатная — точный формат (А2 / А1 / А0)</div>`;
+  html += `<div class="grid-2">`;
+  ['bw','color'].forEach(cm => {
+    html += `<div><div style="font-size:12px;font-weight:600;margin-bottom:4px">${cm==='bw'?'Ч/б':'Цветная'}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">`;
+    ['A2','A1','A0'].forEach(fmt => {
+      const t = PRICES.drawingsExact[cm][fmt];
+      html += `<div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:12px;color:var(--muted)">${fmt}</span>
+        <input type="number" class="pp-exact" data-cm="${cm}" data-fmt="${fmt}" value="${t.price}" min="0" step="0.1"
+          style="width:66px;text-align:center;height:32px;padding:4px;border:1px solid var(--line);border-radius:6px;font-size:12px">
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+  html += `</div>`;
+
+  // ── Широкоформатная кратная (AxN) ─────────────────────────────────
+  html += `<div style="${sectionStyle}">Широкоформатная — кратный формат (А4×N, А3×N, А2×N)</div>`;
+  ['bw','color'].forEach(cm => {
+    html += `<div style="margin-bottom:8px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">${cm==='bw'?'Ч/б':'Цветная'}</div>`;
+    Object.entries(PRICES.drawingsWide[cm]).forEach(([base, table]) => {
+      html += `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+        <span style="font-size:11px;color:var(--muted);min-width:24px">${base}</span>`;
+      Object.entries(table).forEach(([n, price]) => {
+        html += `<div style="display:flex;align-items:center;gap:4px">
+          <span style="font-size:11px;color:var(--muted)">×${n}</span>
+          <input type="number" class="pp-wide" data-cm="${cm}" data-base="${base}" data-n="${n}" value="${price}" min="0" step="0.1"
+            style="width:60px;text-align:center;height:30px;padding:3px;border:1px solid var(--line);border-radius:6px;font-size:11px">
+        </div>`;
+      });
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+
+  // ── Пользовательские тарифы ────────────────────────────────────────
+  html += `<div style="${sectionStyle}">Пользовательские тарифы</div>`;
+  if (CUSTOM_PRICES.length) {
+    html += `<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr>
+      <th style="text-align:left;padding:5px 6px;font-size:11px;color:var(--muted)">Код</th>
+      <th style="text-align:left;padding:5px 6px;font-size:11px;color:var(--muted)">Название</th>
+      <th style="text-align:center;padding:5px 6px;font-size:11px;color:var(--muted)">Формат (ключ)</th>
+      <th style="text-align:center;padding:5px 6px;font-size:11px;color:var(--muted)">Цвет</th>
+      <th style="text-align:center;padding:5px 6px;font-size:11px;color:var(--muted)">₽</th>
+      <th></th></tr></thead><tbody>`;
+    CUSTOM_PRICES.forEach(c => {
+      html += `<tr style="border-bottom:1px solid var(--line-soft)" data-cid="${c.id}">
+        <td style="padding:5px 6px"><input class="pp-custom-code" value="${escapeHtml(c.code)}" style="width:70px;height:30px;padding:4px;border:1px solid var(--line);border-radius:6px;font-size:11px"></td>
+        <td style="padding:5px 6px"><input class="pp-custom-label" value="${escapeHtml(c.label)}" style="width:100%;min-width:140px;height:30px;padding:4px;border:1px solid var(--line);border-radius:6px;font-size:11px"></td>
+        <td style="padding:5px 6px"><input class="pp-custom-format" value="${escapeHtml(c.format)}" style="width:90px;height:30px;padding:4px;border:1px solid var(--line);border-radius:6px;font-size:11px;text-align:center"></td>
+        <td style="padding:5px 6px;text-align:center">
+          <select class="pp-custom-color" style="height:30px;padding:2px 6px;border:1px solid var(--line);border-radius:6px;font-size:11px">
+            <option value="bw" ${c.colorMode==='bw'?'selected':''}>ч/б</option>
+            <option value="color" ${c.colorMode==='color'?'selected':''}>цвет</option>
+          </select>
+        </td>
+        <td style="padding:5px 6px"><input type="number" class="pp-custom-price" value="${c.price}" min="0" step="0.1" style="width:70px;text-align:center;height:30px;padding:4px;border:1px solid var(--line);border-radius:6px;font-size:11px"></td>
+        <td style="padding:5px 6px"><button class="pp-custom-del icon-btn" style="width:28px;height:28px;color:var(--danger);border-color:#f5c6c2;background:var(--danger-soft)">✕</button></td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+  } else {
+    html += `<div style="font-size:12px;color:var(--muted);margin-bottom:6px">Пока нет пользовательских тарифов.</div>`;
+  }
+  html += `<div style="margin-top:8px"><button type="button" class="btn-ghost btn-sm pp-add-custom">+ Добавить тариф</button></div>`;
+
+  html += `</div>`;
+  panel.innerHTML = html;
+
+  // ── Bind edits ──────────────────────────────────────────────────
+  panel.querySelectorAll('.pp-bw-max').forEach(inp => inp.addEventListener('input', () => {
+    const v = inp.value===''? Infinity : Math.max(1, parseInt(inp.value)||1);
+    PRICES.documentsBW[inp.dataset.fmt][+inp.dataset.i].max = v;
+  }));
+  panel.querySelectorAll('.pp-bw-price').forEach(inp => inp.addEventListener('input', () => {
+    PRICES.documentsBW[inp.dataset.fmt][+inp.dataset.i].price = Math.max(0, parseFloat(inp.value.replace(',','.'))||0);
+  }));
+  panel.querySelectorAll('.pp-color-min').forEach(inp => inp.addEventListener('input', () => {
+    PRICES.documentsColor[inp.dataset.fmt].min = Math.max(0, parseFloat(inp.value.replace(',','.'))||0);
+  }));
+  panel.querySelectorAll('.pp-color-max').forEach(inp => inp.addEventListener('input', () => {
+    PRICES.documentsColor[inp.dataset.fmt].max = Math.max(0, parseFloat(inp.value.replace(',','.'))||0);
+  }));
+  panel.querySelectorAll('.pp-exact').forEach(inp => inp.addEventListener('input', () => {
+    PRICES.drawingsExact[inp.dataset.cm][inp.dataset.fmt].price = Math.max(0, parseFloat(inp.value.replace(',','.'))||0);
+  }));
+  panel.querySelectorAll('.pp-wide').forEach(inp => inp.addEventListener('input', () => {
+    PRICES.drawingsWide[inp.dataset.cm][inp.dataset.base][inp.dataset.n] = Math.max(0, parseFloat(inp.value.replace(',','.'))||0);
+  }));
+
+  function bindCustomRowInputs() {
+    panel.querySelectorAll('[data-cid]').forEach(tr => {
+      const cid = tr.dataset.cid;
+      const entry = CUSTOM_PRICES.find(c => c.id===cid);
+      if (!entry) return;
+      tr.querySelector('.pp-custom-code').addEventListener('input', e => entry.code = e.target.value);
+      tr.querySelector('.pp-custom-label').addEventListener('input', e => entry.label = e.target.value);
+      tr.querySelector('.pp-custom-format').addEventListener('input', e => entry.format = e.target.value.trim());
+      tr.querySelector('.pp-custom-color').addEventListener('change', e => entry.colorMode = e.target.value);
+      tr.querySelector('.pp-custom-price').addEventListener('input', e => entry.price = Math.max(0, parseFloat(e.target.value.replace(',','.'))||0));
+      tr.querySelector('.pp-custom-del').addEventListener('click', () => {
+        CUSTOM_PRICES = CUSTOM_PRICES.filter(c => c.id!==cid);
+        buildPricesPanel(id);
+      });
+    });
+  }
+  bindCustomRowInputs();
+
+  panel.querySelector('.pp-add-custom').addEventListener('click', () => {
+    CUSTOM_PRICES.push({id:makeId(), code:'CUSTOM', label:'Новый тариф', format:'A4', colorMode:'bw', price:0});
+    buildPricesPanel(id);
+  });
 }
 
 // ── RESULT RENDER ──────────────────────────────────────────────────
@@ -624,9 +816,11 @@ function renderResult(card, id) {
 
 function renderRowHtml(row) {
   const sum = row.qty * row.unitPrice;
+  const customFmts = [...new Set(CUSTOM_PRICES.map(c => c.format))].filter(f => !ALL_FORMATS.includes(f));
+  const fmtOptions = [...ALL_FORMATS, ...customFmts];
   const fmtCell = row.isSeparator ? `
     <select class="row-format-select" data-row-id="${row.id}" style="height:36px;padding:6px 10px;font-size:13px;border-radius:8px;border:1px solid var(--line);background:#fff;font-family:inherit;min-width:120px;">
-      ${ALL_FORMATS.map(f => `<option value="${f}" ${f===row.billedFormat?'selected':''}>${escapeHtml(fmtLabel(f))}</option>`).join('')}
+      ${fmtOptions.map(f => `<option value="${f}" ${f===row.billedFormat?'selected':''}>${escapeHtml(fmtLabel(f))}</option>`).join('')}
     </select>` : escapeHtml(row.billedFormat||'—');
   const dlBtn = row.isSeparator && !row.isWord && row.fileBytes
     ? `<button type="button" class="btn-secondary btn-xs dl-row-btn" data-row-id="${row.id}">⬇ PDF</button>` : '';
@@ -1560,12 +1754,12 @@ function detectWideFormat(w, h) {
     const step=s.w, con=s.h;
     for (const [pageStep,pageConst] of [[Math.max(w,h),Math.min(w,h)],[Math.min(w,h),Math.max(w,h)]]) {
       const constDiff=Math.abs(pageConst-con);
-      if (constDiff>15) continue;
+      if (constDiff>20) continue;
       const rawN=pageStep/step;
       for (const n of [Math.floor(rawN),Math.round(rawN),Math.ceil(rawN)]) {
         if (n<2||n>20) continue;
         const stepDiff=Math.abs(pageStep-step*n);
-        if (stepDiff>20) continue;
+        if (stepDiff>Math.max(25, n*4)) continue;
         const score=constDiff*3+stepDiff;
         if (score<bestScore) { bestScore=score; best=`${base}x${n}`; }
       }
@@ -1574,7 +1768,15 @@ function detectWideFormat(w, h) {
   return best;
 }
 function findSmallestFitting(w, h) {
-  const short=Math.min(w,h), long=Math.max(w,h);
+  const short = Math.min(w, h), long = Math.max(w, h);
+  const pageRatio = long / short;
+  // Every standard A-series sheet shares the same ratio (~1.414). A page whose
+  // ratio is far beyond that is an elongated multi-panel strip (A4x3 etc.),
+  // not a genuine oversized standard sheet — even if it happens to fit inside
+  // one's bounding box. Reject those so they don't get mislabeled (e.g. a
+  // 630×297mm A4x3 strip technically fits inside A1's 594×841 box, but its
+  // shape has nothing to do with A1).
+  if (pageRatio > Math.SQRT2 * 1.3) return null;
   for (const name of ['A6','A5','A4','A3','A2','A1','A0']) {
     const s=FORMATS[name], fs=Math.min(s.w,s.h), fl=Math.max(s.w,s.h);
     if (short<=fs+TOLERANCE_MM&&long<=fl+TOLERANCE_MM) return name;
@@ -1620,6 +1822,8 @@ function fmtLabel(key) {
   if (FORMATS[key]) return `${key} (${FORMATS[key].w}×${FORMATS[key].h} мм)`;
   const m=/^([A][234])x(\d+)$/i.exec(key);
   if (m) { const base=m[1].toUpperCase(),n=+m[2]; return `${base}×${n} (${FORMATS[base].w*n}×${FORMATS[base].h} мм)`; }
+  const custom = CUSTOM_PRICES.find(c => c.format===key);
+  if (custom) return `${key} — ${custom.label}`;
   return key;
 }
 function escapeHtml(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
