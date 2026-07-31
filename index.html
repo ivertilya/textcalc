@@ -250,23 +250,17 @@ const PRICES = {
   },
   drawingsWide: {
     bw:{
-      A4:{3:52,4:69,5:86,6:104,7:121,8:138},
-      A3:{3:104,4:138,5:173,6:207,7:242,8:276},
-      A2:{3:207,4:276,5:345,6:414}
+      A4:{3:{p:52,c:'1015'},4:{p:69,c:'1017'},5:{p:86,c:'1019'},6:{p:104,c:'1021'},7:{p:121,c:'1023'},8:{p:138,c:'1025'}},
+      A3:{3:{p:104,c:'1027'},4:{p:138,c:'1029'},5:{p:173,c:'1031'},6:{p:207,c:'1033'},7:{p:242,c:'1035'},8:{p:276,c:'1037'}},
+      A2:{3:{p:207,c:'1041'},4:{p:276,c:'1043'},5:{p:345,c:'1045'},6:{p:414,c:'1047'}}
     },
     color:{
-      A4:{3:60,4:81,5:101,6:121,7:141,8:161},
-      A3:{3:121,4:161,5:201,6:242,7:282,8:322},
-      A2:{3:242,4:322,5:403,6:483}
+      A4:{3:{p:60,c:'1016'},4:{p:81,c:'1018'},5:{p:101,c:'1020'},6:{p:121,c:'1022'},7:{p:141,c:'1024'},8:{p:161,c:'1026'}},
+      A3:{3:{p:121,c:'1028'},4:{p:161,c:'1030'},5:{p:201,c:'1032'},6:{p:242,c:'1034'},7:{p:282,c:'1036'},8:{p:322,c:'1038'}},
+      A2:{3:{p:242,c:'1042'},4:{p:322,c:'1044'},5:{p:403,c:'1046'},6:{p:483,c:'1048'}}
     }
   }
 };
-
-// User-added/overriding price-list entries, editable from the separator card.
-// Each entry: {id, code, label, format, colorMode, price}.
-// Checked BEFORE the built-in catalog in getSepPrice, so a custom entry can
-// either extend the catalog (new format key) or override an existing one.
-let CUSTOM_PRICES = [];
 
 const BINDING_OPTIONS = [
   {key:'plastic_a4', label:'Пластиковая пружина А4', tiers:[
@@ -464,7 +458,7 @@ function renderSeparatorBody(id) {
       </div>
     </div>
     <div style="margin-top:14px">
-      <button type="button" class="btn-ghost btn-sm prices-toggle-btn" data-id="${id}">+ Свои пункты прайса</button>
+      <button type="button" class="btn-ghost btn-sm prices-toggle-btn" data-id="${id}">+ Добавить из прайс-листа</button>
       <div id="prices-panel-${id}" style="display:none;margin-top:12px"></div>
     </div>`;
 }
@@ -501,7 +495,7 @@ function bindSeparatorFiles(card, id) {
   pricesBtn.addEventListener('click', () => {
     const open = pricesPanel.style.display === 'none';
     pricesPanel.style.display = open ? 'block' : 'none';
-    pricesBtn.textContent = (open ? '▾ ' : '+ ') + 'Свои пункты прайса';
+    pricesBtn.textContent = (open ? '▾ ' : '+ ') + 'Добавить из прайс-листа';
     if (open) buildPricesPanel(id);
   });
 }
@@ -573,9 +567,6 @@ async function analyzeWord(fe, mode, copies, blockId) {
 }
 
 function getSepPrice(fmt, colorMode, qty) {
-  const custom = CUSTOM_PRICES.find(c => c.format===fmt && c.colorMode===colorMode);
-  if (custom) return {price:custom.price, code:custom.code, label:custom.label};
-
   if (colorMode==='bw' && PRICES.documentsBW[fmt]) {
     const t = PRICES.documentsBW[fmt].find(t => qty<=t.max) || PRICES.documentsBW[fmt].at(-1);
     return {price:t.price, code:t.code, label:t.label};
@@ -591,90 +582,120 @@ function getSepPrice(fmt, colorMode, qty) {
   const wp = parseWideKey(fmt);
   if (wp) {
     const tbl = PRICES.drawingsWide[colorMode]?.[wp.base];
-    if (tbl && tbl[wp.n]) return {price:tbl[wp.n], code:`wide-${colorMode}-${fmt}`,
+    if (tbl && tbl[wp.n]) return {price:tbl[wp.n].p, code:tbl[wp.n].c,
       label:`Широкоформатная печать ${colorMode==='color'?'цветн.':'ч/б'} ${fmt}`};
     if (tbl) {
       const keys = Object.keys(tbl).map(Number).sort((a,b)=>a-b);
       const max  = keys.at(-1), prev = keys.at(-2)??max-1;
-      const step = tbl[max]-tbl[prev];
-      const extraPrice = tbl[max]+(wp.n-max)*step;
-      return {price:extraPrice, code:`wide-${colorMode}-${fmt}+`,
+      const step = tbl[max].p-tbl[prev].p;
+      const extraPrice = tbl[max].p+(wp.n-max)*step;
+      return {price:extraPrice, code:`${tbl[max].c}+`,
         label:`Широкоформатная печать ${colorMode==='color'?'цветн.':'ч/б'} ${fmt} (продолжение прайса)`};
     }
   }
   return {price:0, code:'—', label:`Нет тарифа для ${fmt}`};
 }
 
-// ── PRICE LIST MANAGEMENT PANEL ──────────────────────────────────────
-// Renders an editable view of the global PRICES catalog plus custom
-// user-added entries. Edits mutate PRICES/CUSTOM_PRICES directly — since
-// the price list is shared across the whole shop, a change here affects
-// every separator card immediately.
+// ── FULL PRINT PRICE-LIST CATALOG (codes 1001–1052) ──────────────────
+// Flattens PRICES into one searchable list of official tariffs, used by
+// the "Добавить из прайс-листа" picker in the separator card. Built from
+// the same PRICES object that drives calculation, so codes/prices never
+// drift out of sync with what's actually charged.
+function buildPriceCatalog() {
+  const list = [];
+  ['A4','A3'].forEach(fmt => {
+    PRICES.documentsBW[fmt].forEach(t => list.push({code:t.code, label:t.label, price:t.price, format:fmt, colorMode:'bw'}));
+    const c = PRICES.documentsColor[fmt];
+    list.push({code:c.code.split('–')[0], label:`${c.label} (от)`, price:c.min, format:fmt, colorMode:'color'});
+    list.push({code:c.code.split('–')[1], label:`${c.label} (до)`, price:c.max, format:fmt, colorMode:'color'});
+  });
+  ['bw','color'].forEach(cm => {
+    ['A2','A1','A0'].forEach(fmt => {
+      const t = PRICES.drawingsExact[cm][fmt];
+      list.push({code:t.code, label:`Широкоформатная печать ${cm==='color'?'цветн.':'ч/б'} ${fmt}`, price:t.price, format:fmt, colorMode:cm});
+    });
+    ['A4','A3','A2'].forEach(base => {
+      Object.entries(PRICES.drawingsWide[cm][base]).forEach(([n, t]) => {
+        const fmtKey = `${base}x${n}`;
+        list.push({code:t.c, label:`Широкоформатная печать ${cm==='color'?'цветн.':'ч/б'} ${fmtKey}`, price:t.p, format:fmtKey, colorMode:cm});
+      });
+    });
+  });
+  list.sort((a,b) => a.code.localeCompare(b.code, undefined, {numeric:true}));
+  return list;
+}
+const PRICE_CATALOG = buildPriceCatalog();
+
+
+// ── PRICE-LIST PICKER (codes 1001–1052) ───────────────────────────────
+// Lets you search the official print price list and add any of its items
+// as a row directly, in case a scanned page was mis-detected (wrong
+// format/color) and needs the correct official tariff added by hand.
 
 function buildPricesPanel(id) {
   const panel = document.getElementById(`prices-panel-${id}`);
   if (!panel) return;
 
-  let html = `<div style="border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--card2)">
-    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">
-      Свои пункты прайса — появятся в списке «Формат печати» у любой строки разделителя.
-      Чтобы исправить тариф уже посчитанной страницы (например, скан определил её как ч/б,
-      а на деле там цветная подпись), используйте кнопку «исправить» прямо под тарифом в таблице результата.
+  panel.innerHTML = `
+    <div style="border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--card2)">
+      <input type="text" class="pc-search" placeholder="Поиск по коду или названию…"
+        style="width:100%;height:40px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:10px">
+      <div class="pc-list" style="max-height:280px;overflow-y:auto;border:1px solid var(--line-soft);border-radius:8px"></div>
     </div>`;
 
-  if (CUSTOM_PRICES.length) {
-    html += `<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr>
-      <th style="text-align:left;padding:5px 6px;font-size:11px;color:var(--muted)">Код</th>
-      <th style="text-align:left;padding:5px 6px;font-size:11px;color:var(--muted)">Название</th>
-      <th style="text-align:center;padding:5px 6px;font-size:11px;color:var(--muted)">Формат (ключ)</th>
-      <th style="text-align:center;padding:5px 6px;font-size:11px;color:var(--muted)">Цвет</th>
-      <th style="text-align:center;padding:5px 6px;font-size:11px;color:var(--muted)">₽</th>
-      <th></th></tr></thead><tbody>`;
-    CUSTOM_PRICES.forEach(c => {
-      html += `<tr style="border-bottom:1px solid var(--line-soft)" data-cid="${c.id}">
-        <td style="padding:5px 6px"><input class="pp-custom-code" value="${escapeHtml(c.code)}" style="width:70px;height:30px;padding:4px;border:1px solid var(--line);border-radius:6px;font-size:11px"></td>
-        <td style="padding:5px 6px"><input class="pp-custom-label" value="${escapeHtml(c.label)}" style="width:100%;min-width:140px;height:30px;padding:4px;border:1px solid var(--line);border-radius:6px;font-size:11px"></td>
-        <td style="padding:5px 6px"><input class="pp-custom-format" value="${escapeHtml(c.format)}" style="width:90px;height:30px;padding:4px;border:1px solid var(--line);border-radius:6px;font-size:11px;text-align:center"></td>
-        <td style="padding:5px 6px;text-align:center">
-          <select class="pp-custom-color" style="height:30px;padding:2px 6px;border:1px solid var(--line);border-radius:6px;font-size:11px">
-            <option value="bw" ${c.colorMode==='bw'?'selected':''}>ч/б</option>
-            <option value="color" ${c.colorMode==='color'?'selected':''}>цвет</option>
-          </select>
-        </td>
-        <td style="padding:5px 6px"><input type="number" class="pp-custom-price" value="${c.price}" min="0" step="0.1" style="width:70px;text-align:center;height:30px;padding:4px;border:1px solid var(--line);border-radius:6px;font-size:11px"></td>
-        <td style="padding:5px 6px"><button class="pp-custom-del icon-btn" style="width:28px;height:28px;color:var(--danger);border-color:#f5c6c2;background:var(--danger-soft)">✕</button></td>
-      </tr>`;
-    });
-    html += `</tbody></table>`;
-  } else {
-    html += `<div style="font-size:12px;color:var(--muted);margin-bottom:6px">Пока нет своих пунктов прайса.</div>`;
-  }
-  html += `<div style="margin-top:10px"><button type="button" class="btn-ghost btn-sm pp-add-custom">+ Добавить пункт прайса</button></div>`;
-  html += `</div>`;
-  panel.innerHTML = html;
+  const searchInput = panel.querySelector('.pc-search');
+  const listEl = panel.querySelector('.pc-list');
 
-  function bindCustomRowInputs() {
-    panel.querySelectorAll('[data-cid]').forEach(tr => {
-      const cid = tr.dataset.cid;
-      const entry = CUSTOM_PRICES.find(c => c.id===cid);
-      if (!entry) return;
-      tr.querySelector('.pp-custom-code').addEventListener('input', e => entry.code = e.target.value);
-      tr.querySelector('.pp-custom-label').addEventListener('input', e => entry.label = e.target.value);
-      tr.querySelector('.pp-custom-format').addEventListener('input', e => entry.format = e.target.value.trim());
-      tr.querySelector('.pp-custom-color').addEventListener('change', e => entry.colorMode = e.target.value);
-      tr.querySelector('.pp-custom-price').addEventListener('input', e => entry.price = Math.max(0, parseFloat(e.target.value.replace(',','.'))||0));
-      tr.querySelector('.pp-custom-del').addEventListener('click', () => {
-        CUSTOM_PRICES = CUSTOM_PRICES.filter(c => c.id!==cid);
-        buildPricesPanel(id);
-      });
+  function renderList(filter) {
+    const q = (filter||'').trim().toLowerCase();
+    const items = !q ? PRICE_CATALOG : PRICE_CATALOG.filter(it =>
+      it.code.toLowerCase().includes(q) || it.label.toLowerCase().includes(q));
+
+    if (!items.length) {
+      listEl.innerHTML = '<div style="padding:14px;font-size:12px;color:var(--muted)">Ничего не найдено.</div>';
+      return;
+    }
+
+    listEl.innerHTML = items.map(it => `
+      <div class="pc-item" data-code="${it.code}" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line-soft)">
+        <span style="font-size:11px;color:var(--muted);min-width:40px">${escapeHtml(it.code)}</span>
+        <span style="font-size:12.5px;flex:1">${escapeHtml(it.label)}</span>
+        <span style="font-size:13px;font-weight:700;white-space:nowrap">${money(it.price)}</span>
+        <button type="button" class="btn-secondary btn-xs pc-add-btn" data-code="${it.code}">+ Добавить</button>
+      </div>`).join('');
+
+    listEl.querySelectorAll('.pc-add-btn').forEach(btn => {
+      btn.addEventListener('click', () => addCatalogItemToSeparator(id, btn.dataset.code));
     });
   }
-  bindCustomRowInputs();
 
-  panel.querySelector('.pp-add-custom').addEventListener('click', () => {
-    CUSTOM_PRICES.push({id:makeId(), code:'CUSTOM', label:'Новый тариф', format:'A4', colorMode:'bw', price:0});
-    buildPricesPanel(id);
-  });
+  searchInput.addEventListener('input', () => renderList(searchInput.value));
+  renderList('');
+}
+
+// Adds a chosen price-list item (code 1001-1052) as an extra row to the
+// separator card's results - same row shape as a scanned page, so qty edits
+// still re-price through the tier table and the color toggle still works.
+function addCatalogItemToSeparator(id, code) {
+  const item = PRICE_CATALOG.find(it => it.code === code);
+  if (!item) return;
+  const state = serviceStates[id];
+  if (!state) return;
+
+  const row = {
+    id: makeId(), blockId:id, fileName:null, fileBytes:null,
+    actualLabel:'-', colorMode:item.colorMode, billedFormat:item.format,
+    pages:[], qty:1, unitPrice:item.price, tariffCode:item.code, tariffLabel:item.label,
+    priceLocked:false, isExtra:true, isSeparator:true, isWord:false
+  };
+
+  state.rows = state.rows || [];
+  state.rows.push(row);
+
+  const card = document.querySelector(`.service-card[data-id="${id}"]`);
+  if (card) renderResult(card, id);
+  rebuildRows();
+  updateTotal();
 }
 
 // ── RESULT RENDER ──────────────────────────────────────────────────
@@ -712,11 +733,9 @@ function renderResult(card, id) {
 
 function renderRowHtml(row) {
   const sum = row.qty * row.unitPrice;
-  const customFmts = [...new Set(CUSTOM_PRICES.map(c => c.format))].filter(f => !ALL_FORMATS.includes(f));
-  const fmtOptions = [...ALL_FORMATS, ...customFmts];
   const fmtCell = row.isSeparator ? `
     <select class="row-format-select" data-row-id="${row.id}" style="height:36px;padding:6px 10px;font-size:13px;border-radius:8px;border:1px solid var(--line);background:#fff;font-family:inherit;min-width:120px;">
-      ${fmtOptions.map(f => `<option value="${f}" ${f===row.billedFormat?'selected':''}>${escapeHtml(fmtLabel(f))}</option>`).join('')}
+      ${ALL_FORMATS.map(f => `<option value="${f}" ${f===row.billedFormat?'selected':''}>${escapeHtml(fmtLabel(f))}</option>`).join('')}
     </select>` : escapeHtml(row.billedFormat||'—');
   const dlBtn = row.isSeparator && !row.isWord && row.fileBytes
     ? `<button type="button" class="btn-secondary btn-xs dl-row-btn" data-row-id="${row.id}">⬇ PDF</button>` : '';
@@ -1738,8 +1757,6 @@ function fmtLabel(key) {
   if (FORMATS[key]) return `${key} (${FORMATS[key].w}×${FORMATS[key].h} мм)`;
   const m=/^([A][234])x(\d+)$/i.exec(key);
   if (m) { const base=m[1].toUpperCase(),n=+m[2]; return `${base}×${n} (${FORMATS[base].w*n}×${FORMATS[base].h} мм)`; }
-  const custom = CUSTOM_PRICES.find(c => c.format===key);
-  if (custom) return `${key} — ${custom.label}`;
   return key;
 }
 function escapeHtml(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
