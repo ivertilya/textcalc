@@ -323,9 +323,9 @@ const FOLD_FORMAT_OPTS = [
 ];
 
 const ALL_FORMATS = ['A6','A5','A4','A3','A2','A1','A0',
-  'A4x3','A4x4','A4x5','A4x6','A4x7','A4x8',
-  'A3x3','A3x4','A3x5','A3x6','A3x7','A3x8',
-  'A2x3','A2x4','A2x5','A2x6'];
+  'A4x3','A4x4','A4x5','A4x6','A4x7','A4x8','A4x9','A4x10','A4x12','A4x15','A4x20',
+  'A3x3','A3x4','A3x5','A3x6','A3x7','A3x8','A3x9','A3x10','A3x12','A3x15',
+  'A2x3','A2x4','A2x5','A2x6','A2x7','A2x8','A2x9','A2x10'];
 
 const GUILL_SOURCES = {
   SRA3:{w:320,h:450,label:'SRA3 (320×450)'},
@@ -740,9 +740,15 @@ function renderResult(card, id) {
 
 function renderRowHtml(row) {
   const sum = row.qty * row.unitPrice;
+  // Safety net: if a page's detected format is a wide multiplier beyond the
+  // standard list (e.g. A2x9), it still needs to appear as a real selectable
+  // option — otherwise no <option> matches and the browser silently falls
+  // back to showing the first one (A6), even though the price is correct.
+  const fmtOptions = row.billedFormat && !ALL_FORMATS.includes(row.billedFormat)
+    ? [...ALL_FORMATS, row.billedFormat] : ALL_FORMATS;
   const fmtCell = row.isSeparator ? `
     <select class="row-format-select" data-row-id="${row.id}" style="height:36px;padding:6px 10px;font-size:13px;border-radius:8px;border:1px solid var(--line);background:#fff;font-family:inherit;min-width:120px;">
-      ${ALL_FORMATS.map(f => `<option value="${f}" ${f===row.billedFormat?'selected':''}>${escapeHtml(fmtLabel(f))}</option>`).join('')}
+      ${fmtOptions.map(f => `<option value="${f}" ${f===row.billedFormat?'selected':''}>${escapeHtml(fmtLabel(f))}</option>`).join('')}
     </select>` : escapeHtml(row.billedFormat||'—');
   const dlBtn = row.isSeparator && !row.isWord && row.fileBytes
     ? `<button type="button" class="btn-secondary btn-xs dl-row-btn" data-row-id="${row.id}">⬇ PDF</button>` : '';
@@ -1210,7 +1216,8 @@ function initGuillotine(card, id) {
   const updateInfo = () => {
     const src  = GUILL_SOURCES[document.getElementById(`g-src-${id}`).value];
     const tgt  = getTarget();
-    const gap  = parseFloat(document.getElementById(`g-gap-${id}`)?.value) || 4;
+    const gapRaw = parseFloat(document.getElementById(`g-gap-${id}`)?.value);
+    const gap = Number.isFinite(gapRaw) ? gapRaw : 4;
     const best = bestOrientation(src, tgt, gap);
     const total = best.n1 * best.n2;
     document.getElementById(`g-info-${id}`).innerHTML = total > 0
@@ -1269,9 +1276,12 @@ function calcGuillotine(id) {
   const tgt    = guillGetTarget(id);
   const y      = parseFloat(document.getElementById(`g-y-${id}`).value)||0;
   const x      = parseFloat(document.getElementById(`g-x-${id}`).value)||0;
-  const minCut = parseFloat(document.getElementById(`g-mincut-${id}`)?.value)||50;
-  const gap    = parseFloat(document.getElementById(`g-gap-${id}`)?.value)||4;
-  const block  = parseFloat(document.getElementById(`g-block-${id}`)?.value)||6.5;
+  const minCutRaw = parseFloat(document.getElementById(`g-mincut-${id}`)?.value);
+  const minCut = Number.isFinite(minCutRaw) ? minCutRaw : 50;
+  const gapRaw = parseFloat(document.getElementById(`g-gap-${id}`)?.value);
+  const gap = Number.isFinite(gapRaw) ? gapRaw : 4;
+  const blockRaw = parseFloat(document.getElementById(`g-block-${id}`)?.value);
+  const block = Number.isFinite(blockRaw) ? blockRaw : 6.5;
   const resultEl = document.getElementById(`g-result-${id}`);
 
   if (!tgt.fw || !tgt.fh) {
@@ -1779,7 +1789,7 @@ function detectFormat(w, h) {
 }
 function detectWideFormat(w, h) {
   // A4xN: width=210*N, height=297. step=210, constant=297.
-  const bases = ['A4','A3','A2','A1'];
+  const bases = ['A4','A3','A2','A1','A0'];
   let best=null, bestScore=Infinity;
   for (const base of bases) {
     const s=FORMATS[base];
