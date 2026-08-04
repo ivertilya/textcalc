@@ -1543,7 +1543,7 @@ function initConverter(card, id) {
   if (!window._heic2anyLoaded) {
     window._heic2anyLoaded = true;
     const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js';
+    s.src = 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
     document.head.appendChild(s);
   }
   const files = serviceStates[id].files;
@@ -1574,6 +1574,7 @@ function initConverter(card, id) {
         </div>
       </div>
       <div><button type="button" class="btn-primary" id="cv-go-${id}">Конвертировать</button></div>
+      <div id="cv-zip-wrap-${id}" style="display:none"><button type="button" class="btn-secondary btn-sm" id="cv-zip-${id}">⬇ Скачать всё архивом</button></div>
       <div id="cv-links-${id}" style="display:flex;flex-wrap:wrap;gap:10px"></div>
       <div id="cv-log-${id}" style="font-size:13px;color:var(--muted)"></div>
     </div>`;
@@ -1586,6 +1587,9 @@ function initConverter(card, id) {
   const logEl  = document.getElementById(`cv-log-${id}`);
   const goBtn  = document.getElementById(`cv-go-${id}`);
   const linksEl= document.getElementById(`cv-links-${id}`);
+  const zipWrap= document.getElementById(`cv-zip-wrap-${id}`);
+  const zipBtn = document.getElementById(`cv-zip-${id}`);
+  let lastResults = []; // {url, name} of successfully converted files this run
 
   tgtSel.addEventListener('change', () => { qWrap.style.display = ['jpg','webp'].includes(tgtSel.value)?'':'none'; });
   qWrap.style.display = 'none';
@@ -1619,10 +1623,12 @@ function initConverter(card, id) {
     const fmt  = tgtSel.value;
     const qual = Math.min(1,Math.max(0.1,parseFloat(document.getElementById(`cv-q-${id}`).value)||0.92));
     linksEl.innerHTML=''; logEl.textContent=''; goBtn.disabled=true;
+    zipWrap.style.display='none'; lastResults=[];
     for (const f of files) {
       logEl.textContent = `Обрабатываю: ${f.name}…`;
       try {
         const res = await convertFile(f, fmt, qual);
+        lastResults.push(res);
         const a = document.createElement('a');
         a.href=res.url; a.download=res.name;
         a.style.cssText='display:inline-flex;align-items:center;gap:6px;padding:9px 15px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:600;text-decoration:none;color:var(--text);cursor:pointer';
@@ -1636,6 +1642,39 @@ function initConverter(card, id) {
       }
     }
     logEl.textContent='Готово.'; goBtn.disabled=false;
+    zipWrap.style.display = lastResults.length > 1 ? 'block' : 'none';
+  });
+
+  zipBtn.addEventListener('click', async () => {
+    if (!lastResults.length) return;
+    zipBtn.disabled = true;
+    const origText = zipBtn.textContent;
+    zipBtn.textContent = 'Собираю архив…';
+    try {
+      const zip = new JSZip();
+      const usedNames = new Set();
+      for (const r of lastResults) {
+        const resp = await fetch(r.url);
+        const buf  = await resp.arrayBuffer();
+        let name = r.name;
+        if (usedNames.has(name)) {
+          const dot = name.lastIndexOf('.');
+          name = dot>0 ? `${name.slice(0,dot)}_${makeId().slice(0,4)}${name.slice(dot)}` : `${name}_${makeId().slice(0,4)}`;
+        }
+        usedNames.add(name);
+        zip.file(name, buf);
+      }
+      const blob = await zip.generateAsync({type:'blob'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'конвертированные_файлы.zip';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    } catch(err) {
+      logEl.textContent = 'Не удалось собрать архив: ' + err.message;
+    }
+    zipBtn.disabled = false;
+    zipBtn.textContent = origText;
   });
 }
 
@@ -1654,16 +1693,23 @@ async function imgToCanvas(file) {
   const ext=(file.name.split('.').pop()||'').toLowerCase();
   if (['heic','heif'].includes(ext)) {
     if (typeof heic2any==='undefined') throw new Error('heic2any загружается, повторите через секунду');
-    // heic2any decides whether to process a file by checking its MIME type,
-    // not its extension. Browsers usually leave .heif files' `type` empty
-    // (or set to something heic2any doesn't recognise), so it silently
-    // rejects them even though the underlying HEIF container is identical
-    // to HEIC. Re-wrap with an explicit, recognised type before handing it
-    // off — this covers both .heic and .heif regardless of what the browser
-    // guessed.
     const bytes = await file.arrayBuffer();
     const typedBlob = new Blob([bytes], {type: 'image/heic'});
-    const blob = await heic2any({blob:typedBlob, toType:'image/png'});
+    let blob;
+    try {
+      blob = await heic2any({blob:typedBlob, toType:'image/png'});
+    } catch (e1) {
+      // Some HEIC files (Live Photos, multi-frame bursts) trip up the
+      // single-image decode path. Retry asking for all frames and just
+      // take the first one — this recovers a good chunk of the files
+      // that otherwise fail with ERR_LIBHEIF.
+      try {
+        const frames = await heic2any({blob:typedBlob, toType:'image/png', multiple:true});
+        blob = Array.isArray(frames) ? frames[0] : frames;
+      } catch (e2) {
+        throw new Error('Этот HEIC/HEIF не удалось декодировать в браузере (нестандартное кодирование, например HDR-фото с новых iPhone). Экспортируйте его в JPG через приложение «Фото» на телефоне и загрузите заново.');
+      }
+    }
     const png  = new File([blob], file.name.replace(/\.[^.]+$/,'.png'),{type:'image/png'});
     const img  = await loadImg(png);
     const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight;
