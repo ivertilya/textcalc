@@ -152,7 +152,7 @@ tr:hover td{background:#fafafa}
     <div class="app-logo-icon">🖨</div>
     <div>
       <div class="app-title">Калькулятор печати</div>
-      <div class="app-subtitle">Разделитель · Фальцовка · Гильотина · Брошюровка · Конвертер</div>
+      <div class="app-subtitle">Разделитель · Фальцовка · Брошюровка · Гильотина · Конвертер</div>
     </div>
   </div>
 </header>
@@ -1654,7 +1654,16 @@ async function imgToCanvas(file) {
   const ext=(file.name.split('.').pop()||'').toLowerCase();
   if (['heic','heif'].includes(ext)) {
     if (typeof heic2any==='undefined') throw new Error('heic2any загружается, повторите через секунду');
-    const blob = await heic2any({blob:file,toType:'image/png'});
+    // heic2any decides whether to process a file by checking its MIME type,
+    // not its extension. Browsers usually leave .heif files' `type` empty
+    // (or set to something heic2any doesn't recognise), so it silently
+    // rejects them even though the underlying HEIF container is identical
+    // to HEIC. Re-wrap with an explicit, recognised type before handing it
+    // off — this covers both .heic and .heif regardless of what the browser
+    // guessed.
+    const bytes = await file.arrayBuffer();
+    const typedBlob = new Blob([bytes], {type: 'image/heic'});
+    const blob = await heic2any({blob:typedBlob, toType:'image/png'});
     const png  = new File([blob], file.name.replace(/\.[^.]+$/,'.png'),{type:'image/png'});
     const img  = await loadImg(png);
     const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight;
