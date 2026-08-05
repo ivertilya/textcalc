@@ -1193,6 +1193,14 @@ function initGuillotine(card, id) {
 
   const bestOrientation = (src, tgt, gap) => {
     const fit = (sheetDim, itemDim) => itemDim > 0 ? Math.max(0, Math.floor((sheetDim + gap) / (itemDim + gap))) : 0;
+    // For a custom format the user has deliberately entered "ширина" and
+    // "высота" for their actual artwork — auto-rotating it 90° to squeeze
+    // out more pieces would silently change the layout they intended.
+    // Presets (A6/A5/... /визитка) aren't tied to a specific artwork
+    // orientation, so those still pick whichever orientation yields more.
+    if (tgt.key === 'custom') {
+      return { dimH: tgt.fh, dimW: tgt.fw, n1: fit(src.h, tgt.fh), n2: fit(src.w, tgt.fw) };
+    }
     const optA = { dimH: tgt.fw, dimW: tgt.fh, n1: fit(src.h, tgt.fw), n2: fit(src.w, tgt.fh) };
     const optB = { dimH: tgt.fh, dimW: tgt.fw, n1: fit(src.h, tgt.fh), n2: fit(src.w, tgt.fw) };
     return (optB.n1 * optB.n2 > optA.n1 * optA.n2) ? optB : optA;
@@ -1295,15 +1303,22 @@ function calcGuillotine(id) {
   }
 
   // ── Choose orientation that yields the most pieces ──────────────
-  // Try both ways of mapping the target's two dimensions onto the sheet's
-  // height axis (portrait phase) and width axis (landscape phase).
+  // Custom format: the user entered ширина/высота for actual artwork —
+  // don't rotate it to squeeze out more pieces, use it exactly as entered.
+  // Presets aren't tied to a specific artwork orientation, so those still
+  // pick whichever orientation yields more.
   function fitCount(sheetDim, itemDim) {
     if (itemDim <= 0) return 0;
     return Math.max(0, Math.floor((sheetDim + gap) / (itemDim + gap)));
   }
-  const optA = { dimH: tgt.fw, dimW: tgt.fh, n1: fitCount(src.h, tgt.fw), n2: fitCount(src.w, tgt.fh) };
-  const optB = { dimH: tgt.fh, dimW: tgt.fw, n1: fitCount(src.h, tgt.fh), n2: fitCount(src.w, tgt.fw) };
-  const best = (optB.n1 * optB.n2 > optA.n1 * optA.n2) ? optB : optA;
+  let best;
+  if (tgt.key === 'custom') {
+    best = { dimH: tgt.fh, dimW: tgt.fw, n1: fitCount(src.h, tgt.fh), n2: fitCount(src.w, tgt.fw) };
+  } else {
+    const optA = { dimH: tgt.fw, dimW: tgt.fh, n1: fitCount(src.h, tgt.fw), n2: fitCount(src.w, tgt.fh) };
+    const optB = { dimH: tgt.fh, dimW: tgt.fw, n1: fitCount(src.h, tgt.fh), n2: fitCount(src.w, tgt.fw) };
+    best = (optB.n1 * optB.n2 > optA.n1 * optA.n2) ? optB : optA;
+  }
 
   if (best.n1 < 1 || best.n2 < 1) {
     resultEl.innerHTML = `<div class="g-warn" style="margin-top:14px">⚠️ Формат ${escapeHtml(tgt.label)} не помещается на листе ${escapeHtml(src.label)}.</div>`;
