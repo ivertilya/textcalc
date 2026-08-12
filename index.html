@@ -1388,41 +1388,41 @@ function calcGuillotine(id) {
   function axisChainV2(sheetDim, itemDim, marginInput, N) {
     const steps = [];
     const hasGap = gap > 0.001;
+    const chunkSize = hasGap ? itemDim + gap : itemDim;
 
-    // 1. Trim the starting margin — the one unavoidable unique value.
-    const marginDial = sheetDim + block - marginInput;
+    // 1. Trim the starting margin — same as always.
+    let dial = sheetDim + block - marginInput;
     steps.push({
       kind: 'margin',
       action: `Обрезка стартового поля (${fmt2(marginInput)} мм)`,
-      dial: marginDial,
-      formula: `${fmt2(sheetDim)} + ${fmt2(block)} − ${fmt2(marginInput)} = ${fmt2(marginDial)}`,
+      dial,
+      formula: `${fmt2(sheetDim)} + ${fmt2(block)} − ${fmt2(marginInput)} = ${fmt2(dial)}`,
       removed: marginInput
     });
 
-    // 2. Repeat (N-1) times: cut a constant-size chunk off the leading
-    // edge. Same dial every time — no recalculation between repeats.
+    // 2. Repeat (N-1) times: cut off ONE combined "деталь+зазор" chunk
+    // per cut (no separate gap cut). Same orientation as Способ 1 — the
+    // BIG remaining piece always stays at the stop, so the dial shrinks
+    // each time. Nothing overhangs on the operator's side, unlike the
+    // old constant-dial version.
     if (N > 1) {
-      const chunkDial = hasGap ? itemDim + gap + block : itemDim + block;
-      steps.push({
-        kind: 'repeat-chunk',
-        action: hasGap
-          ? `Отрезаем заготовку «деталь + зазор»`
-          : `Отрезаем деталь`,
-        dial: chunkDial,
-        formula: hasGap
-          ? `${fmt2(itemDim)} + ${fmt2(gap)} + ${fmt2(block)} = ${fmt2(chunkDial)} (не меняется)`
-          : `${fmt2(itemDim)} + ${fmt2(block)} = ${fmt2(chunkDial)} (не меняется)`,
-        removed: hasGap ? itemDim + gap : itemDim,
-        repeatCount: N - 1,
-        note: hasGap
-          ? `Упор не трогаете — повторите ${N-1} раз подряд, каждый раз отрезая ${fmt2(itemDim+gap)} мм. Отложите все заготовки.`
-          : `Упор не трогаете — повторите ${N-1} раз подряд, каждый раз отрезая готовую деталь ${fmt2(itemDim)} мм.`
-      });
+      for (let k = 1; k <= N - 1; k++) {
+        dial -= chunkSize;
+        steps.push({
+          kind: 'strip',
+          action: hasGap
+            ? `Заготовка ${k} из ${N-1} — «деталь + зазор» (${fmt2(chunkSize)} мм)`
+            : `Деталь ${k} из ${N}`,
+          dial,
+          formula: `− ${fmt2(chunkSize)} мм = ${fmt2(dial)}`,
+          removed: chunkSize
+        });
+      }
     }
 
-    // 3. What's left of the main sheet is: 1 item + trailing margin.
-    // Flip it, trim with a FIXED dial (itemDim+block) — this is the
-    // SAME value used to clean up every raw chunk from step 2 below.
+    // 3. What's left of the main sheet is: 1 item + trailing margin
+    // (no gap attached — nothing followed the last item). Flip it,
+    // trim the margin off with a fixed dial.
     const finalDial = itemDim + block;
     steps.push({
       kind: 'flip-last',
@@ -1435,18 +1435,21 @@ function calcGuillotine(id) {
       flip: true
     });
 
-    // 4. Second pass: trim the gap off every raw chunk from step 2,
-    // using the EXACT same dial as step 3 — nothing new to remember.
+    // 4. The N-1 raw strips from step 2 are all IDENTICAL (chunkSize) —
+    // stack them and trim the gap off ALL of them in ONE cut, instead
+    // of handling each strip separately. Same dial as the last piece's
+    // trim (item+block), since you're keeping the item side at the stop
+    // and letting the gap side fall away — for the whole stack at once.
     if (N > 1 && hasGap) {
       steps.push({
-        kind: 'trim-gap-batch',
-        action: `Обрезка зазора у каждой из ${N-1} заготовок — после переворота`,
+        kind: 'stack-trim',
+        action: `Сложите все ${N-1} заготовки в стопку и обрежьте зазор одним резом`,
         dial: finalDial,
         formula: `Тот же упор, что и для последней детали — ${fmt2(finalDial)} мм`,
         removed: gap,
         repeatCount: N - 1,
         flip: true,
-        note: `Переверните каждую заготовку и отрежьте тем же значением упора — зазор ${fmt2(gap)} мм отпадает, остаётся готовая деталь.`
+        note: `Ровно сложите ${N-1} заготовки друг на друга (края вровень) и отрежьте зазор ${fmt2(gap)} мм одним резом сразу у всей стопки — получите ${N-1} готовых деталей за один проход.`
       });
     }
 
@@ -1542,6 +1545,7 @@ function calcGuillotine(id) {
         <div class="g-dial-sub">${escapeHtml(s.formula)}</div>
         ${s.note ? `<div class="g-dial-sub" style="margin-top:4px;font-style:italic">${escapeHtml(s.note)}</div>` : ''}
         ${s.removed != null ? `<div class="g-val-chip" style="margin-top:8px;font-size:11px;color:var(--muted)">в отход: ${fmt2(s.removed)} мм${s.repeatCount ? ' (за каждый повтор)' : ''}</div>` : ''}
+        ${s.warn ? `<div style="margin-top:7px;padding:7px 11px;background:#fffbe6;border:1px solid #f0d878;border-radius:7px;font-size:12px;color:#7a5c00">⚠️ ${escapeHtml(s.warn)}</div>` : ''}
         ${tooSmall ? `<div style="margin-top:7px;padding:7px 11px;background:var(--danger-soft);border:1px solid #f5c6c2;border-radius:7px;font-size:12px;color:var(--danger)">🚫 Значение ${fmt2(s.dial)} мм меньше минимального реза (${fmt2(minCut)} мм)</div>` : ''}
       </div>
     </div>`;
