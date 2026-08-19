@@ -1044,7 +1044,31 @@ function buildFoldUI(card, id) {
   root.querySelectorAll('.fold-fmt').forEach(sel =>
     sel.addEventListener('change', () => { lines[+sel.dataset.idx].format=sel.value; buildFoldUI(card,id); updateTotal(); }));
   root.querySelectorAll('.fold-qty').forEach(inp =>
-    inp.addEventListener('input', () => { lines[+inp.dataset.idx].qty=Math.max(1,parseInt(inp.value)||1); buildFoldUI(card,id); updateTotal(); }));
+    inp.addEventListener('input', () => {
+      const idx = +inp.dataset.idx;
+      lines[idx].qty = Math.max(1, parseInt(inp.value)||1);
+      const tr = inp.closest('tr');
+      const t = FOLD_PRICES[lines[idx].direction];
+      const baseArea = FOLD_DIRECTION_OPTS.find(d=>d.key===lines[idx].direction)?.baseArea||1;
+      let fmtArea = FMT_AREA[lines[idx].format]||1;
+      const m = /^([A][234])x(\d+)$/i.exec(lines[idx].format);
+      if (m) fmtArea = (FMT_AREA[m[1].toUpperCase()]||1)*Number(m[2]);
+      const price = !t ? 0 : lines[idx].direction==='custom-A4' ? t.price : Math.round(t.price*(fmtArea/baseArea)*100)/100;
+      const cells = tr.querySelectorAll('td');
+      cells[4].textContent = money(price*lines[idx].qty);
+      const newTotal = lines.reduce((s,l) => {
+        const tt = FOLD_PRICES[l.direction]; if (!tt) return s;
+        const ba = FOLD_DIRECTION_OPTS.find(d=>d.key===l.direction)?.baseArea||1;
+        let fa = FMT_AREA[l.format]||1;
+        const mm = /^([A][234])x(\d+)$/i.exec(l.format);
+        if (mm) fa = (FMT_AREA[mm[1].toUpperCase()]||1)*Number(mm[2]);
+        const p = l.direction==='custom-A4' ? tt.price : Math.round(tt.price*(fa/ba)*100)/100;
+        return s + p*l.qty;
+      }, 0);
+      const footCell = root.querySelector('tfoot td:nth-child(2)');
+      if (footCell) footCell.textContent = money(newTotal);
+      updateTotal();
+    }));
   root.querySelectorAll('.fold-del').forEach(btn =>
     btn.addEventListener('click', () => { lines.splice(+btn.dataset.idx,1); buildFoldUI(card,id); updateTotal(); }));
   root.querySelector('.fold-add').addEventListener('click', () => {
@@ -1118,12 +1142,46 @@ function buildBindingUI(card, id) {
       <button type="button" class="btn-ghost btn-sm b-add">+ Добавить строку</button>
     </div>`;
 
+  function recomputeBindingTotal() {
+    return lines.reduce((s,l) => {
+      const opt = BINDING_OPTIONS.find(o=>o.key===l.key);
+      if (!opt) return s;
+      const price = opt.tiers ? (opt.tiers.find(t=>l.sheets<=t.max)||opt.tiers.at(-1)).price : opt.price;
+      return s + price*l.copies;
+    }, 0);
+  }
+  function updateBindingFooter() {
+    const footCell = root.querySelector('tfoot td:nth-child(2)');
+    if (footCell) footCell.textContent = money(recomputeBindingTotal());
+  }
+
   root.querySelectorAll('.b-type').forEach(sel =>
     sel.addEventListener('change', () => { lines[+sel.dataset.idx].key=sel.value; buildBindingUI(card,id); updateTotal(); }));
   root.querySelectorAll('.b-sheets').forEach(inp =>
-    inp.addEventListener('input', () => { lines[+inp.dataset.idx].sheets=Math.max(1,parseInt(inp.value)||1); buildBindingUI(card,id); updateTotal(); }));
+    inp.addEventListener('input', () => {
+      const idx = +inp.dataset.idx;
+      lines[idx].sheets = Math.max(1, parseInt(inp.value)||1);
+      const opt  = BINDING_OPTIONS.find(o=>o.key===lines[idx].key)||BINDING_OPTIONS[0];
+      const tier = opt.tiers ? (opt.tiers.find(t=>lines[idx].sheets<=t.max)||opt.tiers.at(-1)) : null;
+      const price = tier ? tier.price : opt.price;
+      const code  = tier ? tier.code  : opt.code;
+      const cells = inp.closest('tr').querySelectorAll('td');
+      cells[3].innerHTML = `${escapeHtml(code)}${tier?`<br><span style="font-size:11px">${escapeHtml(tier.label)}</span>`:''}`;
+      cells[4].textContent = money(price);
+      cells[5].textContent = money(price*lines[idx].copies);
+      updateBindingFooter(); updateTotal();
+    }));
   root.querySelectorAll('.b-copies').forEach(inp =>
-    inp.addEventListener('input', () => { lines[+inp.dataset.idx].copies=Math.max(1,parseInt(inp.value)||1); buildBindingUI(card,id); updateTotal(); }));
+    inp.addEventListener('input', () => {
+      const idx = +inp.dataset.idx;
+      lines[idx].copies = Math.max(1, parseInt(inp.value)||1);
+      const opt  = BINDING_OPTIONS.find(o=>o.key===lines[idx].key)||BINDING_OPTIONS[0];
+      const tier = opt.tiers ? (opt.tiers.find(t=>lines[idx].sheets<=t.max)||opt.tiers.at(-1)) : null;
+      const price = tier ? tier.price : opt.price;
+      const cells = inp.closest('tr').querySelectorAll('td');
+      cells[5].textContent = money(price*lines[idx].copies);
+      updateBindingFooter(); updateTotal();
+    }));
   root.querySelectorAll('.b-del').forEach(btn =>
     btn.addEventListener('click', () => { lines.splice(+btn.dataset.idx,1); buildBindingUI(card,id); updateTotal(); }));
   root.querySelector('.b-add').addEventListener('click', () => {
