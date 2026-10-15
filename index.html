@@ -299,7 +299,8 @@ const BINDING_OPTIONS = [
 
 // Фальцовка — прайс из калькулятора проектной документации.
 // Плоская таблица: цена за 1 шт. зависит только от формата чертежа,
-// без направления (всегда подразумевается фальцовка под стандартную папку).
+// Режим фальцовки: «Под A4» (по умолчанию) или «Под A3». Под A3 форматы A4 и A3 бесплатны,
+// остальные форматы — по прайсу (как в «Инженерная_печать.xlsx»).
 const FOLD_PRICE_TABLE = {
   A4:0, A3:6, A2:12, A1:24, A0m2:48,
   A4x3:9, A4x4:12, A4x5:15, A4x6:18, A4x7:21, A4x8:24, A4x9:27, A4x10:30, A4x11:33, A4x12:36,
@@ -356,6 +357,7 @@ function addBlock(type) {
     notes: [],
     collapsed: false,
     foldLines:   type==='folding'  ? [{format:'A2',qty:1}] : undefined,
+    foldMode:    type==='folding'  ? 'A4' : undefined,
     bindingLines:type==='binding'  ? [{key:'plastic_a4',sheets:40,copies:1}] : undefined
   };
 
@@ -968,16 +970,27 @@ function downloadBytes(data, name, mime) {
 // ── FOLDING ────────────────────────────────────────────────────────
 function renderFoldingBody(id) { return `<div id="fold-ui-${id}"></div>`; }
 
-function foldPrice(fmt) { return FOLD_PRICE_TABLE[fmt] ?? 0; }
+function foldPrice(fmt, mode) {
+  if (mode === 'A3' && (fmt === 'A4' || fmt === 'A3')) return 0;
+  return FOLD_PRICE_TABLE[fmt] ?? 0;
+}
 
 function buildFoldUI(card, id) {
   const st   = serviceStates[id];
   const root = document.getElementById(`fold-ui-${id}`);
   if (!root) return;
   const lines = st.foldLines;
-  const total = lines.reduce((s,l) => s + foldPrice(l.format)*l.qty, 0);
+  const fp = f => foldPrice(f, st.foldMode);
+  const total = lines.reduce((s,l) => s + fp(l.format)*l.qty, 0);
 
   root.innerHTML = `
+    <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px">
+      <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase">Фальцовка</label>
+      <select class="fold-mode" style="height:38px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit">
+        <option value="A4" ${st.foldMode==='A4'?'selected':''}>Под A4</option>
+        <option value="A3" ${st.foldMode==='A3'?'selected':''}>Под A3</option>
+      </select>
+    </div>
     <div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse;min-width:380px;">
       <thead><tr>
@@ -989,7 +1002,7 @@ function buildFoldUI(card, id) {
       </tr></thead>
       <tbody>
         ${lines.map((l,idx) => {
-          const price = foldPrice(l.format);
+          const price = fp(l.format);
           return `<tr style="border-bottom:1px solid var(--line-soft)">
             <td style="padding:7px 10px">
               <select class="fold-fmt" data-idx="${idx}" style="width:100%;min-width:140px;height:38px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit">
@@ -1018,25 +1031,28 @@ function buildFoldUI(card, id) {
       <button type="button" class="btn-ghost btn-sm fold-add">+ Добавить строку</button>
     </div>`;
 
+  root.querySelector('.fold-mode').addEventListener('change', e => {
+    st.foldMode = e.target.value; buildFoldUI(card,id); updateTotal();
+  });
   root.querySelectorAll('.fold-fmt').forEach(sel =>
     sel.addEventListener('change', () => {
       const idx = +sel.dataset.idx;
       lines[idx].format = sel.value;
       const tr = sel.closest('tr');
-      const p  = foldPrice(lines[idx].format);
+      const p  = fp(lines[idx].format);
       const cells = tr.querySelectorAll('td');
       cells[2].textContent = fmt2(p) + ' ₽';
       cells[3].textContent = money(p * lines[idx].qty);
-      root.querySelector('.fold-total').textContent = money(lines.reduce((s,l)=>s+foldPrice(l.format)*l.qty,0));
+      root.querySelector('.fold-total').textContent = money(lines.reduce((s,l)=>s+fp(l.format)*l.qty,0));
       updateTotal();
     }));
   root.querySelectorAll('.fold-qty').forEach(inp =>
     inp.addEventListener('input', () => {
       const idx = +inp.dataset.idx;
       lines[idx].qty = Math.max(1, parseInt(inp.value)||1);
-      const p = foldPrice(lines[idx].format);
+      const p = fp(lines[idx].format);
       inp.closest('tr').querySelector('.fold-sum').textContent = money(p * lines[idx].qty);
-      root.querySelector('.fold-total').textContent = money(lines.reduce((s,l)=>s+foldPrice(l.format)*l.qty,0));
+      root.querySelector('.fold-total').textContent = money(lines.reduce((s,l)=>s+fp(l.format)*l.qty,0));
       updateTotal();
     }));
   root.querySelectorAll('.fold-del').forEach(btn =>
@@ -1842,7 +1858,7 @@ function updateTotal() {
   let total = calculatedRows.reduce((s,r)=>s+r.qty*r.unitPrice, 0);
   Object.values(serviceStates).forEach(st => {
     if (st.type==='folding' && st.foldLines) {
-      st.foldLines.forEach(l => { total += foldPrice(l.format) * (l.qty||1); });
+      st.foldLines.forEach(l => { total += foldPrice(l.format, st.foldMode) * (l.qty||1); });
     }
     if (st.type==='binding' && st.bindingLines) {
       st.bindingLines.forEach(l => {
